@@ -1,0 +1,2 @@
+D:/flutter/anyen_clinic/android/app/.cxx/RelWithDebInfo/2p43306e/x86_64/CMakeFiles/edit_cache.dir
+D:/flutter/anyen_clinic/android/app/.cxx/RelWithDebInfo/2p43306e/x86_64/CMakeFiles/rebuild_cache.dir

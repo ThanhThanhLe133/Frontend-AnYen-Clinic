@@ -1,0 +1,470 @@
+import 'package:anyen_clinic/widget/buildButton.dart';
+import 'package:anyen_clinic/widget/dateTimePicker.dart';
+import 'package:anyen_clinic/widget/sectionTitle.dart';
+import 'package:flutter/material.dart';
+// import 'package:an_yen_clinic/gen/assets.gen.dart';
+
+class MedicalRecordsScreen extends StatelessWidget {
+  const MedicalRecordsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.width;
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.chevron_left, color: Color(0xFF9BA5AC)),
+          iconSize: screenWidth * 0.08,
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        title: Text(
+          "Hồ sơ y tế",
+          style: TextStyle(
+            color: Colors.blue,
+            fontSize: screenWidth * 0.065,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(1.0),
+          child: Container(
+            color: Color(0xFF9BA5AC),
+            height: 1.0,
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.only(right: screenWidth * 0.03),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: GestureDetector(
+                  onTap: () {},
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        'Sửa',
+                        style: TextStyle(
+                          color: Color(0xFF119CF0),
+                          fontSize: screenWidth * 0.035,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Container(
+              width: screenWidth * 0.9,
+              padding: EdgeInsets.all(screenWidth * 0.02),
+              // constraints:
+              //     BoxConstraints(minHeight: screenHeight * 0.4, maxHeight: 500),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: Color(0xFFD9D9D9),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  infoWidget(
+                    screenWidth: screenWidth,
+                    label: "Họ và tên",
+                    info: "Lê Thị Thanh Thanh",
+                  ),
+                  infoWidget(
+                    screenWidth: screenWidth,
+                    label: "Giới tính",
+                    info: "Nữ",
+                  ),
+                  infoWidget(
+                    screenWidth: screenWidth,
+                    label: "Ngày sinh",
+                    info: "13/03/2005",
+                  ),
+                  infoWidget(
+                    screenWidth: screenWidth,
+                    label: "Tiền sử bệnh",
+                    info: "ssssssssssssssssssssssssssss",
+                  ),
+                  infoWidget(
+                    screenWidth: screenWidth,
+                    label: "Dị ứng",
+                    info: "ssssssssssssssssssssssssssss",
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(screenWidth * 0.05),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  sectionTitle(
+                      title: 'Chỉ số sức khoẻ',
+                      screenHeight: screenHeight,
+                      screenWidth: screenWidth),
+                  Padding(
+                    padding: EdgeInsets.only(
+                        top: screenHeight * 0.02, bottom: screenHeight * 0.01),
+                    child: GestureDetector(
+                      onTap: () => _showHealthDialog(context),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Thêm',
+                            style: TextStyle(
+                              color: Color(0xFF119CF0),
+                              fontSize: screenWidth * 0.035,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              width: screenWidth * 0.9,
+              padding: EdgeInsets.all(screenWidth * 0.02),
+              // constraints: BoxConstraints(
+              //     minHeight: screenHeight * 0.15, maxHeight: 500),
+              decoration: BoxDecoration(
+                color: Color(0xFFD9D9D9),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _labelMedicalRecord(
+                    screenWidth: screenWidth,
+                    label: "Ngày đo",
+                  ),
+                  _labelMedicalRecord(
+                    screenWidth: screenWidth,
+                    label: "Tuổi",
+                  ),
+                  _labelMedicalRecord(
+                    screenWidth: screenWidth,
+                    label: "Chiều cao \n (cm)",
+                  ),
+                  _labelMedicalRecord(
+                    screenWidth: screenWidth,
+                    label: "Cân nặng \n (kg)",
+                  ),
+                  _labelMedicalRecord(
+                    screenWidth: screenWidth,
+                    label: "BMI",
+                  ),
+                ],
+              ),
+            ),
+            _medicalRecord(
+              screenWidth: screenWidth,
+              screenHeight: screenHeight,
+              dateRecord: "05/03/2025",
+              age: 22,
+              height: 125,
+              weight: 60,
+              bmi: 30,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _labelMedicalRecord extends StatelessWidget {
+  const _labelMedicalRecord({
+    required this.screenWidth,
+    required this.label,
+  });
+
+  final double screenWidth;
+  final String label;
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: screenWidth * 0.16,
+      child: Text(
+        label,
+        style:
+            TextStyle(fontSize: screenWidth * 0.035, color: Color(0xFF40494F)),
+        textAlign: TextAlign.center,
+      ),
+    );
+  }
+}
+
+class _medicalRecord extends StatelessWidget {
+  const _medicalRecord({
+    required this.screenWidth,
+    required this.screenHeight,
+    required this.dateRecord,
+    required this.age,
+    required this.height,
+    required this.weight,
+    required this.bmi,
+  });
+
+  final double screenWidth;
+  final double screenHeight;
+  final String dateRecord;
+  final int age;
+  final double height;
+  final double weight;
+  final double bmi;
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: screenWidth * 0.9,
+      padding: EdgeInsets.all(screenWidth * 0.02),
+      // constraints:
+      //     BoxConstraints(minHeight: screenHeight * 0.15, maxHeight: 500),
+      decoration: BoxDecoration(
+        color: Colors.white,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: screenWidth * 0.16,
+            child: Text(
+              dateRecord.toString(),
+              style: TextStyle(
+                  fontSize: screenWidth * 0.03, color: Color(0xFF40494F)),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          SizedBox(
+            width: screenWidth * 0.16,
+            child: Text(
+              age.toString(),
+              style: TextStyle(
+                  fontSize: screenWidth * 0.035, color: Color(0xFF40494F)),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          SizedBox(
+            width: screenWidth * 0.16,
+            child: Text(
+              height.toString(),
+              style: TextStyle(
+                  fontSize: screenWidth * 0.035, color: Color(0xFF40494F)),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          SizedBox(
+            width: screenWidth * 0.16,
+            child: Text(
+              weight.toString(),
+              style: TextStyle(
+                  fontSize: screenWidth * 0.035, color: Color(0xFF40494F)),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          SizedBox(
+            width: screenWidth * 0.16,
+            child: Text(
+              bmi.toString(),
+              style: TextStyle(
+                  fontSize: screenWidth * 0.035, color: Color(0xFF40494F)),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class infoWidget extends StatelessWidget {
+  const infoWidget(
+      {super.key,
+      required this.screenWidth,
+      required this.label,
+      required this.info});
+
+  final double screenWidth;
+  final String label;
+  final String info;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        SizedBox(
+          child: Text(
+            label,
+            style: TextStyle(fontSize: screenWidth * 0.035),
+            textAlign: TextAlign.left,
+          ),
+        ),
+        SizedBox(
+          width: screenWidth * 0.05,
+        ),
+        Flexible(
+          child: SizedBox(
+            child: Text(
+              info,
+              softWrap: true,
+              maxLines: null,
+              overflow: TextOverflow.visible,
+              style: TextStyle(
+                  fontSize: screenWidth * 0.035, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.right,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+void _showHealthDialog(BuildContext context) {
+  double screenWidth = MediaQuery.of(context).size.width;
+  showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          contentPadding: EdgeInsets.all(10),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Align(
+                alignment: Alignment.topRight,
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Icon(Icons.close, color: Colors.grey, size: 24),
+                ),
+              ),
+
+              Text(
+                "Chỉ số sức khoẻ",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                ),
+              ),
+
+              SizedBox(height: 10),
+
+              // Nội dung Form
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Color(0xFFD9D9D9)),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("Ngày đo:", style: TextStyle(fontSize: 16)),
+                        DatePickerField(
+                          width: screenWidth * 0.3,
+                          initialDate: DateTime.now(),
+                          onDateSelected: (selectedDate) {
+                            print("Ngày được chọn: ${selectedDate.toString()}");
+                          },
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Text("Chiều cao:", style: TextStyle(fontSize: 16)),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Color(0xFFF3EFEF),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(5),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                            keyboardType: TextInputType.number,
+                          ),
+                        ),
+                        SizedBox(width: 5),
+                        Text("cm", style: TextStyle(fontSize: 16)),
+                      ],
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Text("Cân nặng:", style: TextStyle(fontSize: 16)),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Color(0xFFF3EFEF),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(5),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                            keyboardType: TextInputType.number,
+                          ),
+                        ),
+                        SizedBox(width: 5),
+                        Text("kg", style: TextStyle(fontSize: 16)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 20),
+
+              // Nút OK
+              CustomButton(
+                text: "OK",
+                isPrimary: true,
+                screenWidth: screenWidth,
+              )
+            ],
+          ),
+        );
+      });
+}

@@ -1,0 +1,68 @@
+import 'package:anyen_clinic/appointment/appointment_screen.dart';
+import 'package:anyen_clinic/dashboard/dashboard.dart';
+import 'package:anyen_clinic/doctor/list_doctor_screen.dart';
+import 'package:anyen_clinic/message/message_screen.dart';
+import 'package:anyen_clinic/settings/account_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:fab_circular_menu/fab_circular_menu.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+final menuOpenProvider = StateProvider<bool>((ref) => false);
+
+class Menu extends ConsumerStatefulWidget {
+  const Menu({super.key});
+
+  @override
+  _MenuState createState() => _MenuState();
+}
+
+class _MenuState extends ConsumerState<Menu> {
+  final GlobalKey<FabCircularMenuState> _fabKey = GlobalKey();
+  @override
+  Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    Widget buildMenuItem(IconData icon, String label, Widget nextScreen) {
+      return Tooltip(
+        message: label,
+        textStyle: const TextStyle(color: Colors.white, fontSize: 14),
+        decoration: BoxDecoration(
+          color: Colors.black87.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: IconButton(
+            icon: Icon(icon, color: Colors.white, size: 25),
+            onPressed: () {
+              ref.read(menuOpenProvider.notifier).state = false; // Đóng menu
+              _fabKey.currentState?.close();
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => nextScreen),
+              );
+            }),
+      );
+    }
+
+    return FabCircularMenu(
+      key: _fabKey,
+      ringColor: Colors.blue.withOpacity(0.5),
+      ringDiameter: screenWidth,
+      fabColor: Color(0xFF119CF0).withOpacity(0.8),
+      fabSize: screenWidth * 0.1,
+      ringWidth: screenWidth * 0.13,
+      fabOpenIcon: const Icon(Icons.menu, color: Colors.white),
+      fabCloseIcon: const Icon(Icons.close, color: Colors.white),
+      children: [
+        buildMenuItem(Icons.home, "Trang chủ", Dashboard()),
+        buildMenuItem(
+            Icons.local_hospital, "Danh sách bác sĩ", DoctorListScreen()),
+        buildMenuItem(Icons.quiz, "Trắc nghiệm", AccountScreen()), //tạm thời
+        buildMenuItem(Icons.book, "Nhật ký", AccountScreen()), //tạm thời
+        buildMenuItem(Icons.event, "Lịch hẹn", AppointmentScreen()),
+        buildMenuItem(Icons.message, "Tin nhắn", MessageScreen()),
+        buildMenuItem(Icons.settings, "Cài đặt", AccountScreen()),
+        buildMenuItem(
+            Icons.support_agent, "Liên hệ CSKH", AccountScreen()), //tạm thời
+      ],
+    );
+  }
+}
