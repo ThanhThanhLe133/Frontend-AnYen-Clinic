@@ -230,7 +230,7 @@ class MessageConnectedCard extends StatelessWidget {
                   width: screenWidth * 0.2,
                   child: CircleAvatar(
                     radius: screenWidth * 0.07,
-                    backgroundImage: AssetImage("assets/doctor.png"),
+                    backgroundImage: AssetImage("assets/images/doctor.png"),
                   ),
                 ),
               ),

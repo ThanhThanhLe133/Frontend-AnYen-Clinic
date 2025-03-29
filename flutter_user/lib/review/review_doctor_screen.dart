@@ -42,128 +42,131 @@ class ReviewDoctorScreen extends StatelessWidget {
       ),
       body: Padding(
         padding: EdgeInsets.all(screenWidth * 0.05),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: double.infinity,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CircleAvatar(
-                    radius: screenWidth * 0.11,
-                    backgroundImage:
-                        NetworkImage('https://i.imgur.com/Y6W5JhB.png'),
-                  ),
-                  SizedBox(width: screenWidth * 0.05),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'BS.CKI Macus Horizon',
-                          style: TextStyle(
-                              fontSize: screenWidth * 0.05,
-                              fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          'Tâm lý - Nội tổng quát',
-                          softWrap: true,
-                          maxLines: null,
-                          style: TextStyle(
-                              fontSize: screenWidth * 0.035,
-                              color: Colors.grey),
-                        ),
-                        Text(
-                          'Bệnh viện ĐH Y Dược HCM Bệnh viện ĐH Y Dược HCM ',
-                          softWrap: true,
-                          maxLines: null,
-                          style: TextStyle(
-                              fontSize: screenWidth * 0.035,
-                              color: Colors.grey),
-                        ),
-                      ],
+        child: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: double.infinity,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CircleAvatar(
+                      radius: screenWidth * 0.11,
+                      backgroundImage:
+                          NetworkImage('https://i.imgur.com/Y6W5JhB.png'),
                     ),
-                  ),
-                ],
+                    SizedBox(width: screenWidth * 0.05),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'BS.CKI Macus Horizon',
+                            style: TextStyle(
+                                fontSize: screenWidth * 0.05,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            'Tâm lý - Nội tổng quát',
+                            softWrap: true,
+                            maxLines: null,
+                            style: TextStyle(
+                                fontSize: screenWidth * 0.035,
+                                color: Colors.grey),
+                          ),
+                          Text(
+                            'Bệnh viện ĐH Y Dược HCM Bệnh viện ĐH Y Dược HCM ',
+                            softWrap: true,
+                            maxLines: null,
+                            style: TextStyle(
+                                fontSize: screenWidth * 0.035,
+                                color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(
-                  horizontal: screenWidth * 0.01,
-                  vertical: screenHeight * 0.02),
-              child: Text(
-                '"Sẵn sàng lắng nghe, thấu hiểu và chia sẻ"',
+              Padding(
+                padding: EdgeInsets.symmetric(
+                    horizontal: screenWidth * 0.01,
+                    vertical: screenHeight * 0.02),
+                child: Text(
+                  '"Sẵn sàng lắng nghe, thấu hiểu và chia sẻ"',
+                  softWrap: true,
+                  maxLines: null,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: screenWidth * 0.04,
+                      color: Colors.blue,
+                      fontStyle: FontStyle.italic),
+                ),
+              ),
+              SizedBox(height: screenHeight * 0.02),
+              Text(
+                'Vui lòng dành ít phút cho chúng tôi biết cảm nhận của bạn sau cuộc tư vấn',
                 softWrap: true,
                 maxLines: null,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                    fontSize: screenWidth * 0.04,
-                    color: Colors.blue,
-                    fontStyle: FontStyle.italic),
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.02),
-            Text(
-              'Vui lòng dành ít phút cho chúng tôi biết cảm nhận của bạn sau cuộc tư vấn',
-              softWrap: true,
-              maxLines: null,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: screenWidth * 0.035,
-                color: Color(0xFF949FA6),
-                height: 1.2,
-              ),
-            ),
-            SatisfactionWidget(
-              screenWidth: screenWidth,
-            ),
-            SizedBox(height: screenHeight * 0.02),
-            Text(
-              "Chia sẻ thêm với mọi người cảm nhận của bạn",
-              maxLines: null,
-              textAlign: TextAlign.left,
-              softWrap: true,
-              style: TextStyle(
-                  fontSize: screenWidth * 0.05,
-                  fontWeight: FontWeight.bold,
+                  fontSize: screenWidth * 0.035,
+                  color: Color(0xFF949FA6),
                   height: 1.2,
-                  color: Color(0xFF40494F)),
-            ),
-            SizedBox(height: screenHeight * 0.02),
-            TextField(
-              style: TextStyle(fontSize: screenWidth * 0.04),
-              maxLines: null,
-              decoration: InputDecoration(
-                isDense: true,
-                filled: true,
-                fillColor: Colors.white,
-                enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(5),
-                    borderSide: BorderSide(color: Color(0xFFD9D9D9), width: 1)),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(5),
-                  borderSide: BorderSide(color: Colors.blue, width: 1),
                 ),
-                hintText:
-                    "Chia sẻ cảm nhận của bạn về buổi tư vấn cùng bác sĩ.\n",
-                hintStyle: TextStyle(
-                    fontSize: screenWidth * 0.035,
-                    color: Color(0xFFD9D9D9),
-                    fontWeight: FontWeight.w400),
-                contentPadding: EdgeInsets.symmetric(
-                    vertical: screenWidth * 0.03,
-                    horizontal: screenWidth * 0.02),
               ),
-            ),
-            SizedBox(height: screenHeight * 0.02),
-            Spacer(),
-            normalButton(
+              SatisfactionWidget(
                 screenWidth: screenWidth,
-                screenHeight: screenHeight,
-                label: "Gửi đánh giá",
-                nextScreen: LoginScreen())
-          ],
+              ),
+              SizedBox(height: screenHeight * 0.02),
+              Text(
+                "Chia sẻ thêm với mọi người cảm nhận của bạn",
+                maxLines: null,
+                textAlign: TextAlign.left,
+                softWrap: true,
+                style: TextStyle(
+                    fontSize: screenWidth * 0.05,
+                    fontWeight: FontWeight.bold,
+                    height: 1.2,
+                    color: Color(0xFF40494F)),
+              ),
+              SizedBox(height: screenHeight * 0.02),
+              TextField(
+                style: TextStyle(fontSize: screenWidth * 0.04),
+                maxLines: null,
+                decoration: InputDecoration(
+                  isDense: true,
+                  filled: true,
+                  fillColor: Colors.white,
+                  enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(5),
+                      borderSide:
+                          BorderSide(color: Color(0xFFD9D9D9), width: 1)),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(5),
+                    borderSide: BorderSide(color: Colors.blue, width: 1),
+                  ),
+                  hintText:
+                      "Chia sẻ cảm nhận của bạn về buổi tư vấn cùng bác sĩ.\n",
+                  hintStyle: TextStyle(
+                      fontSize: screenWidth * 0.035,
+                      color: Color(0xFFD9D9D9),
+                      fontWeight: FontWeight.w400),
+                  contentPadding: EdgeInsets.symmetric(
+                      vertical: screenWidth * 0.03,
+                      horizontal: screenWidth * 0.02),
+                ),
+              ),
+              SizedBox(height: screenHeight * 0.2),
+              normalButton(
+                  screenWidth: screenWidth,
+                  screenHeight: screenHeight,
+                  label: "Gửi đánh giá",
+                  nextScreen: LoginScreen())
+            ],
+          ),
         ),
       ),
     );

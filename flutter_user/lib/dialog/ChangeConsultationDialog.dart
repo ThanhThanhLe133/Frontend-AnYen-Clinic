@@ -24,45 +24,49 @@ void showChangeConsultationDialog(BuildContext context) {
               color: Colors.blue,
             ),
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  SizedBox(
-                    child: _buildOption(
-                        Icons.chat_rounded, "Online", isSelected, () {
-                      setState(() => isSelected = true);
-                    }, screenWidth),
-                  ),
-                  SizedBox(
-                    child: _buildOption(
-                        Icons.people_alt_rounded, "Trực tiếp", !isSelected, () {
-                      setState(() => isSelected = false);
-                    }, screenWidth),
-                  ),
-                ],
-              ),
-              SizedBox(height: screenWidth * 0.05),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  CustomButton(
-                      text: "BỎ QUA",
-                      isPrimary: false,
-                      screenWidth: screenWidth),
-                  CustomButton(
-                    text: "CẬP NHẬT",
-                    isPrimary: true,
-                    screenWidth: screenWidth,
-                    onPressed: () {
-                      print("Nút được nhấn!");
-                    },
-                  ),
-                ],
-              ),
-            ],
+          content: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    SizedBox(
+                      child: _buildOption(
+                          Icons.chat_rounded, "Online", isSelected, () {
+                        setState(() => isSelected = true);
+                      }, screenWidth),
+                    ),
+                    SizedBox(
+                      child: _buildOption(
+                          Icons.people_alt_rounded, "Trực tiếp", !isSelected,
+                          () {
+                        setState(() => isSelected = false);
+                      }, screenWidth),
+                    ),
+                  ],
+                ),
+                SizedBox(height: screenWidth * 0.05),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    CustomButton(
+                        text: "BỎ QUA",
+                        isPrimary: false,
+                        screenWidth: screenWidth),
+                    CustomButton(
+                      text: "CẬP NHẬT",
+                      isPrimary: true,
+                      screenWidth: screenWidth,
+                      onPressed: () {
+                        print("Nút được nhấn!");
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         );
       });

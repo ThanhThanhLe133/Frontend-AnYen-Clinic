@@ -23,6 +23,7 @@ dependencies:
   riverpod_annotation: ^2.6.1
   syncfusion_flutter_gauges: ^23.1.39
   flutter_webrtc: 0.12.10
+  flutter_keyboard_visibility: ^6.0.0
 
 dev_dependencies:
   flutter_test:

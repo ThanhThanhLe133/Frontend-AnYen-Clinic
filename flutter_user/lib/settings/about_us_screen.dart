@@ -38,7 +38,8 @@ class AboutUsScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: Expanded(
+      body: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
         child: SafeArea(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -100,7 +101,7 @@ class AboutUsScreen extends StatelessWidget {
                   text: " 012 345 6789",
                   icon: Icons.phone,
                   color: Colors.green),
-              Spacer(),
+              SizedBox(height: screenHeight * 0.4),
               Container(
                 alignment: Alignment.bottomCenter,
                 padding: EdgeInsets.only(bottom: screenHeight * 0.03),
@@ -112,12 +113,13 @@ class AboutUsScreen extends StatelessWidget {
                       imagePath: "assets/images/facebook.png",
                       onPressed: () {},
                     ),
-                    SizedBox(height: 10),
+                    SizedBox(width: 10),
                     SocialButton(
                       radius: screenWidth * 0.15,
                       imagePath: "assets/images/zalo.png",
                       onPressed: () {},
                     ),
+                    SizedBox(width: 10),
                     SocialButton(
                       radius: screenWidth * 0.15,
                       imagePath: "assets/images/call_button.png",

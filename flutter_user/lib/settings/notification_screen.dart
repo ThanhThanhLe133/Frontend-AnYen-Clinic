@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 class NotificationScreen extends StatefulWidget {
@@ -46,47 +48,48 @@ class _NotificationScreenState extends State<NotificationScreen> {
           ),
         ),
       ),
-      body: Padding(
-        padding: EdgeInsets.symmetric(
-            horizontal: screenWidth * 0.08, vertical: screenHeight * 0.05),
-        child: Container(
-          height: screenWidth * 0.45,
-          constraints: BoxConstraints(
-            minHeight: 230,
-          ),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: Color(0xFFD9D9D9),
-              width: 1,
+      body: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+              horizontal: screenWidth * 0.08, vertical: screenHeight * 0.1),
+          child: Container(
+            height: max(screenHeight * 0.5, 250),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: Color(0xFFD9D9D9),
+                width: 1,
+              ),
             ),
-          ),
-          child: Center(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(height: screenHeight * 0.03),
-                _buildToggleOption(
-                    screenWidth, Icons.article, "Nhật ký", toggle1, (value) {
-                  setState(() => toggle1 = value);
-                }),
-                _buildToggleOption(screenWidth, Icons.lock, "Lịch hẹn", toggle2,
-                    (value) {
-                  setState(() => toggle2 = value);
-                }),
-                _buildToggleOption(
-                    screenWidth, Icons.notifications, "Tin nhắn", toggle3,
-                    (value) {
-                  setState(() => toggle3 = value);
-                }),
-                _buildToggleOption(
-                    screenWidth, Icons.payment, "Thanh toán", toggle4, (value) {
-                  setState(() => toggle4 = value);
-                }),
-                SizedBox(height: screenHeight * 0.03),
-              ],
+            child: Center(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  SizedBox(height: screenHeight * 0.03),
+                  _buildToggleOption(
+                      screenWidth, Icons.article, "Nhật ký", toggle1, (value) {
+                    setState(() => toggle1 = value);
+                  }),
+                  _buildToggleOption(
+                      screenWidth, Icons.lock, "Lịch hẹn", toggle2, (value) {
+                    setState(() => toggle2 = value);
+                  }),
+                  _buildToggleOption(
+                      screenWidth, Icons.notifications, "Tin nhắn", toggle3,
+                      (value) {
+                    setState(() => toggle3 = value);
+                  }),
+                  _buildToggleOption(
+                      screenWidth, Icons.payment, "Thanh toán", toggle4,
+                      (value) {
+                    setState(() => toggle4 = value);
+                  }),
+                  SizedBox(height: screenHeight * 0.03),
+                ],
+              ),
             ),
           ),
         ),

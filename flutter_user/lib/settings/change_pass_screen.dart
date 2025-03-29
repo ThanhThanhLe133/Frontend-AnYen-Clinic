@@ -45,39 +45,42 @@ class _ChangePassScreenState extends State<ChangePassScreen> {
           ),
         ),
       ),
-      body: Padding(
-        padding: EdgeInsets.symmetric(
-            horizontal: screenWidth * 0.08, vertical: screenHeight * 0.05),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SizedBox(height: screenHeight * 0.1),
-            PasswordField(
-              screenWidth: screenWidth,
-              screenHeight: screenHeight,
-              hintText: "Nhập mật khẩu cũ",
-            ),
-            SizedBox(height: screenHeight * 0.05),
-            PasswordField(
-              screenWidth: screenWidth,
-              screenHeight: screenHeight,
-              hintText: "Nhập mật khẩu",
-            ),
-            SizedBox(height: screenHeight * 0.05),
-            PasswordField(
-              screenWidth: screenWidth,
-              screenHeight: screenHeight,
-              hintText: "Xác thực mật khẩu",
-            ),
-            SizedBox(height: screenHeight * 0.2),
-            normalButton(
-              screenWidth: screenWidth,
-              screenHeight: screenHeight,
-              label: "Đổi mật khẩu",
-              nextScreen: LoginScreen(),
-              action: null,
-            )
-          ],
+      body: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+              horizontal: screenWidth * 0.08, vertical: screenHeight * 0.05),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(height: screenHeight * 0.1),
+              PasswordField(
+                screenWidth: screenWidth,
+                screenHeight: screenHeight,
+                hintText: "Nhập mật khẩu cũ",
+              ),
+              SizedBox(height: screenHeight * 0.05),
+              PasswordField(
+                screenWidth: screenWidth,
+                screenHeight: screenHeight,
+                hintText: "Nhập mật khẩu",
+              ),
+              SizedBox(height: screenHeight * 0.05),
+              PasswordField(
+                screenWidth: screenWidth,
+                screenHeight: screenHeight,
+                hintText: "Xác thực mật khẩu",
+              ),
+              SizedBox(height: screenHeight * 0.2),
+              normalButton(
+                screenWidth: screenWidth,
+                screenHeight: screenHeight,
+                label: "Đổi mật khẩu",
+                nextScreen: LoginScreen(),
+                action: null,
+              )
+            ],
+          ),
         ),
       ),
     );

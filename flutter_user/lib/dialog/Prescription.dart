@@ -28,45 +28,48 @@ class PrescriptionDialog extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: EdgeInsets.all(screenWidth * 0.04),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Text(
-                "Đơn thuốc",
-                style: TextStyle(
-                  fontSize: screenWidth * 0.055,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Text(
+                  "Đơn thuốc",
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.055,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                  ),
                 ),
               ),
-            ),
-            SizedBox(height: 10),
-            ...medicines
-                .map((medicine) => _buildMedicineItem(medicine, screenWidth)),
-            SizedBox(height: 20),
-            Divider(height: 1),
-            SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                CustomButton(
-                  text: "ĐÓNG",
-                  isPrimary: false,
-                  screenWidth: screenWidth,
-                ),
-                CustomButton(
-                  text: "LIÊN HỆ CSKH",
-                  isPrimary: true,
-                  screenWidth: screenWidth,
-                  onPressed: () {
-                    print("Nút được nhấn!");
-                  },
-                ),
-              ],
-            ),
-          ],
+              SizedBox(height: 10),
+              ...medicines
+                  .map((medicine) => _buildMedicineItem(medicine, screenWidth)),
+              SizedBox(height: 20),
+              Divider(height: 1),
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  CustomButton(
+                    text: "ĐÓNG",
+                    isPrimary: false,
+                    screenWidth: screenWidth,
+                  ),
+                  CustomButton(
+                    text: "LIÊN HỆ CSKH",
+                    isPrimary: true,
+                    screenWidth: screenWidth,
+                    onPressed: () {
+                      print("Nút được nhấn!");
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

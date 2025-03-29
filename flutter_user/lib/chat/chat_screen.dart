@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:anyen_clinic/chat/CallScreen.dart';
 import 'package:anyen_clinic/dialog/PaymentHistory.dart';
 import 'package:anyen_clinic/dialog/option_dialog.dart';
+import 'package:anyen_clinic/widget/CustomBackButton.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -11,6 +12,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:anyen_clinic/chat/CameraScreen.dart';
 import 'package:record/record.dart';
 import 'package:uuid/uuid.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -68,14 +70,18 @@ class _ChatScreenState extends State<ChatScreen> {
         _controller.clear();
       });
 
-      Future.delayed(Duration(milliseconds: 100), () {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent, // Cuộn đến cuối
-          duration: Duration(milliseconds: 300),
-          curve: Curves.easeOut, // Hiệu ứng cuộn mượt mà
-        );
-      });
+      _scrollToBottom();
     }
+  }
+
+  void _scrollToBottom() {
+    Future.delayed(Duration(milliseconds: 100), () {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent, // Cuộn đến cuối
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeOut, // Hiệu ứng cuộn mượt mà
+      );
+    });
   }
 
   Future<void> _openCamera(BuildContext context) async {
@@ -247,22 +253,12 @@ class _ChatScreenState extends State<ChatScreen> {
     double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: Container(
-          alignment: Alignment.centerLeft,
-          padding: EdgeInsets.only(left: 0),
-          child: IconButton(
-            icon: Icon(Icons.chevron_left, color: Color(0xFF9BA5AC)),
-            iconSize: screenWidth * 0.08,
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-        ),
-        titleSpacing: 0,
+        leading: CustomBackButton(),
         title: Transform.translate(
           offset: Offset(-10, 0),
           child: Row(
@@ -355,91 +351,100 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-        child: Column(
-          children: [
-            SizedBox(
-              height: 10,
-            ),
-            Align(
-              alignment: Alignment.topLeft,
-              child: Text(
-                "Câu hỏi",
-                style: TextStyle(
-                    fontSize: screenWidth * 0.04,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          controller: _scrollController,
+          child: Column(
+            children: [
+              SizedBox(
+                height: 10,
               ),
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            _buildQuestionBubble(),
-            SizedBox(
-              height: 10,
-            ),
-            Divider(
-              height: 1,
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            Expanded(
-              child: ListView(
-                controller: _scrollController, // Thêm controller vào ListView
-                padding: EdgeInsets.all(10),
-
-                children: [
-                  Align(
-                    alignment: Alignment.topLeft,
-                    child: Text(
-                      "Thời gian: 22/02/2025, 14h50",
-                      style: TextStyle(
-                          fontSize: screenWidth * 0.03,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF40494F)),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 10,
-                  ),
-                  Text(
-                    "BS.CKI Macus Horizon đã tham gia cuộc trò chuyện",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        fontSize: screenWidth * 0.03, color: Color(0xFF9AA5AC)),
-                  ),
-                  SizedBox(
-                    height: 10,
-                  ),
-                  ..._messages.map((message) {
-                    return _buildChatBubble(
-                      message['text'] ?? "",
-                      message['isMe'] ?? false,
-                      imagePath: message["imagePath"] as String?,
-                      audioPath: message["audioPath"] as String?,
-                    );
-                  }),
-                ],
+              Align(
+                alignment: Alignment.topLeft,
+                child: Text(
+                  "Câu hỏi",
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
+                ),
               ),
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(
-              color: Colors.grey,
-              width: 1,
-            ),
+              SizedBox(
+                height: 10,
+              ),
+              _buildQuestionBubble(screenWidth),
+              SizedBox(
+                height: 10,
+              ),
+              Divider(
+                height: 1,
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              Align(
+                alignment: Alignment.topLeft,
+                child: Text(
+                  "Thời gian: 22/02/2025, 14h50",
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF40494F)),
+                ),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              Text(
+                "BS.CKI Macus Horizon đã tham gia cuộc trò chuyện",
+                textAlign: TextAlign.left,
+                style: TextStyle(fontSize: 15, color: Color(0xFF9AA5AC)),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              ..._messages.map((message) {
+                return _buildChatBubble(
+                  message['text'] ?? "",
+                  message['isMe'] ?? false,
+                  imagePath: message["imagePath"] as String?,
+                  audioPath: message["audioPath"] as String?,
+                );
+              }),
+              SizedBox(
+                height: 20,
+              ),
+            ],
           ),
         ),
-        child: _buildMessageInput(),
+      ),
+      bottomNavigationBar: KeyboardVisibilityBuilder(
+        builder: (context, isKeyboardVisible) {
+          if (isKeyboardVisible) {
+            _scrollToBottom();
+          }
+          return Padding(
+            padding: EdgeInsets.only(
+                bottom: isKeyboardVisible
+                    ? MediaQuery.of(context).viewInsets.bottom
+                    : 0), // Đẩy lên khi bàn phím mở
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  top: BorderSide(color: Color(0xFFD9D9D9), width: 1),
+                ),
+              ),
+              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+              child: _buildMessageInput(),
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildQuestionBubble() {
+  Widget _buildQuestionBubble(double screenWidth) {
     return Padding(
       padding: EdgeInsets.only(left: 64),
       child: Container(
@@ -451,7 +456,7 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         child: Text(
           'abcxyzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz',
-          style: TextStyle(fontSize: 14),
+          style: TextStyle(fontSize: 13),
         ),
       ),
     );
@@ -574,174 +579,168 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildMessageInput() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
+    return Row(
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        if (_image != null)
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Stack(
+              alignment: Alignment.topRight,
+              children: [
+                Image.file(File(_image!.path), height: 100),
+                IconButton(
+                  icon: Icon(Icons.cancel, color: Colors.red),
+                  onPressed: () {
+                    setState(() {
+                      _image = null; // Xóa ảnh chưa gửi
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+        if (_recordedFilePath != null) // Hiển thị file ghi âm
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              if (_image != null)
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Stack(
-                    alignment: Alignment.topRight,
-                    children: [
-                      Image.file(File(_image!.path), height: 100),
-                      IconButton(
-                        icon: Icon(Icons.cancel, color: Colors.red),
-                        onPressed: () {
-                          setState(() {
-                            _image = null; // Xóa ảnh chưa gửi
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              if (_recordedFilePath != null) // Hiển thị file ghi âm
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: Icon(
-                          (_isPlaying && _currentAudioPath == _recordedFilePath)
-                              ? Icons.pause
-                              : Icons.play_arrow,
-                          color: Colors.blue),
-                      onPressed: () => _togglePlayPause(_recordedFilePath),
-                    ),
-                    Text(
-                      (_isRecording)
-                          ? _formatDuration(
-                              _recordDuration) // Hiển thị thời gian ghi âm
-                          : "${_formatDuration(_currentPositions[_recordedFilePath] ?? Duration.zero)} / ${_formatDuration(_recordDuration)}",
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.cancel, color: Colors.red),
-                      onPressed: _removeRecordedAudio,
-                    ),
-                  ],
-                ),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.6), // Màu nền
-                  shape: BoxShape.circle, // Hình tròn
-                ),
-                child: IconButton(
-                  icon: Icon(Icons.camera_alt_sharp,
-                      color: Colors.white), // Màu icon
-                  onPressed: () async {
-                    PermissionStatus statusCamera =
-                        await Permission.camera.request();
-                    if (statusCamera.isGranted) {
-                      await _openCamera(context);
-                    } else if (statusCamera.isPermanentlyDenied) {
-                      showOptionDialog(
-                        context,
-                        "Cần quyền truy cập Camera",
-                        "Vui lòng cấp quyền camera trong cài đặt để sử dụng tính năng này.",
-                        "HỦY",
-                        "CÀI ĐẶT",
-                        () {
-                          openAppSettings();
-                        },
-                      );
-                    } else {
-                      showOptionDialog(
-                        context,
-                        "An yên muốn truy cập camera",
-                        "Cho phép truy cập camera để chụp hình toa thuốc",
-                        "TỪ CHỐI",
-                        "OK",
-                        () async {
-                          await _openCamera(context);
-                        },
-                      );
-                    }
-                  },
-                  iconSize: 20, // Điều chỉnh kích thước icon
+              IconButton(
+                icon: Icon(
+                    (_isPlaying && _currentAudioPath == _recordedFilePath)
+                        ? Icons.pause
+                        : Icons.play_arrow,
+                    color: Colors.blue),
+                onPressed: () => _togglePlayPause(_recordedFilePath),
+              ),
+              Text(
+                (_isRecording)
+                    ? _formatDuration(
+                        _recordDuration) // Hiển thị thời gian ghi âm
+                    : "${_formatDuration(_currentPositions[_recordedFilePath] ?? Duration.zero)} / ${_formatDuration(_recordDuration)}",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.mic, color: Colors.blue.withOpacity(0.6)),
-                onPressed: () async {
-                  PermissionStatus statusMicro =
-                      await Permission.microphone.request();
-                  if (statusMicro.isGranted) {
-                    await _startRecording(context);
-                  } else if (statusMicro.isPermanentlyDenied) {
-                    showOptionDialog(
-                      context,
-                      "Cần quyền truy cập Microphone",
-                      "Vui lòng cấp quyền Microphone trong cài đặt để sử dụng tính năng này.",
-                      "HỦY",
-                      "CÀI ĐẶT",
-                      () {
-                        openAppSettings();
-                      },
-                    );
-                  } else {
-                    showOptionDialog(
-                      context,
-                      "An yên muốn truy cập Microphone",
-                      "Cho phép truy cập Microphone để ghi âm",
-                      "TỪ CHỐI",
-                      "OK",
-                      () async {
-                        await _startRecording(context);
-                      },
-                    );
-                  }
-                },
-                iconSize: 20,
-              ),
-              SizedBox(
-                width: 8,
-              ),
-              Expanded(
-                child: TextField(
-                  controller: _controller,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Color(0xFFECF8FF),
-                    hintText: 'Gõ nội dung...',
-                    hintStyle: TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF9AA5AC),
-                        fontWeight: FontWeight.w400),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide.none,
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    contentPadding:
-                        EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(24),
-                      borderSide: BorderSide(color: Colors.blue, width: 2),
-                    ),
-                  ),
-                  onSubmitted: (value) {
-                    _sendMessage();
-                  },
-                ),
-              ),
-              SizedBox(
-                width: 8,
-              ),
-              IconButton(
-                icon: Icon(Icons.send_sharp, color: Colors.blue), // Màu icon
-                onPressed: () => _sendMessage(),
-                iconSize: 24,
+                icon: Icon(Icons.cancel, color: Colors.red),
+                onPressed: _removeRecordedAudio,
               ),
             ],
           ),
-        ],
-      ),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.blue.withOpacity(0.6), // Màu nền
+            shape: BoxShape.circle, // Hình tròn
+          ),
+          child: IconButton(
+            icon: Icon(Icons.camera_alt_sharp, color: Colors.white), // Màu icon
+            onPressed: () async {
+              PermissionStatus statusCamera = await Permission.camera.request();
+              if (statusCamera.isGranted) {
+                await _openCamera(context);
+              } else if (statusCamera.isPermanentlyDenied) {
+                showOptionDialog(
+                  context,
+                  "Cần quyền truy cập Camera",
+                  "Vui lòng cấp quyền camera trong cài đặt để sử dụng tính năng này.",
+                  "HỦY",
+                  "CÀI ĐẶT",
+                  () {
+                    openAppSettings();
+                  },
+                );
+              } else {
+                showOptionDialog(
+                  context,
+                  "An yên muốn truy cập camera",
+                  "Cho phép truy cập camera để chụp hình toa thuốc",
+                  "TỪ CHỐI",
+                  "OK",
+                  () async {
+                    await _openCamera(context);
+                  },
+                );
+              }
+            },
+            iconSize: 20, // Điều chỉnh kích thước icon
+          ),
+        ),
+        IconButton(
+          icon: Icon(Icons.mic, color: Colors.blue.withOpacity(0.6)),
+          onPressed: () async {
+            PermissionStatus statusMicro =
+                await Permission.microphone.request();
+            if (statusMicro.isGranted) {
+              await _startRecording(context);
+            } else if (statusMicro.isPermanentlyDenied) {
+              showOptionDialog(
+                context,
+                "Cần quyền truy cập Microphone",
+                "Vui lòng cấp quyền Microphone trong cài đặt để sử dụng tính năng này.",
+                "HỦY",
+                "CÀI ĐẶT",
+                () {
+                  openAppSettings();
+                },
+              );
+            } else {
+              showOptionDialog(
+                context,
+                "An yên muốn truy cập Microphone",
+                "Cho phép truy cập Microphone để ghi âm",
+                "TỪ CHỐI",
+                "OK",
+                () async {
+                  await _startRecording(context);
+                },
+              );
+            }
+          },
+          iconSize: 20,
+        ),
+        SizedBox(
+          width: 8,
+        ),
+        Expanded(
+          child: TextField(
+            controller: _controller,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Color(0xFFECF8FF),
+              hintText: 'Gõ nội dung...',
+              hintStyle: TextStyle(
+                  fontSize: 16,
+                  color: Color(0xFF9AA5AC),
+                  fontWeight: FontWeight.w400),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide.none,
+                borderRadius: BorderRadius.circular(24),
+              ),
+              contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(24),
+                borderSide: BorderSide(color: Colors.blue, width: 2),
+              ),
+            ),
+            onSubmitted: (value) {
+              _sendMessage();
+            },
+            onTap: () {
+              _scrollToBottom();
+            },
+          ),
+        ),
+        SizedBox(
+          width: 8,
+        ),
+        IconButton(
+          icon: Icon(Icons.send_sharp, color: Colors.blue), // Màu icon
+          onPressed: () => _sendMessage(),
+          iconSize: 24,
+        ),
+      ],
     );
   }
 

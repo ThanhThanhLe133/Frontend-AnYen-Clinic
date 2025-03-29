@@ -1,4 +1,10 @@
+import 'package:anyen_clinic/appointment/appointment_screen.dart';
+import 'package:anyen_clinic/chat/chat_screen.dart';
 import 'package:anyen_clinic/dashboard/dashboard.dart';
+import 'package:anyen_clinic/message/message_screen.dart';
+import 'package:anyen_clinic/review/review_doctor_screen.dart';
+import 'package:anyen_clinic/settings/account_screen.dart';
+import 'package:anyen_clinic/settings/edit_account_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';

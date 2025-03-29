@@ -46,194 +46,202 @@ class _EditAccountScreenSate extends State<EditAccountScreen> {
           ),
         ),
       ),
-      body: Padding(
-        padding: EdgeInsets.symmetric(
-            horizontal: screenWidth * 0.1, vertical: screenHeight * 0.05),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Row(
-              children: [
-                Text(
-                  "Họ và tên ",
+      body: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+              horizontal: screenWidth * 0.1, vertical: screenHeight * 0.05),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    "Họ và tên ",
+                    style: TextStyle(fontSize: screenWidth * 0.035),
+                    textAlign: TextAlign.left,
+                  ),
+                  Text(
+                    "*",
+                    style: TextStyle(
+                        fontSize: screenWidth * 0.035, color: Colors.red),
+                    textAlign: TextAlign.left,
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: screenWidth * 0.03,
+              ),
+              TextField(
+                style: TextStyle(fontSize: screenWidth * 0.04),
+                decoration: InputDecoration(
+                  isDense: true,
+                  filled: true,
+                  fillColor: Color(0xFFF3EFEF),
+                  enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide:
+                          BorderSide(color: Color(0xFFD9D9D9), width: 1)),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(5),
+                    borderSide: BorderSide(color: Colors.blue, width: 1),
+                  ),
+                  hintText: "",
+                  hintStyle: TextStyle(fontSize: screenWidth * 0.04),
+                  contentPadding: EdgeInsets.symmetric(
+                      vertical: screenWidth * 0.03,
+                      horizontal: screenWidth * 0.02),
+                ),
+              ),
+              SizedBox(
+                height: screenWidth * 0.05,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            "Ngày sinh ",
+                            style: TextStyle(fontSize: screenWidth * 0.035),
+                            textAlign: TextAlign.left,
+                          ),
+                          Text(
+                            "*",
+                            style: TextStyle(
+                                fontSize: screenWidth * 0.035,
+                                color: Colors.red),
+                            textAlign: TextAlign.left,
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: screenWidth * 0.03,
+                      ),
+                      DatePickerField(
+                        width: screenWidth,
+                        initialDate: DateTime.now(),
+                        onDateSelected: (selectedDate) {
+                          print("Ngày được chọn: ${selectedDate.toString()}");
+                        },
+                      ),
+                    ],
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            "Giới tính ",
+                            style: TextStyle(fontSize: screenWidth * 0.035),
+                            textAlign: TextAlign.left,
+                          ),
+                          Text(
+                            "*",
+                            style: TextStyle(
+                                fontSize: screenWidth * 0.035,
+                                color: Colors.red),
+                            textAlign: TextAlign.left,
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: screenWidth * 0.03,
+                      ),
+                      GenderDropdown(),
+                    ],
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: screenWidth * 0.05,
+              ),
+              Align(
+                alignment: Alignment.topLeft,
+                child: Text(
+                  "Tiền sử bệnh ",
                   style: TextStyle(fontSize: screenWidth * 0.035),
                   textAlign: TextAlign.left,
                 ),
-                Text(
-                  "*",
-                  style: TextStyle(
-                      fontSize: screenWidth * 0.035, color: Colors.red),
+              ),
+              SizedBox(
+                height: screenWidth * 0.03,
+              ),
+              TextField(
+                style: TextStyle(fontSize: screenWidth * 0.04),
+                maxLines: null,
+                decoration: InputDecoration(
+                  isDense: true,
+                  filled: true,
+                  fillColor: Color(0xFFF3EFEF),
+                  enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide:
+                          BorderSide(color: Color(0xFFD9D9D9), width: 1)),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(5),
+                    borderSide: BorderSide(color: Colors.blue, width: 1),
+                  ),
+                  hintText: "",
+                  hintStyle: TextStyle(fontSize: screenWidth * 0.04),
+                  contentPadding: EdgeInsets.symmetric(
+                      vertical: screenWidth * 0.03,
+                      horizontal: screenWidth * 0.02),
+                ),
+              ),
+              SizedBox(
+                height: screenWidth * 0.05,
+              ),
+              Align(
+                alignment: Alignment.topLeft,
+                child: Text(
+                  "Dị ứng ",
+                  style: TextStyle(fontSize: screenWidth * 0.035),
                   textAlign: TextAlign.left,
                 ),
-              ],
-            ),
-            SizedBox(
-              height: screenWidth * 0.03,
-            ),
-            TextField(
-              style: TextStyle(fontSize: screenWidth * 0.04),
-              decoration: InputDecoration(
-                isDense: true,
-                filled: true,
-                fillColor: Color(0xFFF3EFEF),
-                enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Color(0xFFD9D9D9), width: 1)),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(5),
-                  borderSide: BorderSide(color: Colors.blue, width: 1),
-                ),
-                hintText: "",
-                hintStyle: TextStyle(fontSize: screenWidth * 0.04),
-                contentPadding: EdgeInsets.symmetric(
-                    vertical: screenWidth * 0.03,
-                    horizontal: screenWidth * 0.02),
               ),
-            ),
-            SizedBox(
-              height: screenWidth * 0.05,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          "Ngày sinh ",
-                          style: TextStyle(fontSize: screenWidth * 0.035),
-                          textAlign: TextAlign.left,
-                        ),
-                        Text(
-                          "*",
-                          style: TextStyle(
-                              fontSize: screenWidth * 0.035, color: Colors.red),
-                          textAlign: TextAlign.left,
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: screenWidth * 0.03,
-                    ),
-                    DatePickerField(
-                      width: screenWidth * 0.4,
-                      initialDate: DateTime.now(),
-                      onDateSelected: (selectedDate) {
-                        print("Ngày được chọn: ${selectedDate.toString()}");
-                      },
-                    ),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          "Giới tính ",
-                          style: TextStyle(fontSize: screenWidth * 0.035),
-                          textAlign: TextAlign.left,
-                        ),
-                        Text(
-                          "*",
-                          style: TextStyle(
-                              fontSize: screenWidth * 0.035, color: Colors.red),
-                          textAlign: TextAlign.left,
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: screenWidth * 0.03,
-                    ),
-                    GenderDropdown(),
-                  ],
-                ),
-              ],
-            ),
-            SizedBox(
-              height: screenWidth * 0.05,
-            ),
-            Align(
-              alignment: Alignment.topLeft,
-              child: Text(
-                "Tiền sử bệnh ",
-                style: TextStyle(fontSize: screenWidth * 0.035),
-                textAlign: TextAlign.left,
+              SizedBox(
+                height: screenWidth * 0.03,
               ),
-            ),
-            SizedBox(
-              height: screenWidth * 0.03,
-            ),
-            TextField(
-              style: TextStyle(fontSize: screenWidth * 0.04),
-              maxLines: null,
-              decoration: InputDecoration(
-                isDense: true,
-                filled: true,
-                fillColor: Color(0xFFF3EFEF),
-                enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Color(0xFFD9D9D9), width: 1)),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(5),
-                  borderSide: BorderSide(color: Colors.blue, width: 1),
+              TextField(
+                style: TextStyle(fontSize: screenWidth * 0.04),
+                maxLines: null,
+                decoration: InputDecoration(
+                  isDense: true,
+                  filled: true,
+                  fillColor: Color(0xFFF3EFEF),
+                  enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide:
+                          BorderSide(color: Color(0xFFD9D9D9), width: 1)),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(5),
+                    borderSide: BorderSide(color: Colors.blue, width: 1),
+                  ),
+                  hintText: "",
+                  hintStyle: TextStyle(fontSize: screenWidth * 0.04),
+                  contentPadding: EdgeInsets.symmetric(
+                      vertical: screenWidth * 0.03,
+                      horizontal: screenWidth * 0.02),
                 ),
-                hintText: "",
-                hintStyle: TextStyle(fontSize: screenWidth * 0.04),
-                contentPadding: EdgeInsets.symmetric(
-                    vertical: screenWidth * 0.03,
-                    horizontal: screenWidth * 0.02),
               ),
-            ),
-            SizedBox(
-              height: screenWidth * 0.05,
-            ),
-            Align(
-              alignment: Alignment.topLeft,
-              child: Text(
-                "Dị ứng ",
-                style: TextStyle(fontSize: screenWidth * 0.035),
-                textAlign: TextAlign.left,
+              SizedBox(
+                height: screenWidth * 0.2,
               ),
-            ),
-            SizedBox(
-              height: screenWidth * 0.03,
-            ),
-            TextField(
-              style: TextStyle(fontSize: screenWidth * 0.04),
-              maxLines: null,
-              decoration: InputDecoration(
-                isDense: true,
-                filled: true,
-                fillColor: Color(0xFFF3EFEF),
-                enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Color(0xFFD9D9D9), width: 1)),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(5),
-                  borderSide: BorderSide(color: Colors.blue, width: 1),
-                ),
-                hintText: "",
-                hintStyle: TextStyle(fontSize: screenWidth * 0.04),
-                contentPadding: EdgeInsets.symmetric(
-                    vertical: screenWidth * 0.03,
-                    horizontal: screenWidth * 0.02),
-              ),
-            ),
-            SizedBox(
-              height: screenWidth * 0.05,
-            ),
-            Spacer(),
-            normalButton(
-              screenWidth: screenWidth,
-              screenHeight: screenHeight,
-              label: "Lưu",
-              nextScreen: LoginScreen(),
-              action: null,
-            )
-          ],
+              normalButton(
+                screenWidth: screenWidth,
+                screenHeight: screenHeight,
+                label: "Lưu",
+                nextScreen: LoginScreen(),
+                action: null,
+              )
+            ],
+          ),
         ),
       ),
     );

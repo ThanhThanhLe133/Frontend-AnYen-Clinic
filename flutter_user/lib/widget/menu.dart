@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:anyen_clinic/appointment/appointment_screen.dart';
 import 'package:anyen_clinic/dashboard/dashboard.dart';
 import 'package:anyen_clinic/doctor/list_doctor_screen.dart';
@@ -21,6 +23,7 @@ class _MenuState extends ConsumerState<Menu> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
     Widget buildMenuItem(IconData icon, String label, Widget nextScreen) {
       return Tooltip(
         message: label,
@@ -45,7 +48,7 @@ class _MenuState extends ConsumerState<Menu> {
     return FabCircularMenu(
       key: _fabKey,
       ringColor: Colors.blue.withOpacity(0.5),
-      ringDiameter: screenWidth,
+      ringDiameter: max(screenWidth, screenHeight) * 0.65,
       fabColor: Color(0xFF119CF0).withOpacity(0.8),
       fabSize: screenWidth * 0.1,
       ringWidth: screenWidth * 0.13,

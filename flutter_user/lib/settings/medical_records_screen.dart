@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:anyen_clinic/settings/edit_account_screen.dart';
 import 'package:anyen_clinic/widget/buildButton.dart';
 import 'package:anyen_clinic/widget/dateTimePicker.dart';
 import 'package:anyen_clinic/widget/sectionTitle.dart';
@@ -47,11 +50,17 @@ class MedicalRecordsScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Padding(
-              padding: EdgeInsets.only(right: screenWidth * 0.03),
+              padding: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.05, vertical: screenWidth * 0.03),
               child: Align(
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => EditAccountScreen()));
+                  },
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -72,6 +81,7 @@ class MedicalRecordsScreen extends StatelessWidget {
             Container(
               width: screenWidth * 0.9,
               padding: EdgeInsets.all(screenWidth * 0.02),
+              height: screenHeight * 0.5,
               // constraints:
               //     BoxConstraints(minHeight: screenHeight * 0.4, maxHeight: 500),
               decoration: BoxDecoration(
@@ -353,15 +363,19 @@ class infoWidget extends StatelessWidget {
 
 void _showHealthDialog(BuildContext context) {
   double screenWidth = MediaQuery.of(context).size.width;
+  double screenHeight = MediaQuery.of(context).size.height;
+
   showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          contentPadding: EdgeInsets.all(10),
-          content: Column(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+        contentPadding: EdgeInsets.all(10),
+        content: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Align(
@@ -373,20 +387,16 @@ void _showHealthDialog(BuildContext context) {
                   child: Icon(Icons.close, color: Colors.grey, size: 24),
                 ),
               ),
-
               Text(
                 "Chỉ số sức khoẻ",
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: screenWidth * 0.05,
                   fontWeight: FontWeight.bold,
                   color: Colors.blue,
                 ),
               ),
-
               SizedBox(height: 10),
-
-              // Nội dung Form
               Container(
                 padding: EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -396,25 +406,31 @@ void _showHealthDialog(BuildContext context) {
                 child: Column(
                   children: [
                     Row(
+                      children: [
+                        Text("Ngày đo:",
+                            style: TextStyle(fontSize: screenWidth * 0.04)),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: DatePickerField(
+                            width: screenWidth * 0.85,
+                            initialDate: DateTime.now(),
+                            onDateSelected: (selectedDate) {
+                              print(
+                                  "Ngày được chọn: ${selectedDate.toString()}");
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 10),
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Ngày đo:", style: TextStyle(fontSize: 16)),
-                        DatePickerField(
+                        Text("Chiều cao:",
+                            style: TextStyle(fontSize: screenWidth * 0.04)),
+                        SizedBox(
                           width: screenWidth * 0.3,
-                          initialDate: DateTime.now(),
-                          onDateSelected: (selectedDate) {
-                            print("Ngày được chọn: ${selectedDate.toString()}");
-                          },
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Text("Chiều cao:", style: TextStyle(fontSize: 16)),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: TextFormField(
+                          child: TextField(
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: Color(0xFFF3EFEF),
@@ -426,17 +442,19 @@ void _showHealthDialog(BuildContext context) {
                             keyboardType: TextInputType.number,
                           ),
                         ),
-                        SizedBox(width: 5),
-                        Text("cm", style: TextStyle(fontSize: 16)),
+                        Text("cm",
+                            style: TextStyle(fontSize: screenWidth * 0.04)),
                       ],
                     ),
                     SizedBox(height: 10),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Cân nặng:", style: TextStyle(fontSize: 16)),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: TextFormField(
+                        Text("Cân nặng:",
+                            style: TextStyle(fontSize: screenWidth * 0.04)),
+                        SizedBox(
+                          width: screenWidth * 0.3,
+                          child: TextField(
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: Color(0xFFF3EFEF),
@@ -448,16 +466,14 @@ void _showHealthDialog(BuildContext context) {
                             keyboardType: TextInputType.number,
                           ),
                         ),
-                        SizedBox(width: 5),
-                        Text("kg", style: TextStyle(fontSize: 16)),
+                        Text("kg",
+                            style: TextStyle(fontSize: screenWidth * 0.04)),
                       ],
                     ),
                   ],
                 ),
               ),
               SizedBox(height: 20),
-
-              // Nút OK
               CustomButton(
                 text: "OK",
                 isPrimary: true,
@@ -465,6 +481,8 @@ void _showHealthDialog(BuildContext context) {
               )
             ],
           ),
-        );
-      });
+        ),
+      );
+    },
+  );
 }

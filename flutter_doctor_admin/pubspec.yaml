@@ -1,0 +1,62 @@
+name: ayclinic_doctor_admin
+description: "A new Flutter project."
+
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.7.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  intl: ^0.18.1
+  fab_circular_menu: ^1.0.2
+  permission_handler: ^11.4.0
+  image_picker: ^1.1.2
+  camera: ^0.11.1
+  record: ^5.2.1
+  audioplayers: ^5.2.1
+  uuid: ^4.2.1
+  supabase_flutter: ^2.8.4
+  riverpod: ^2.6.1
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+  syncfusion_flutter_gauges: ^23.1.39
+  flutter_webrtc: 0.12.10
+  cupertino_icons: ^1.0.8
+  flutter_keyboard_visibility: ^6.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.15
+  riverpod_generator: ^2.6.5
+  custom_lint: ^0.7.5
+  riverpod_lint: ^2.6.5
+
+flutter:
+
+  uses-material-design: true
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter.ttf
+          weight: 700
+    - family: Inter_bold
+      fonts:
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700
+    - family: Inter_medium
+      fonts:
+        - asset: assets/fonts/Inter-Medium.ttf
+          weight: 900
+    - family: Inter_medium
+      fonts:
+        - asset: assets/fonts/Inter-SemiBold.ttf
+          weight: 800   
+
+  assets:  
+  - assets/images/
+  - assets/fonts/

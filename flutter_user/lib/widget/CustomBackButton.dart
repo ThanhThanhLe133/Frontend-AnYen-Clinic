@@ -7,13 +7,15 @@ class CustomBackButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return IconButton(
-      icon: Icon(Icons.chevron_left, color: Color(0xFF9BA5AC)),
-      iconSize: MediaQuery.of(context).size.width * 0.08,
-      onPressed: () async {
-        ref.read(menuOpenProvider.notifier).state = false;
-        Navigator.pop(context);
-      },
+    return Center(
+      child: IconButton(
+        icon: Icon(Icons.chevron_left, color: Color(0xFF9BA5AC)),
+        iconSize: 40,
+        onPressed: () async {
+          ref.read(menuOpenProvider.notifier).state = false;
+          Navigator.pop(context);
+        },
+      ),
     );
   }
 }
