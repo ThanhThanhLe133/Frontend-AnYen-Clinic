@@ -1,7 +1,10 @@
 import verifyOtp from "./verify_otp"
-import auth from "./authRoute"
+import authRoute from "./authRoute"
+import userRoute from "./userRoute"
 
 const initRoutes = (app) => {
     app.use('/api/otp', verifyOtp)
-    app.use('/api/auth', auth)
+    app.use("/api/auth", authRoute);
+    app.use("/api/user", userRoute);
+
 }
