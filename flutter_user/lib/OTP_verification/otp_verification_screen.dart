@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:anyen_clinic/OTP_verification/otp_provider.dart';
 import 'package:anyen_clinic/dashboard/dashboard.dart';
 import 'package:anyen_clinic/dialog/SuccessScreen.dart';
@@ -7,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final supabase = Supabase.instance.client;
@@ -57,36 +60,54 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
 
   // Xử lý xác thực OTP ở đây
   Future<void> verifyOTP() async {
-    showSuccessScreen(
-      context,
-      Dashboard(),
-    );
-    // String otpCode = ref.read(otpProvider);
-    // try {
-    //   await supabase.auth.verifyOTP(
-    //     phone: widget.phone,
-    //     token: otpCode,
-    //     type: OtpType.sms,
-    //   );
-    //   showSuccessScreen(context, Dashboard());
-    // } catch (e) {
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     SnackBar(content: Text("Lỗi OTP: ${e.toString()}")),
-    //   );
-    // }
+    String otpCode = ref.read(otpProvider);
+    try {
+      final response = await http.post(
+        Uri.parse(
+            'http://localhost:5000/api/verify-otp'), // Đổi thành URL của backend
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "phone": widget.phone,
+          "token": otpCode,
+        }),
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        showSuccessScreen(context, Dashboard());
+      } else {
+        throw Exception(responseData["message"] ?? "Xác thực OTP thất bại");
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Lỗi OTP: ${e.toString()}")),
+      );
+    }
   }
 
   Future<void> resendOtp() async {
     try {
-      await supabase.auth.signInWithOtp(phone: widget.phone);
-      startCountdown();
-      ref.read(otpProvider.notifier).resetOTP();
-      for (var controller in otpControllers) {
-        controller.clear();
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Mã OTP đã được gửi lại!")),
+      final response = await http.post(
+        Uri.parse('http://localhost:5000/api/send-otp'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"phone": widget.phone}),
       );
+      final responseData = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        startCountdown();
+        ref.read(otpProvider.notifier).resetOTP();
+        for (var controller in otpControllers) {
+          controller.clear();
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Mã OTP đã được gửi lại!")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Lỗi: ${responseData['message']}")),
+        );
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Lỗi gửi lại OTP: ${e.toString()}")),

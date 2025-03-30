@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:anyen_clinic/OTP_verification/otp_verification_screen.dart';
 import 'package:anyen_clinic/login/login_screen.dart';
 import 'package:anyen_clinic/widget/normalButton.dart';
@@ -5,6 +7,7 @@ import 'package:anyen_clinic/widget/phoneCode_drop_down/country_code_provider.da
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../widget/inputPhoneNumber.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -51,19 +54,29 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       return;
     }
     try {
-      await supabase.auth.signInWithOtp(phone: phoneNumber);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("OTP đã được gửi đến $phoneNumber")),
+      final response = await http.post(
+        Uri.parse('http://localhost:5000/api/send-otp'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"phone": phoneNumber}),
       );
 
+      final responseData = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("OTP đã được gửi đến $phoneNumber")),
+        );
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OTPVerificationScreen(phone: phoneNumber),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Lỗi: ${responseData['message']}")),
+        );
+      }
       // Chuyển đến màn hình nhập OTP
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => OTPVerificationScreen(phone: phoneNumber),
-        ),
-      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Lỗi: ${e.toString()}")),
