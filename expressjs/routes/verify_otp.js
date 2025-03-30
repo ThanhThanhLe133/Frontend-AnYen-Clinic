@@ -1,6 +1,6 @@
 import * as controllers from '../controllers'
 import express from 'express'
-import verifyOtp from '../middleware/verify_otp'
+import verifyOtp from '../middlewares/verify_otp'
 
 const router = express.Router()
 router.use(verifyOtp)
