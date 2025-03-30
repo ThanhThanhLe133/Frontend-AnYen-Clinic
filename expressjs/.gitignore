@@ -1,0 +1,36 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/build
+
+# misc
+.DS_Store
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ignore all .mp3 files
+*.mp3
+
+#songs and images
+/public/songs
+/public/song_images
+/public/album_images
+/public/artist_images
+/public/playlist_images
+/public/genre_images
+/public/user_images
