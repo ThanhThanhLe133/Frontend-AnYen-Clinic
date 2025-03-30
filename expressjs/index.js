@@ -1,15 +1,16 @@
-import "dotenv/config";
-import express from "express";
-import "./sync.js";
-// import { router as authRoutes } from "./routes/auth.js";
+const express = require("express");
+const dotenv = require("dotenv");
+const authRoutes = require("./routes/authRoute");
+const userRoutes = require("./services/authService");
 
 const app = express();
 
 // Middleware
 app.use(express.json());
 
-// Routes
-// app.use("/api/auth", authRoutes);
+//use routes
+app.use("/api/auth", authRoutes);
+app.use("/api/user", userRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

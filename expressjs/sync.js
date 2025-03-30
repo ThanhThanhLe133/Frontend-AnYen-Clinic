@@ -1,6 +1,8 @@
-import { sequelize } from "./config/sequelize.js";
-import { User } from "./models/user.js";
-import { RefreshToken } from "./models/token.js";
+const dotenv = require("dotenv");
+const { User } = require("./models/user");
+const RefreshToken = require("./models/refreshToken");
+const TokenBlacklist = require("./models/tokenBlacklist");
+const { sequelize } = require("./config/sequelize");
 
 // Connect to database and sync models
 sequelize
