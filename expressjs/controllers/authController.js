@@ -1,3 +1,6 @@
+import joi from 'joi'
+import { phone, otp } from '../helpers/joi_schema';
+
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
 const { User } = require("../models/user");
@@ -12,6 +15,7 @@ const { AppError } = require("../middlewares/errorMiddleware");
 
 // Register a new user
 const register = async (req, res, next) => {
+
   try {
     // Validate request data
     const errors = validationResult(req);
@@ -22,8 +26,20 @@ const register = async (req, res, next) => {
       });
     }
 
-    const { phoneNumber, password } = req.body;
-    console.log(phoneNumber, password);
+    const { phone, otp, password } = req.body;
+
+    const phoneValidation = joi.object({ phone: phone }).validate(req.body);
+    const otpValidation = joi.object({ otp: otp }).validate(req.body);
+    if (phoneValidation.error) return next(phoneValidation.error);
+    if (otpValidation.error) return next(otpValidation.error);
+
+    const otpResponse = await verifyOtp(req, res, next);
+    if (!otpResponse) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired OTP",
+      });
+    }
 
     // Check if user already exists
     const existingUser = await User.findOne({
@@ -68,7 +84,20 @@ const login = async (req, res, next) => {
       });
     }
 
-    const { phoneNumber, password } = req.body;
+    const { phone, otp, password } = req.body;
+
+    const phoneValidation = joi.object({ phone: phone }).validate(req.body);
+    const otpValidation = joi.object({ otp: otp }).validate(req.body);
+    if (phoneValidation.error) return next(phoneValidation.error);
+    if (otpValidation.error) return next(otpValidation.error);
+
+    const otpResponse = await verifyOtp(req, res, next);
+    if (!otpResponse) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired OTP",
+      });
+    }
 
     // Find user
     const user = await User.findOne({ where: { phone_number: phoneNumber } });
