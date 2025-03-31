@@ -28,22 +28,9 @@ const register = async (req, res, next) => {
 
     const { phone, otp, password } = req.body;
 
-    const phoneValidation = joi.object({ phone: phone }).validate(req.body);
-    const otpValidation = joi.object({ otp: otp }).validate(req.body);
-    if (phoneValidation.error) return next(phoneValidation.error);
-    if (otpValidation.error) return next(otpValidation.error);
-
-    const otpResponse = await verifyOtp(req, res, next);
-    if (!otpResponse) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid or expired OTP",
-      });
-    }
-
     // Check if user already exists
     const existingUser = await User.findOne({
-      where: { phone_number: phoneNumber },
+      where: { phone_number: phone },
     });
     if (existingUser) {
       return res.status(409).json({
@@ -54,7 +41,7 @@ const register = async (req, res, next) => {
 
     // Create user
     const user = await User.create({
-      phone_number: phoneNumber,
+      phone_number: phone,
       password_hash: password,
     });
 
@@ -86,21 +73,8 @@ const login = async (req, res, next) => {
 
     const { phone, otp, password } = req.body;
 
-    const phoneValidation = joi.object({ phone: phone }).validate(req.body);
-    const otpValidation = joi.object({ otp: otp }).validate(req.body);
-    if (phoneValidation.error) return next(phoneValidation.error);
-    if (otpValidation.error) return next(otpValidation.error);
-
-    const otpResponse = await verifyOtp(req, res, next);
-    if (!otpResponse) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid or expired OTP",
-      });
-    }
-
     // Find user
-    const user = await User.findOne({ where: { phone_number: phoneNumber } });
+    const user = await User.findOne({ where: { phone_number: phone } });
     if (!user) {
       return res.status(401).json({
         success: false,

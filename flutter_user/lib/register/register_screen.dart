@@ -68,7 +68,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => OTPVerificationScreen(phone: phoneNumber),
+            builder: (context) =>
+                OTPVerificationScreen(phone: phoneNumber, source: "register"),
           ),
         );
       } else {

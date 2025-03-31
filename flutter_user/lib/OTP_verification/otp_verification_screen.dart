@@ -15,8 +15,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 final supabase = Supabase.instance.client;
 
 class OTPVerificationScreen extends ConsumerStatefulWidget {
-  const OTPVerificationScreen({super.key, required this.phone});
+  const OTPVerificationScreen(
+      {super.key, required this.phone, required this.source});
   final String phone;
+  final String source;
   @override
   _OTPVerificationScreenState createState() => _OTPVerificationScreenState();
 }
@@ -63,8 +65,7 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
     String otpCode = ref.read(otpProvider);
     try {
       final response = await http.post(
-        Uri.parse(
-            'http://localhost:5000/api/verify-otp'), // Đổi thành URL của backend
+        Uri.parse('http://localhost:5000/api/verify-otp'),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "phone": widget.phone,
@@ -75,6 +76,11 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
       final responseData = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
+        if (widget.source == "register") {
+          callRegisterAPI();
+        } else {
+          callLoginAPI();
+        }
         showSuccessScreen(context, Dashboard());
       } else {
         throw Exception(responseData["message"] ?? "Xác thực OTP thất bại");
@@ -85,6 +91,20 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
       );
     }
   }
+
+  Future<void> callRegisterAPI() async {
+    final response = await http.post(
+      Uri.parse('http://localhost:5000/api/auth/register'),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({}),
+    );
+
+    final responseData = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {}
+  }
+
+  void callLoginAPI() {}
 
   Future<void> resendOtp() async {
     try {
