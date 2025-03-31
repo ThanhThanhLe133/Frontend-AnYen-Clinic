@@ -1,50 +1,10 @@
 import { validationResult } from "express-validator";
-import User from "../models/user.js";
+import * as services from '../services'
+import { internalServerError, badRequest } from '../middlewares/handle_errors.js'
 
 // Update user profile
 export const updateProfile = async (req, res, next) => {
-  try {
-    // Validate request data
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array(),
-      });
-    }
 
-    const { email } = req.body;
-
-    // Check if email already exists (if changing email)
-    if (email && email !== req.user.email) {
-      const existingUser = await User.findOne({ where: { email } });
-      if (existingUser) {
-        return res.status(409).json({
-          success: false,
-          message: "Email already in use",
-        });
-      }
-    }
-
-    // Update user
-    await req.user.update({
-      email: email || req.user.email,
-    });
-
-    // Return updated user
-    res.status(200).json({
-      success: true,
-      message: "Profile updated successfully",
-      user: {
-        id: req.user.id,
-        email: req.user.email,
-        created_at: req.user.created_at,
-        last_login: req.user.last_login,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
 };
 
 // Change password
@@ -83,3 +43,14 @@ export const changePassword = async (req, res, next) => {
     next(error);
   }
 };
+export const getCurrent = async (req, res) => {
+  try {
+    const { id } = req.user
+    const response = await services.getOne(id)
+    if (!id) return badRequest('User ID is missing!', res);
+
+    return res.status(200).json(response)
+  } catch (error) {
+    return internalServerError(res)
+  }
+}

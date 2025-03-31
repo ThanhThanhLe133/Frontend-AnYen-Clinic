@@ -1,8 +1,5 @@
-import joi from "joi";
-
 import jwt from "jsonwebtoken";
 import { validationResult } from "express-validator";
-import User from "../models/user.js";
 import {
   generateTokens,
   verifyRefreshToken,
@@ -12,227 +9,97 @@ import {
 } from "../utils/tokenUtils.js";
 import { AppError } from "../middlewares/errorMiddleware.js";
 
-// Register a new user
-export const register = async (req, res, next) => {
+import * as services from '../services'
+import { internalServerError, badRequest } from '../middlewares/handle_errors.js'
+import { phone_number, password, refresh_token, otp } from '../helpers/joi_schema'
+import joi from 'joi'
+
+export const register = async (req, res) => {
   try {
-    // Validate request data
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array(),
-      });
-    }
+    const { error } = joi.object({ phone_number, password }).validate(req.body)
+    if (error)
+      return badRequest(error.details[0]?.message, res)
 
-    const { phone, otp, password } = req.body;
+    const response = await services.register(req.body)
 
-    // Check if user already exists
-    const existingUser = await User.findOne({
-      where: { phone_number: phone },
-    });
-    if (existingUser) {
-      return res.status(409).json({
-        success: false,
-        message: "User already exists",
-      });
-    }
-
-    // Create user
-    const user = await User.create({
-      phone_number: phone,
-      password_hash: password,
-    });
-
-    // Return user
-    res.status(201).json({
-      success: true,
-      message: "User registered successfully",
-      user: {
-        id: user.id,
-        phoneNumber: user.phone_number,
-      },
-    });
+    return res.status(200).json(response)
   } catch (error) {
-    next(error);
-  }
-};
+    console.log(error);
 
-// Login user
-export const login = async (req, res, next) => {
+    return internalServerError(res)
+  }
+}
+export const login = async (req, res) => {
   try {
-    // Validate request data
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array(),
-      });
-    }
+    const { error } = joi.object({ phone_number, password }).validate(req.body)
+    if (error)
+      return badRequest(error.details[0]?.message, res)
+    const response = await services.login(req.body)
 
-    const { phone, otp, password } = req.body;
-
-    // Find user
-    const user = await User.findOne({ where: { phone_number: phone } });
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials",
-      });
-    }
-
-    // Check if user is active
-    if (!user.is_active) {
-      return res.status(401).json({
-        success: false,
-        message: "Account is deactivated",
-      });
-    }
-
-    // Validate password
-    const isPasswordValid = await user.isValidPassword(password);
-    if (!isPasswordValid) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials",
-      });
-    }
-
-    // Generate tokens
-    const { accessToken, refreshToken, jti } = await generateTokens(user.id);
-
-    // Save refresh token to database
-    await saveRefreshToken(
-      refreshToken,
-      user.id,
-      req.ip,
-      req.headers["user-agent"]
-    );
-
-    // Return user and access token
-    res.status(200).json({
-      success: true,
-      message: "Login successful",
-      user: {
-        id: user.id,
-        email: user.email,
-      },
-      accessToken,
-      refreshToken,
-    });
+    return res.status(200).json(response)
   } catch (error) {
-    next(error);
+    console.log(error);
+    return internalServerError(res)
   }
-};
-
-// Refresh access token
-export const refreshAccessToken = async (req, res, next) => {
+}
+export const refreshTokenController = async (req, res) => {
   try {
-    // Get refresh token from cookie
-    const refreshToken = req.cookies.refreshToken;
+    const { error } = joi.object({ refresh_token }).validate(req.body)
 
-    if (!refreshToken) {
-      return res.status(401).json({
-        success: false,
-        message: "Refresh token not found",
-      });
-    }
+    if (error)
+      return badRequest(error.details[0]?.message, res)
 
-    // Verify refresh token
-    const decoded = await verifyRefreshToken(refreshToken);
+    const response = await services.refreshToken(req.body.refresh_token);
 
-    // Revoke old refresh token
-    await revokeRefreshToken(refreshToken);
-
-    // Generate new tokens
-    const {
-      accessToken,
-      refreshToken: newRefreshToken,
-      jti,
-    } = await generateTokens(decoded.sub);
-
-    // Save new refresh token
-    await saveRefreshToken(
-      newRefreshToken,
-      decoded.sub,
-      req.ip,
-      req.headers["user-agent"]
-    );
-
-    // Set new refresh token in cookie
-    res.cookie("refreshToken", newRefreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
-
-    // Return new access token
-    res.status(200).json({
-      success: true,
-      message: "Token refreshed successfully",
-      accessToken,
-    });
+    return res.status(200).json(response)
   } catch (error) {
-    // Clear cookie if refresh failed
-    res.clearCookie("refreshToken");
-
-    if (
-      error.message === "Invalid refresh token" ||
-      error.message === "Refresh token expired"
-    ) {
-      return res.status(401).json({
-        success: false,
-        message: error.message,
-      });
-    }
-
-    next(error);
+    console.error('Error in refreshTokenController: ', error);
+    return internalServerError(res)
   }
-};
+}
+// // Logout user
+// export const logout = async (req, res, next) => {
+//   try {
+//     // Get refresh token from cookie
+//     const refreshToken = req.cookies.refreshToken;
 
-// Logout user
-export const logout = async (req, res, next) => {
-  try {
-    // Get refresh token from cookie
-    const refreshToken = req.cookies.refreshToken;
+//     if (refreshToken) {
+//       // Revoke refresh token
+//       await revokeRefreshToken(refreshToken);
+//     }
 
-    if (refreshToken) {
-      // Revoke refresh token
-      await revokeRefreshToken(refreshToken);
-    }
+//     // If user is authenticated, blacklist access token
+//     if (req.user && req.jti) {
+//       const decoded = jwt.decode(req.headers.authorization.split(" ")[1]);
+//       await blacklistAccessToken(req.jti, decoded.exp);
+//     }
 
-    // If user is authenticated, blacklist access token
-    if (req.user && req.jti) {
-      const decoded = jwt.decode(req.headers.authorization.split(" ")[1]);
-      await blacklistAccessToken(req.jti, decoded.exp);
-    }
+//     // Clear refresh token cookie
+//     res.clearCookie("refreshToken");
 
-    // Clear refresh token cookie
-    res.clearCookie("refreshToken");
+//     res.status(200).json({
+//       success: true,
+//       message: "Logout successful",
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
-    res.status(200).json({
-      success: true,
-      message: "Logout successful",
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// Get current user profile
-export const me = async (req, res, next) => {
-  try {
-    // User is already set in req by auth middleware
-    res.status(200).json({
-      success: true,
-      user: {
-        id: req.user.id,
-        email: req.user.email,
-        created_at: req.user.created_at,
-        last_login: req.user.last_login,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+// // Get current user profile
+// export const me = async (req, res, next) => {
+//   try {
+//     // User is already set in req by auth middleware
+//     res.status(200).json({
+//       success: true,
+//       user: {
+//         id: req.user.id,
+//         email: req.user.email,
+//         created_at: req.user.created_at,
+//         last_login: req.user.last_login,
+//       },
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };

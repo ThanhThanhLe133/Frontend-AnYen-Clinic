@@ -6,8 +6,7 @@ import {
   accessTokenExpiration,
   refreshTokenExpiration,
 } from "../config/jwt.js";
-import RefreshToken from "../models/refreshToken.js";
-import TokenBlacklist from "../models/tokenBlacklist.js";
+
 
 // Generate JWT tokens
 const generateTokens = async (userId) => {

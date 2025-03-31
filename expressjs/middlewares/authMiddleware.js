@@ -1,5 +1,4 @@
 import { verifyAccessToken } from "../utils/tokenUtils.js";
-import User from "../models/user.js";
 
 // Authentication middleware to protect routes
 export const authenticate = async (req, res, next) => {

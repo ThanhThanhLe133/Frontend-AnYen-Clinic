@@ -1,26 +1,11 @@
 import express from "express";
 import { body } from "express-validator";
-import * as userController from "../controllers/userController.js";
+import verifyToken from '../middleWares/verify_token'
+import * as controllers from '../controllers'
 import { authenticate } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-// All routes require authentication
-router.use(authenticate);
-
-// Update profile route
-router.put(
-  "/profile",
-  [
-    body("email")
-      .optional()
-      .isEmail()
-      .withMessage("Please provide a valid email"),
-  ],
-  userController.updateProfile
-);
-
-// Change password route
 router.put(
   "/change-password",
   [
@@ -35,7 +20,8 @@ router.put(
         "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
       ),
   ],
-  userController.changePassword
+  controllers.changePassword
 );
-
+router.use(verifyToken)
+router.get('/', controllers.getCurrent)
 export { router };
