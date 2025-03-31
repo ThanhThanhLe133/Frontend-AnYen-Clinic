@@ -1,6 +1,6 @@
-const { DataTypes } = require("sequelize");
-const { sequelize } = require("../config/sequelize.js");
-const { User } = require("./user.js");
+import { DataTypes } from "sequelize";
+import { sequelize } from "../config/sequelize.js";
+import User from "./user.js";
 
 const RefreshToken = sequelize.define(
   "RefreshToken",
@@ -56,4 +56,4 @@ const RefreshToken = sequelize.define(
 User.hasMany(RefreshToken, { foreignKey: "user_id" });
 RefreshToken.belongsTo(User, { foreignKey: "user_id" });
 
-module.exports = RefreshToken;
+export default RefreshToken;

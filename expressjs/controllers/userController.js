@@ -1,9 +1,8 @@
-const { validationResult } = require("express-validator");
-const User = require("../models/user");
-const { AppError } = require("../middlewares/errorMiddleware");
+import { validationResult } from "express-validator";
+import User from "../models/user.js";
 
 // Update user profile
-const updateProfile = async (req, res, next) => {
+export const updateProfile = async (req, res, next) => {
   try {
     // Validate request data
     const errors = validationResult(req);
@@ -49,7 +48,7 @@ const updateProfile = async (req, res, next) => {
 };
 
 // Change password
-const changePassword = async (req, res, next) => {
+export const changePassword = async (req, res, next) => {
   try {
     // Validate request data
     const errors = validationResult(req);
@@ -83,9 +82,4 @@ const changePassword = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-};
-
-module.exports = {
-  updateProfile,
-  changePassword,
 };

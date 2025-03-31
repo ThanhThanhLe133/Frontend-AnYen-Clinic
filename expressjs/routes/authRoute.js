@@ -1,8 +1,6 @@
-const express = require("express");
-const { body } = require("express-validator");
-const authController = require("../controllers/authController");
-const { authenticate } = require("../middlewares/authMiddleware");
-const { AppError } = require("../middlewares/errorMiddleware");
+import express from "express";
+import * as authController from "../controllers/authController.js";
+import { authenticate } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
@@ -20,5 +18,4 @@ router.post("/logout", authController.logout);
 
 // Get current user route
 router.get("/me", authenticate, authController.me);
-
-module.exports = router;
+export { router };

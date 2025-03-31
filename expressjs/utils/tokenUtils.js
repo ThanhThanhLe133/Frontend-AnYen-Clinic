@@ -1,13 +1,13 @@
-const jwt = require("jsonwebtoken");
-const { v4: uuidv4 } = require("uuid");
-const {
+import jwt from "jsonwebtoken";
+import { v4 as uuidv4 } from "uuid";
+import {
   accessTokenSecret,
   refreshTokenSecret,
   accessTokenExpiration,
   refreshTokenExpiration,
-} = require("../config/jwt");
-const RefreshToken = require("../models/refreshToken");
-const TokenBlacklist = require("../models/tokenBlacklist");
+} from "../config/jwt.js";
+import RefreshToken from "../models/refreshToken.js";
+import TokenBlacklist from "../models/tokenBlacklist.js";
 
 // Generate JWT tokens
 const generateTokens = async (userId) => {
@@ -159,7 +159,7 @@ const cleanupExpiredTokens = async () => {
   }
 };
 
-module.exports = {
+export {
   generateTokens,
   verifyAccessToken,
   verifyRefreshToken,

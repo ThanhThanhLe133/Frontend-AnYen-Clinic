@@ -1,7 +1,7 @@
-const express = require("express");
-const { body } = require("express-validator");
-const userController = require("../controllers/userController");
-const { authenticate } = require("../middlewares/authMiddleware");
+import express from "express";
+import { body } from "express-validator";
+import * as userController from "../controllers/userController.js";
+import { authenticate } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
@@ -38,4 +38,4 @@ router.put(
   userController.changePassword
 );
 
-module.exports = router;
+export { router };

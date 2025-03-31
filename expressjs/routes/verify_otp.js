@@ -1,10 +1,10 @@
-import * as controllers from '../controllers'
-import express from 'express'
-import verifyOtp from '../middlewares/verify_otp'
+import express from "express";
+import * as controllers from "../controllers/verify_otp.js";
+import verifyOtp from "../middlewares/verify_otp.js";
 
-const router = express.Router()
-router.use(verifyOtp)
-router.post('/send-otp', controllers.sendOtp)
-router.post('/verify-otp', controllers.verifyOtp)
+const router = express.Router();
+router.use(verifyOtp);
+router.post("/send-otp", controllers.sendOtp);
+router.post("/verify-otp", controllers.verifyOtp);
 
-module.exports = router
+export { router };
