@@ -1,5 +1,5 @@
 // Error handling middleware
-const errorHandler = (err, req, res, next) => {
+export const errorHandler = (err, req, res, next) => {
   console.error(err.stack);
 
   const statusCode = err.statusCode || 500;
@@ -13,7 +13,7 @@ const errorHandler = (err, req, res, next) => {
 };
 
 // Custom error class
-class AppError extends Error {
+export class AppError extends Error {
   constructor(message, statusCode) {
     super(message);
     this.statusCode = statusCode;
@@ -21,5 +21,3 @@ class AppError extends Error {
     Error.captureStackTrace(this, this.constructor);
   }
 }
-
-module.exports = { errorHandler, AppError };

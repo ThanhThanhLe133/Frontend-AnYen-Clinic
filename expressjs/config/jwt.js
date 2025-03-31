@@ -1,8 +1,8 @@
-require("dotenv").config();
+import dotenv from "dotenv";
 
-module.exports = {
-  accessTokenSecret: process.env.JWT_ACCESS_SECRET,
-  refreshTokenSecret: process.env.JWT_REFRESH_SECRET,
-  accessTokenExpiration: process.env.JWT_ACCESS_EXPIRATION,
-  refreshTokenExpiration: process.env.JWT_REFRESH_EXPIRATION,
-};
+dotenv.config();
+
+export const accessTokenSecret = process.env.JWT_ACCESS_SECRET;
+export const refreshTokenSecret = process.env.JWT_REFRESH_SECRET;
+export const accessTokenExpiration = process.env.JWT_ACCESS_EXPIRATION;
+export const refreshTokenExpiration = process.env.JWT_REFRESH_EXPIRATION;

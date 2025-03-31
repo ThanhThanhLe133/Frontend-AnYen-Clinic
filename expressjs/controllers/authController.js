@@ -1,21 +1,19 @@
-import joi from 'joi'
-import { phone, otp } from '../helpers/joi_schema';
+import joi from "joi";
 
-const jwt = require("jsonwebtoken");
-const { validationResult } = require("express-validator");
-const { User } = require("../models/user");
-const {
+import jwt from "jsonwebtoken";
+import { validationResult } from "express-validator";
+import User from "../models/user.js";
+import {
   generateTokens,
   verifyRefreshToken,
   saveRefreshToken,
   revokeRefreshToken,
   blacklistAccessToken,
-} = require("../utils/tokenUtils");
-const { AppError } = require("../middlewares/errorMiddleware");
+} from "../utils/tokenUtils.js";
+import { AppError } from "../middlewares/errorMiddleware.js";
 
 // Register a new user
-const register = async (req, res, next) => {
-
+export const register = async (req, res, next) => {
   try {
     // Validate request data
     const errors = validationResult(req);
@@ -60,7 +58,7 @@ const register = async (req, res, next) => {
 };
 
 // Login user
-const login = async (req, res, next) => {
+export const login = async (req, res, next) => {
   try {
     // Validate request data
     const errors = validationResult(req);
@@ -127,7 +125,7 @@ const login = async (req, res, next) => {
 };
 
 // Refresh access token
-const refreshAccessToken = async (req, res, next) => {
+export const refreshAccessToken = async (req, res, next) => {
   try {
     // Get refresh token from cookie
     const refreshToken = req.cookies.refreshToken;
@@ -193,7 +191,7 @@ const refreshAccessToken = async (req, res, next) => {
 };
 
 // Logout user
-const logout = async (req, res, next) => {
+export const logout = async (req, res, next) => {
   try {
     // Get refresh token from cookie
     const refreshToken = req.cookies.refreshToken;
@@ -222,7 +220,7 @@ const logout = async (req, res, next) => {
 };
 
 // Get current user profile
-const me = async (req, res, next) => {
+export const me = async (req, res, next) => {
   try {
     // User is already set in req by auth middleware
     res.status(200).json({
@@ -237,12 +235,4 @@ const me = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-};
-
-module.exports = {
-  register,
-  login,
-  refreshAccessToken,
-  logout,
-  me,
 };

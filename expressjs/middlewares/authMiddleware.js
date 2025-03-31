@@ -1,8 +1,8 @@
-const { verifyAccessToken } = require("../utils/tokenUtils");
-const User = require("../models/user");
+import { verifyAccessToken } from "../utils/tokenUtils.js";
+import User from "../models/user.js";
 
 // Authentication middleware to protect routes
-const authenticate = async (req, res, next) => {
+export const authenticate = async (req, res, next) => {
   try {
     // Get authorization header
     const authHeader = req.headers.authorization;
@@ -56,5 +56,3 @@ const authenticate = async (req, res, next) => {
     });
   }
 };
-
-module.exports = { authenticate };

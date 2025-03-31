@@ -1,5 +1,6 @@
-const { DataTypes } = require("sequelize");
-const { sequelize } = require("../config/sequelize.js");
+import { DataTypes } from "sequelize";
+import { sequelize } from "../config/sequelize.js";
+import e from "express";
 
 const TokenBlacklist = sequelize.define(
   "TokenBlacklist",
@@ -29,4 +30,4 @@ const TokenBlacklist = sequelize.define(
   }
 );
 
-module.exports = TokenBlacklist;
+export default TokenBlacklist;
