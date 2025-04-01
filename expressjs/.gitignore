@@ -1,6 +1,7 @@
 /node_modules
 .env
-
+connection_db
+config.json
 # dependencies
 /node_modules
 /.pnp

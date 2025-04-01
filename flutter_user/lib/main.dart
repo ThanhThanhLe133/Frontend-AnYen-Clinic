@@ -1,5 +1,4 @@
 import 'package:anyen_clinic/login/login_screen.dart';
-import 'package:anyen_clinic/register/register_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
