@@ -1,5 +1,5 @@
 import jwt, { TokenExpiredError } from 'jsonwebtoken'
-import { notAuth } from './handle_errors'
+import { notAuth } from '../middlewares/handle_errors.js'
 
 const verifyToken = (req, res, next) => {
     const token = req.headers.authorization

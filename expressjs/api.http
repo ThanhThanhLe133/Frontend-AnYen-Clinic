@@ -6,8 +6,8 @@ POST http://localhost:5000/api/auth/register
 Content-Type: application/json
 
 {
-    "phone_number":"0123452789",
-    "password":"Thanh12345678$$"
+    "phone_number":"",
+    "password":""
 }
 
 ###
@@ -15,17 +15,33 @@ POST http://localhost:5000/api/auth/login
 Content-Type: application/json
 
 {
-    "phone_number":"0123452789",
-    "password":"Thanh12345678$$"
+    "phone_number":"",
+    "password":""
+}
+###
+POST http://localhost:5000/api/otp/send-otp
+Content-Type: application/json
+
+{
+    "phone_number":""
+}
+
+###
+POST http://localhost:5000/api/otp/verify-otp
+Content-Type: application/json
+
+{
+    "phone_number":"",
+    "otp": ""
 }
 
 ###
 GET http://localhost:5000/api/user/
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbjEyMzQ1NUBnbWFpbC5jb20iLCJyb2xlX2NvZGUiOiJSMyIsImlhdCI6MTc0MzA3NDI2MiwiZXhwIjoxNzQzMDc3ODYyfQ.1vmOS8raC4BVZ94cNqQbjlng0WkSTLA-MinhhImjpYI
+Authorization: 
 
 ###
 POST http://localhost:5000/api/auth/refresh-token/
-refresh_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNzQzMDcyOTgyLCJleHAiOjE3NDMwNzMwMTJ9.q77qpxp5e8GU8P3XjmxePEZrhaZXvmM7TiaT5hhelWY
+refresh_token: 
 
 
 

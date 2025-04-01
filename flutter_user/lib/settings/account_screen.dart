@@ -7,7 +7,6 @@ import 'package:anyen_clinic/widget/menu.dart';
 import 'package:anyen_clinic/widget/sectionTitle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:anyen_clinic/patient_provider.dart';
 
 final patientDataProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
   await Future.delayed(Duration(seconds: 1));

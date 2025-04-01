@@ -11,23 +11,22 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:supabase_flutter/supabase_flutter.dart';
-
-final supabase = Supabase.instance.client;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class OTPVerificationScreen extends ConsumerStatefulWidget {
-  const OTPVerificationScreen(
-      {super.key, required this.phone, required this.source});
-  final String phone;
+  const OTPVerificationScreen({super.key, required this.source});
   final String source;
   @override
   _OTPVerificationScreenState createState() => _OTPVerificationScreenState();
 }
 
 class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
+  String apiUrl = dotenv.env['API_URL']!;
+
   List<TextEditingController> otpControllers =
       List.generate(6, (index) => TextEditingController());
   List<FocusNode> otpFocusNodes = List.generate(6, (index) => FocusNode());
+  FocusNode otpFocusNode = FocusNode();
   final int timeCount = 60;
   int countdown = 0;
   late Timer timer;
@@ -35,9 +34,13 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(Duration(milliseconds: 100), () {
-      FocusScope.of(context).requestFocus(otpFocusNodes[0]);
-    });
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     startCountdown();
   }
 
@@ -62,9 +65,15 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
     for (var controller in otpControllers) {
       controller.dispose();
     }
-    for (var node in otpFocusNodes) {
-      node.dispose();
+    for (var focusNode in otpFocusNodes) {
+      focusNode.dispose();
     }
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
     super.dispose();
   }
 
@@ -78,7 +87,7 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
     Future<void> callRegisterAPI() async {
       try {
         final response = await http.post(
-          Uri.parse('http://localhost:5000/api/auth/register'),
+          Uri.parse('$apiUrl/auth/register'),
           headers: {"Content-Type": "application/json"},
           body: jsonEncode({
             "phone_number": phoneNumber,
@@ -105,7 +114,7 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
     Future<void> callLoginAPI() async {
       try {
         final response = await http.post(
-          Uri.parse('http://localhost:5000/api/auth/login'),
+          Uri.parse('$apiUrl/auth/login'),
           headers: {"Content-Type": "application/json"},
           body: jsonEncode({
             "phone_number": phoneNumber,
@@ -135,14 +144,14 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
       String otpCode = ref.read(otpProvider);
       try {
         final response = await http.post(
-          Uri.parse('http://localhost:5000/api/verify-otp'),
+          Uri.parse('$apiUrl/otp/verify-otp'),
           headers: {"Content-Type": "application/json"},
           body: jsonEncode({
-            "phone": widget.phone,
-            "token": otpCode,
+            "phone_number": phoneNumber,
+            "otp": otpCode,
           }),
         );
-
+        debugPrint("🔍 API Response: ${response.body}");
         final responseData = jsonDecode(response.body);
 
         if (response.statusCode == 200) {
@@ -155,6 +164,7 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
           throw Exception(responseData["message"] ?? "Xác thực OTP thất bại");
         }
       } catch (e) {
+        debugPrint("🔍$e");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Lỗi OTP: ${e.toString()}")),
         );
@@ -164,9 +174,9 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
     Future<void> resendOtp() async {
       try {
         final response = await http.post(
-          Uri.parse('http://localhost:5000/api/send-otp'),
+          Uri.parse('$apiUrl/otp/send-otp'),
           headers: {"Content-Type": "application/json"},
-          body: jsonEncode({"phone": widget.phone}),
+          body: jsonEncode({"phone_number": phoneNumber}),
         );
         final responseData = jsonDecode(response.body);
         if (response.statusCode == 200) {
@@ -247,43 +257,46 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
                       border: Border.all(color: Colors.black, width: 1),
                       borderRadius: BorderRadius.circular(5),
                     ),
-                    child: Padding(
-                      padding:
-                          EdgeInsets.symmetric(vertical: screenWidth * 0.04),
-                      child: TextField(
-                        controller: otpControllers[index],
-                        keyboardType: TextInputType.number,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: screenWidth * 0.05),
-                        maxLength: 1,
-                        focusNode: otpFocusNodes[index],
-                        decoration: InputDecoration(
-                          counterText: "",
-                          border: InputBorder.none,
-                        ),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly
-                        ],
-                        onChanged: (value) {
-                          String otp = otpControllers.map((c) => c.text).join();
-                          ref.read(otpProvider.notifier).updateOTP(otp);
-
-                          if (value.isNotEmpty) {
-                            if (index < 5) {
-                              FocusScope.of(context)
-                                  .requestFocus(otpFocusNodes[index + 1]);
-                            } else {
-                              FocusScope.of(context)
-                                  .unfocus(); // Tự động bỏ focus nếu nhập xong 6 ký tự
-                            }
-                          } else {
-                            if (index > 0) {
-                              FocusScope.of(context)
-                                  .requestFocus(otpFocusNodes[index - 1]);
-                            }
-                          }
-                        },
+                    child: TextField(
+                      controller: otpControllers[index],
+                      focusNode: otpFocusNodes[index],
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      textAlignVertical: TextAlignVertical.center,
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.05,
+                        height: 1.0,
                       ),
+                      maxLength: 1,
+                      autofocus: index == 0,
+                      decoration: InputDecoration(
+                        counterText: "",
+                        border: InputBorder.none,
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(width: 1),
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                            vertical: screenWidth * 0.03,
+                            horizontal: screenWidth * 0.02),
+                      ),
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      onTap: () {
+                        otpFocusNode.requestFocus();
+                      },
+                      onChanged: (value) {
+                        String otp = otpControllers.map((c) => c.text).join();
+                        ref.read(otpProvider.notifier).updateOTP(otp);
+
+                        if (value.isNotEmpty) {
+                          if (index < 5) {
+                            otpFocusNodes[index + 1].requestFocus();
+                          }
+                        } else {
+                          if (index > 0) {
+                            otpFocusNodes[index - 1].requestFocus();
+                          }
+                        }
+                      },
                     ),
                   );
                 }),

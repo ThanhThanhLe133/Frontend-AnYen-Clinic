@@ -1,11 +1,11 @@
 import joi from 'joi'
 
 export const phone_number = joi.string()
-    .pattern(/^[0-9]{10,12}$/)
+    .pattern(/^\+[1-9]{1}[0-9]{1,3}[0-9]{7,10}$/)
     .required()
     .messages({
         "string.empty": "Số điện thoại không được để trống",
-        "string.pattern.base": "Số điện thoại không hợp lệ",
+        "string.pattern.base": "Số điện thoại không hợp lệ, cần có mã vùng hợp lệ",
         "any.required": "Số điện thoại là bắt buộc",
     });
 

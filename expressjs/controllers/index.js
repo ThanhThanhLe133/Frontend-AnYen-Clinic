@@ -1,3 +1,3 @@
 export * from './authController'
-export * from './verify_otp'
+export * from './otp'
 export * from './userController'

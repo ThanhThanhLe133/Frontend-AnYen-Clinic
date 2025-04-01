@@ -8,6 +8,8 @@ import 'package:anyen_clinic/widget/phoneCode_drop_down/country_code_provider.da
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../widget/inputPhoneNumber.dart';
@@ -23,6 +25,7 @@ class RegisterScreen extends ConsumerStatefulWidget {
 }
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
+  String apiUrl = dotenv.env['API_URL'] ?? 'https://default-api.com';
   bool obscurePassword = true;
   bool isChecked = false;
   final phoneController = TextEditingController();
@@ -57,18 +60,55 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     ref.read(phoneNumberProvider.notifier).state = phoneNumber;
     ref.read(passwordProvider.notifier).state = password;
     try {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) =>
-              OTPVerificationScreen(phone: phoneNumber, source: "register"),
-        ),
+      final response = await http.post(
+        Uri.parse('$apiUrl/otp/send-otp'),
+        //thay = địa chỉ ipv4 ở đây nếu run = điện thoại
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "phone_number": phoneNumber,
+        }),
       );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OTPVerificationScreen(source: "register"),
+          ),
+        );
+      } else {
+        throw Exception(responseData["message"] ?? "Lỗi đăng nhập");
+      }
     } catch (e) {
+      debugPrint("🔍$e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Lỗi: ${e.toString()}")),
+        SnackBar(content: Text("Lỗi đăng nhập: ${e.toString()}")),
       );
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Chỉ cho phép màn hình dọc khi vào màn hình này
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  }
+
+  @override
+  void dispose() {
+    // Khôi phục cài đặt gốc khi thoát màn hình này
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+    super.dispose();
   }
 
   @override

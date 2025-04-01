@@ -1,9 +1,10 @@
-import Joi from "joi";
 import supabase from "../config/supabaseClient";
 
-export const sendOtp = async (phone) => {
+export const sendOtp = async (phone_number) => {
   try {
-    const { data, error } = await supabase.auth.signInWithOtp({ phone });
+    console.log(phone_number);
+
+    const { data, error } = await supabase.auth.signInWithOtp({ phone: phone_number });
     if (error) throw new Error(error.message);
     return data;
   } catch (err) {
@@ -12,12 +13,13 @@ export const sendOtp = async (phone) => {
   }
 };
 
-export const verifyOtp = async (phone, token) => {
+export const verifyOtp = async (phone_number, otp) => {
   const { data, error } = await supabase.auth.verifyOtp({
-    phone,
-    token,
+    phone: phone_number,
+    token: otp,
     type: "sms",
   });
+
   if (error) throw new Error(error.message);
   return data;
 };

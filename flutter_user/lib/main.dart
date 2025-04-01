@@ -1,22 +1,11 @@
-import 'package:anyen_clinic/appointment/appointment_screen.dart';
-import 'package:anyen_clinic/chat/chat_screen.dart';
-import 'package:anyen_clinic/dashboard/dashboard.dart';
-import 'package:anyen_clinic/message/message_screen.dart';
 import 'package:anyen_clinic/register/register_screen.dart';
-import 'package:anyen_clinic/review/review_doctor_screen.dart';
-import 'package:anyen_clinic/settings/account_screen.dart';
-import 'package:anyen_clinic/settings/edit_account_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Supabase.initialize(
-    url: 'https://jqbpguplezywjemitmna.supabase.co',
-    anonKey:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxYnBndXBsZXp5d2plbWl0bW5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA0NDgxNTksImV4cCI6MjA1NjAyNDE1OX0.zbE38vdeJg-10mZoH7zd4EiwkS_ZhWdisYiMseDK5mM',
-  );
+  await dotenv.load(fileName: "assets/config/.env");
   runApp(ProviderScope(child: const MainApp()));
 }
 
