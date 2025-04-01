@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:anyen_clinic/OTP_verification/otp_verification_screen.dart';
 import 'package:anyen_clinic/login/login_screen.dart';
 import 'package:anyen_clinic/patient_provider.dart';
+import 'package:anyen_clinic/widget/buildPasswordField.dart';
 import 'package:anyen_clinic/widget/normalButton.dart';
 import 'package:anyen_clinic/widget/phoneCode_drop_down/country_code_provider.dart';
 
@@ -11,11 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../widget/inputPhoneNumber.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-final supabase = Supabase.instance.client;
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -79,12 +77,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           ),
         );
       } else {
-        throw Exception(responseData["message"] ?? "Lỗi đăng nhập");
+        throw Exception(responseData["message"] ?? "Lỗi đăng ký");
       }
     } catch (e) {
       debugPrint("🔍$e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Lỗi đăng nhập: ${e.toString()}")),
+        SnackBar(content: Text("Lỗi đăng ký: ${e.toString()}")),
       );
     }
   }
@@ -146,47 +144,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             SizedBox(
               height: screenHeight * 0.02,
             ),
-            SizedBox(
-              width: screenWidth * 0.9,
-              height: screenHeight * 0.2,
-              child: TextField(
-                controller: passController,
-                onChanged: (value) {
-                  passController.text = value;
-                  passController.selection = TextSelection.fromPosition(
-                    TextPosition(offset: passController.text.length),
-                  );
-                },
-                obscureText: obscurePassword,
-                decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.lock, color: Colors.grey),
-                  hintText: "Nhập mật khẩu",
-                  hintStyle: TextStyle(
-                    fontSize: screenWidth * 0.05,
-                    color: Color(0xFF9AA5AC),
-                    fontWeight: FontWeight.w400,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(5),
-                    borderSide: BorderSide(color: Color(0xFF9AA5AC), width: 1),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(5),
-                    borderSide: BorderSide(color: Colors.blue, width: 2),
-                  ),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      obscurePassword ? Icons.visibility_off : Icons.visibility,
-                      color: Colors.grey,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        obscurePassword = !obscurePassword;
-                      });
-                    },
-                  ),
-                ),
-              ),
+            PasswordField(
+              screenWidth: screenWidth,
+              screenHeight: screenHeight,
+              hintText: "Nhập mật khẩu",
+              controller: passController,
             ),
             SizedBox(
               width: screenWidth * 0.9,

@@ -1,17 +1,102 @@
+import 'dart:convert';
+
+import 'package:anyen_clinic/OTP_verification/otp_verification_screen.dart';
+import 'package:anyen_clinic/patient_provider.dart';
 import 'package:anyen_clinic/register/register_screen.dart';
 import 'package:anyen_clinic/widget/buildPasswordField.dart';
+import 'package:anyen_clinic/widget/inputPhoneNumber.dart';
 import 'package:anyen_clinic/widget/normalButton.dart';
+import 'package:anyen_clinic/widget/phoneCode_drop_down/country_code_provider.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
+  String apiUrl = dotenv.env['API_URL'] ?? 'https://default-api.com';
+  bool obscurePassword = true;
+  final phoneController = TextEditingController();
+  final passController = TextEditingController();
+  Future<void> sendOTP() async {
+    final selectedCountryCode = ref.read(countryCodeProvider);
+
+    String phoneNumber = phoneController.text.trim();
+    if (phoneNumber.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Vui lòng nhập số điện thoại")),
+      );
+      return;
+    } else if (!phoneNumber.startsWith(selectedCountryCode)) {
+      phoneNumber = "$selectedCountryCode$phoneNumber";
+    }
+
+    String password = passController.text.trim();
+    if (password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Vui lòng nhập password")),
+      );
+      return;
+    }
+    ref.read(phoneNumberProvider.notifier).state = phoneNumber;
+    ref.read(passwordProvider.notifier).state = password;
+    try {
+      final response = await http.post(
+        Uri.parse('$apiUrl/otp/send-otp'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "phone_number": phoneNumber,
+        }),
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OTPVerificationScreen(source: "login"),
+          ),
+        );
+      } else {
+        throw Exception(responseData["message"] ?? "Lỗi đăng nhập");
+      }
+    } catch (e) {
+      debugPrint("🔍$e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Lỗi đăng nhập: ${e.toString()}")),
+      );
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  }
+
+  @override
+  void dispose() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -39,8 +124,11 @@ class _LoginScreenState extends State<LoginScreen> {
               height: screenHeight * 0.1,
               width: screenWidth * 0.8,
             ),
-            // inputPhoneNumber(
-            //     screenWidth: screenWidth, screenHeight: screenHeight),
+            InputPhoneNumber(
+              screenWidth: screenWidth,
+              screenHeight: screenHeight,
+              controller: phoneController,
+            ),
             SizedBox(
               height: screenHeight * 0.02,
             ),
@@ -48,6 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
               screenWidth: screenWidth,
               screenHeight: screenHeight,
               hintText: "Nhập mật khẩu",
+              controller: passController,
             ),
             Align(
               alignment: Alignment.centerRight,
@@ -72,8 +161,7 @@ class _LoginScreenState extends State<LoginScreen> {
               screenWidth: screenWidth,
               screenHeight: screenHeight,
               label: "Đăng nhập",
-              nextScreen: LoginScreen(), //tạm thời
-              action: null,
+              action: sendOTP,
             ),
             SizedBox(height: screenHeight * 0.03),
             Row(

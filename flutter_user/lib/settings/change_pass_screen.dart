@@ -11,6 +11,7 @@ class ChangePassScreen extends StatefulWidget {
 }
 
 class _ChangePassScreenState extends State<ChangePassScreen> {
+  final passController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -58,18 +59,21 @@ class _ChangePassScreenState extends State<ChangePassScreen> {
                 screenWidth: screenWidth,
                 screenHeight: screenHeight,
                 hintText: "Nhập mật khẩu cũ",
+                controller: passController,
               ),
               SizedBox(height: screenHeight * 0.05),
               PasswordField(
                 screenWidth: screenWidth,
                 screenHeight: screenHeight,
                 hintText: "Nhập mật khẩu",
+                controller: passController,
               ),
               SizedBox(height: screenHeight * 0.05),
               PasswordField(
                 screenWidth: screenWidth,
                 screenHeight: screenHeight,
                 hintText: "Xác thực mật khẩu",
+                controller: passController,
               ),
               SizedBox(height: screenHeight * 0.2),
               normalButton(
