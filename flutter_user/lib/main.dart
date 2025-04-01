@@ -2,6 +2,7 @@ import 'package:anyen_clinic/appointment/appointment_screen.dart';
 import 'package:anyen_clinic/chat/chat_screen.dart';
 import 'package:anyen_clinic/dashboard/dashboard.dart';
 import 'package:anyen_clinic/message/message_screen.dart';
+import 'package:anyen_clinic/register/register_screen.dart';
 import 'package:anyen_clinic/review/review_doctor_screen.dart';
 import 'package:anyen_clinic/settings/account_screen.dart';
 import 'package:anyen_clinic/settings/edit_account_screen.dart';
@@ -33,7 +34,7 @@ class MainApp extends StatelessWidget {
           bodySmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
         ),
       ),
-      home: Dashboard(),
+      home: RegisterScreen(),
     );
   }
 }

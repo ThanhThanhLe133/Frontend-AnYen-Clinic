@@ -21,3 +21,5 @@ final patientProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
 
   return response;
 });
+final phoneNumberProvider = StateProvider<String>((ref) => '');
+final passwordProvider = StateProvider<String>((ref) => '');

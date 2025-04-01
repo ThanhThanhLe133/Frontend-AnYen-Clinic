@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:anyen_clinic/OTP_verification/otp_verification_screen.dart';
 import 'package:anyen_clinic/login/login_screen.dart';
+import 'package:anyen_clinic/patient_provider.dart';
 import 'package:anyen_clinic/widget/normalButton.dart';
 import 'package:anyen_clinic/widget/phoneCode_drop_down/country_code_provider.dart';
 
@@ -53,31 +54,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       );
       return;
     }
+    ref.read(phoneNumberProvider.notifier).state = phoneNumber;
+    ref.read(passwordProvider.notifier).state = password;
     try {
-      final response = await http.post(
-        Uri.parse('http://localhost:5000/api/send-otp'),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"phone": phoneNumber}),
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              OTPVerificationScreen(phone: phoneNumber, source: "register"),
+        ),
       );
-
-      final responseData = jsonDecode(response.body);
-      if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("OTP đã được gửi đến $phoneNumber")),
-        );
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                OTPVerificationScreen(phone: phoneNumber, source: "register"),
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Lỗi: ${responseData['message']}")),
-        );
-      }
-      // Chuyển đến màn hình nhập OTP
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Lỗi: ${e.toString()}")),
