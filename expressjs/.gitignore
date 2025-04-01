@@ -1,7 +1,7 @@
 /node_modules
 .env
 
-connection_db
+connection_db.js
 
 config.json
 
