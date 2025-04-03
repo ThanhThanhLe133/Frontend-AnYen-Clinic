@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import initRoutes from "./routes/index.js";
 import cors from "cors";
-require('./connection_db')
+import { syncDatabase } from "./sync.js";
 const app = express();
 
 app.use(
@@ -20,3 +20,6 @@ const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+// Sync database
+syncDatabase();
