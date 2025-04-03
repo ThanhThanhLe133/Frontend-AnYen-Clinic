@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:anyen_clinic/OTP_verification/otp_verification_screen.dart';
+import 'package:anyen_clinic/forgotPass/forgot_pass_screen.dart';
 import 'package:anyen_clinic/patient_provider.dart';
 import 'package:anyen_clinic/register/register_screen.dart';
 import 'package:anyen_clinic/widget/buildPasswordField.dart';
@@ -143,7 +144,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               child: Padding(
                 padding: EdgeInsets.only(right: screenWidth * 0.05),
                 child: GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ForgotPassScreen()));
+                  },
                   child: Text(
                     'Quên mật khẩu',
                     style: TextStyle(

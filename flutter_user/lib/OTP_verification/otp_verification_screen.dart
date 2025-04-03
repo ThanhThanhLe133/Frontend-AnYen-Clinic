@@ -157,6 +157,7 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
         if (response.statusCode == 200) {
           if (widget.source == "register") {
             await callRegisterAPI();
+          } else if (widget.source == "forgot") {
           } else {
             await callLoginAPI();
           }

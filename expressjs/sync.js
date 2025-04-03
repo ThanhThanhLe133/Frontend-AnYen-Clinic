@@ -1,7 +1,5 @@
 import dotenv from "dotenv";
-import User from "./models/user.js";
-import RefreshToken from "./models/refreshToken.js";
-import TokenBlacklist from "./models/tokenBlacklist.js";
+import User from "./models/patient.js";
 import { sequelize } from "./config/sequelize.js";
 
 // Connect to database and sync models

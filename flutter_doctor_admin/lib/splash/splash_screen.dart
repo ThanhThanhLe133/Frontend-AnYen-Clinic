@@ -1,7 +1,26 @@
+import 'dart:async';
+
+import 'package:ayclinic_doctor_admin/login/login_screen.dart';
 import 'package:flutter/material.dart';
 
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Timer(Duration(seconds: 3), () {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,10 +31,8 @@ class SplashScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(height: screenHeight * 0.5),
-            //logo
             SizedBox(
               width: screenWidth * 0.6,
               height: screenHeight * 0.6,
@@ -31,8 +48,6 @@ class SplashScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: screenHeight * 0.04),
-
-            // Slogan
             Text(
               'Nơi cảm xúc được lắng nghe',
               style: TextStyle(
@@ -40,6 +55,7 @@ class SplashScreen extends StatelessWidget {
                 color: Color(0xFFDE8C88),
               ),
             ),
+            SizedBox(height: screenHeight * 0.04),
           ],
         ),
       ),

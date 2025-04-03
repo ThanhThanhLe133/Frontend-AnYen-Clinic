@@ -1,42 +1,48 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class PasswordField extends StatefulWidget {
+class PasswordVisibilityNotifier extends StateNotifier<bool> {
+  PasswordVisibilityNotifier() : super(true);
+
+  void toggle() {
+    state = !state;
+  }
+}
+
+final passwordVisibilityProvider =
+    StateNotifierProvider<PasswordVisibilityNotifier, bool>(
+  (ref) => PasswordVisibilityNotifier(),
+);
+
+class PasswordField extends ConsumerWidget {
   final double screenWidth;
   final double screenHeight;
   final String hintText;
+  final TextEditingController controller;
 
   const PasswordField({
     super.key,
     required this.screenWidth,
     required this.screenHeight,
     required this.hintText,
+    required this.controller,
   });
 
   @override
-  _PasswordFieldState createState() => _PasswordFieldState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final obscurePassword = ref.watch(passwordVisibilityProvider);
 
-class _PasswordFieldState extends State<PasswordField> {
-  bool obscurePassword = true;
-
-  void togglePasswordVisibility() {
-    setState(() {
-      obscurePassword = !obscurePassword;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return SizedBox(
-      width: widget.screenWidth * 0.9,
-      height: widget.screenHeight * 0.2,
+      width: screenWidth * 0.9,
+      height: screenHeight * 0.2,
       child: TextField(
+        controller: controller,
         obscureText: obscurePassword,
         decoration: InputDecoration(
           prefixIcon: const Icon(Icons.lock, color: Colors.grey),
-          hintText: widget.hintText,
+          hintText: hintText,
           hintStyle: TextStyle(
-            fontSize: widget.screenWidth * 0.05,
+            fontSize: screenWidth * 0.05,
             color: const Color(0xFF9AA5AC),
             fontWeight: FontWeight.w400,
           ),
@@ -53,11 +59,13 @@ class _PasswordFieldState extends State<PasswordField> {
               obscurePassword ? Icons.visibility_off : Icons.visibility,
               color: Colors.grey,
             ),
-            onPressed: togglePasswordVisibility,
+            onPressed: () {
+              ref.read(passwordVisibilityProvider.notifier).toggle();
+            },
           ),
         ),
         style: TextStyle(
-          fontSize: widget.screenWidth * 0.045,
+          fontSize: screenWidth * 0.045,
           color: Colors.black,
           fontWeight: FontWeight.w500,
         ),

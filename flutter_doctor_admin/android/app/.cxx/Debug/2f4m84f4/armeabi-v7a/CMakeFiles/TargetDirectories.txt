@@ -1,0 +1,2 @@
+D:/flutter/anyen_clinic/android/app/.cxx/Debug/2f4m84f4/armeabi-v7a/CMakeFiles/edit_cache.dir
+D:/flutter/anyen_clinic/android/app/.cxx/Debug/2f4m84f4/armeabi-v7a/CMakeFiles/rebuild_cache.dir

@@ -26,5 +26,12 @@ const sequelize = new Sequelize(
     },
   }
 );
-
+(async () => {
+  try {
+    await sequelize.authenticate();
+    console.log('✅ Kết nối thành công!');
+  } catch (error) {
+    console.error('❌ Lỗi kết nối:', error);
+  }
+})();
 export { sequelize };

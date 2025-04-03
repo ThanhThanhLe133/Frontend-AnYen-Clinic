@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:anyen_clinic/login/login_screen.dart';
 import 'package:anyen_clinic/register/register_screen.dart';
 import 'package:anyen_clinic/widget/normalButton.dart';
@@ -5,9 +7,14 @@ import 'package:anyen_clinic/widget/outlineButton.dart';
 import 'package:flutter/material.dart';
 // import 'package:an_yen_clinic/gen/assets.gen.dart';
 
-class SplashScreenIntro extends StatelessWidget {
+class SplashScreenIntro extends StatefulWidget {
   const SplashScreenIntro({super.key});
 
+  @override
+  State<SplashScreenIntro> createState() => _SplashScreenIntroState();
+}
+
+class _SplashScreenIntroState extends State<SplashScreenIntro> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
