@@ -10,6 +10,7 @@ void showSuccessScreen(BuildContext context, Widget? nextScreen) {
     barrierDismissible: true,
     builder: (BuildContext context) {
       return AlertDialog(
+        backgroundColor: Colors.white,
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,

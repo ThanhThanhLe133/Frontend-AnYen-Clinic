@@ -1,16 +1,18 @@
-import 'package:anyen_clinic/appointment/changeDoctor_screen.dart';
+import 'package:ayclinic_doctor_admin/login/login_screen.dart';
 import 'package:flutter/material.dart';
 
-void showOptionDialogToChangeDoctor(BuildContext context, String title,
-    String content, String cancel, String confirm) {
+void showOptionDialogToChangeDoctor(
+  BuildContext context,
+  String title,
+  String content,
+  String cancel,
+  String confirm,
+) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
       return Dialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
           child: Column(
@@ -18,10 +20,7 @@ void showOptionDialogToChangeDoctor(BuildContext context, String title,
             children: [
               Text(
                 title,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 10),
               Text(
@@ -61,16 +60,14 @@ void showOptionDialogToChangeDoctor(BuildContext context, String title,
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => ChangeDoctorScreen()),
+                            builder: (context) => LoginScreen(),
+                          ),
                         );
                       },
                       child: Text(
                         confirm,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 20,
-                          color: Colors.blue,
-                        ),
+                        style: TextStyle(fontSize: 20, color: Colors.blue),
                       ),
                     ),
                   ),

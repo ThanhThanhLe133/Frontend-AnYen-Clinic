@@ -1,11 +1,9 @@
-import 'package:anyen_clinic/settings/about_us_screen.dart';
-import 'package:anyen_clinic/settings/change_pass_screen.dart';
-import 'package:anyen_clinic/settings/medical_records_screen.dart';
-import 'package:anyen_clinic/settings/notification_screen.dart';
-import 'package:anyen_clinic/widget/CustomBackButton.dart';
-import 'package:anyen_clinic/widget/SettingsMenu.dart';
-import 'package:anyen_clinic/widget/menu.dart';
-import 'package:anyen_clinic/widget/sectionTitle.dart';
+import 'package:ayclinic_doctor_admin/DOCTOR/settings/about_us_screen.dart';
+import 'package:ayclinic_doctor_admin/DOCTOR/settings/change_pass_screen.dart';
+import 'package:ayclinic_doctor_admin/DOCTOR/settings/notification_screen.dart';
+import 'package:ayclinic_doctor_admin/widget/CustomBackButton.dart';
+import 'package:ayclinic_doctor_admin/widget/SettingsMenu.dart';
+import 'package:ayclinic_doctor_admin/widget/menu_doctor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -13,9 +11,6 @@ final patientDataProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
   await Future.delayed(Duration(seconds: 1));
   return {'anonymous_name': null};
 });
-
-final savedTextProvider = StateProvider<String?>((ref) => null);
-final isEditingProvider = StateProvider<bool>((ref) => false);
 
 class AccountScreen extends ConsumerStatefulWidget {
   const AccountScreen({super.key});
@@ -27,25 +22,12 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
   final TextEditingController controller = TextEditingController();
   final FocusNode focusNode = FocusNode();
 
-  void onEditingComplete() {
-    ref.read(savedTextProvider.notifier).state = controller.text;
-    ref.read(isEditingProvider.notifier).state = false;
-    focusNode.unfocus();
-  }
-
-  void onCancelEdit() {
-    controller.text = ref.read(savedTextProvider) ?? '';
-    ref.read(isEditingProvider.notifier).state = false;
-  }
-
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.width;
 
     final patientData = ref.watch(patientDataProvider);
-    final savedText = ref.watch(savedTextProvider);
-    final isEditing = ref.watch(isEditingProvider);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -63,13 +45,10 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
         backgroundColor: Colors.white,
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(1.0),
-          child: Container(
-            color: Color(0xFF9BA5AC),
-            height: 1.0,
-          ),
+          child: Container(color: Color(0xFF9BA5AC), height: 1.0),
         ),
       ),
-      floatingActionButton: Menu(),
+      floatingActionButton: MenuDoctor(),
       body: GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();
@@ -81,15 +60,14 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
               return Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    height: screenHeight * 0.05,
-                  ),
+                  SizedBox(height: screenHeight * 0.05),
                   Container(
                     width: screenWidth * 0.9,
                     padding: EdgeInsets.all(screenWidth * 0.05),
                     constraints: BoxConstraints(
-                        minHeight: screenHeight * 0.3,
-                        minWidth: screenWidth * 0.9),
+                      minHeight: screenHeight * 0.3,
+                      minWidth: screenWidth * 0.9,
+                    ),
                     decoration: BoxDecoration(
                       color: Color(0xFFECF8FF),
                       borderRadius: BorderRadius.circular(10),
@@ -108,31 +86,10 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                                 CircleAvatar(
                                   radius: screenWidth * 0.1,
                                   backgroundColor: Colors.blue,
-                                  child: Icon(Icons.person,
-                                      color: Colors.white,
-                                      size: screenWidth * 0.1),
-                                ),
-                                Positioned(
-                                  bottom: -10,
-                                  right: 2,
-                                  child: Container(
-                                    width: screenWidth * 0.06,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.blue,
-                                      border: Border.all(
-                                          color: Colors.white, width: 2),
-                                    ),
-                                    child: IconButton(
-                                      icon: Icon(Icons.add,
-                                          color: Colors.white,
-                                          size: screenWidth * 0.05),
-                                      onPressed: () {
-                                        // Xử lý khi nhấn nút Add
-                                      },
-                                      padding: EdgeInsets.zero,
-                                      constraints: BoxConstraints(),
-                                    ),
+                                  child: Icon(
+                                    Icons.person,
+                                    color: Colors.white,
+                                    size: screenWidth * 0.1,
                                   ),
                                 ),
                               ],
@@ -147,110 +104,32 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                                   maxLines: null,
                                   overflow: TextOverflow.visible,
                                   style: TextStyle(
-                                      fontSize: screenWidth * 0.055,
-                                      fontWeight: FontWeight.bold),
+                                    fontSize: screenWidth * 0.055,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                                 Text(
                                   patient?['phone_number'] ?? '0123456789',
                                   style: TextStyle(
-                                      fontSize: screenWidth * 0.045,
-                                      color: Colors.grey[700]),
+                                    fontSize: screenWidth * 0.045,
+                                    color: Colors.grey[700],
+                                  ),
                                 ),
                               ],
                             ),
                           ],
                         ),
                         SizedBox(height: screenHeight * 0.03),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              "Tên ẩn danh",
-                              style: TextStyle(
-                                  fontSize: screenWidth * 0.045,
-                                  fontWeight: FontWeight.w500),
-                            ),
-                            SizedBox(width: screenHeight * 0.03),
-                            IconButton(
-                              icon: Icon(
-                                Icons.info,
-                                color: Colors.blue,
-                                size: screenWidth * 0.06,
-                              ),
-                              onPressed: () {
-                                _showInfoDialog(context);
-                              },
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: screenHeight * 0.02),
-                        TextField(
-                          controller: controller,
-                          focusNode: focusNode,
-                          style: TextStyle(fontSize: screenWidth * 0.04),
-                          decoration: InputDecoration(
-                            isDense: true,
-                            filled: true,
-                            fillColor: Colors.white,
-                            enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(5),
-                                borderSide:
-                                    BorderSide(color: Colors.white, width: 1)),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(5),
-                              borderSide:
-                                  BorderSide(color: Colors.blue, width: 1),
-                            ),
-                            hintText: patientData.value?['anonymous_name'] ??
-                                "Nhập tên ẩn danh của bạn",
-                            hintStyle: TextStyle(fontSize: screenWidth * 0.04),
-                            contentPadding: EdgeInsets.symmetric(
-                                vertical: screenWidth * 0.03,
-                                horizontal: screenWidth * 0.02),
-                            suffixIcon: isEditing
-                                ? IconButton(
-                                    icon: Icon(Icons.cancel,
-                                        size: screenWidth * 0.05,
-                                        color: Colors.red),
-                                    onPressed: onCancelEdit,
-                                  )
-                                : Icon(Icons.arrow_forward_ios,
-                                    size: screenWidth * 0.05),
-                          ),
-                          onTap: () {
-                            if (!isEditing) {
-                              ref.read(isEditingProvider.notifier).state = true;
-                              if (savedText == null || savedText.isEmpty) {
-                                final newText =
-                                    patient?['anonymous_name'] as String? ?? '';
-                                ref.read(savedTextProvider.notifier).state =
-                                    newText;
-                                controller.text = newText;
-                              }
-                            }
-                            focusNode.requestFocus();
-                          },
-                          onEditingComplete: onEditingComplete,
-                        ),
                       ],
                     ),
                   ),
-                  Padding(
-                    padding: EdgeInsets.all(screenWidth * 0.05),
-                    child: sectionTitle(
-                        title: 'Tài khoản của bạn',
-                        screenHeight: screenHeight,
-                        screenWidth: screenWidth),
-                  ),
+
                   Container(
                     width: screenWidth * 0.9,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: Color(0xFFD9D9D9),
-                        width: 1,
-                      ),
+                      border: Border.all(color: Color(0xFFD9D9D9), width: 1),
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -258,41 +137,40 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         SettingsMenu(
-                          label: "Hồ sơ y tế",
-                          icon: Icons.article,
-                          iconColor: Colors.blue,
-                          action: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      MedicalRecordsScreen())),
-                        ),
-                        SettingsMenu(
                           label: "Đổi mật khẩu",
                           icon: Icons.lock,
                           iconColor: Colors.blueAccent,
-                          action: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => ChangePassScreen())),
+                          action:
+                              () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ChangePassScreen(),
+                                ),
+                              ),
                         ),
                         SettingsMenu(
                           label: "Cài đặt thông báo",
                           icon: Icons.notifications,
                           iconColor: Colors.amber,
-                          action: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => NotificationScreen())),
+                          action:
+                              () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => NotificationScreen(),
+                                ),
+                              ),
                         ),
                         SettingsMenu(
                           label: "Về chúng tôi",
                           icon: Icons.groups,
                           iconColor: Colors.green,
-                          action: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => AboutUsScreen())),
+                          action:
+                              () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AboutUsScreen(),
+                                ),
+                              ),
                         ),
                       ],
                     ),
@@ -305,9 +183,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                       fit: BoxFit.contain,
                     ),
                   ),
-                  SizedBox(
-                    height: screenHeight * 0.02,
-                  ),
+                  SizedBox(height: screenHeight * 0.02),
                   Text(
                     'An Yên',
                     style: TextStyle(
@@ -405,8 +281,10 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: Text("Tôi đã hiểu",
-                      style: TextStyle(color: Colors.white, fontSize: 20)),
+                  child: Text(
+                    "Tôi đã hiểu",
+                    style: TextStyle(color: Colors.white, fontSize: 20),
+                  ),
                 ),
               ),
             ],

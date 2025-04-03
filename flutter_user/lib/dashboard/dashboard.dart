@@ -70,6 +70,7 @@ class _DashboardState extends ConsumerState<Dashboard> {
               children: [
                 Center(child: RadialBarChart(screenWidth: screenWidth)),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text("Cảm xúc trong tháng của bạn",
                         style: TextStyle(

@@ -6,6 +6,7 @@ void showOptionDialog(BuildContext context, String title, String content,
     context: context,
     builder: (BuildContext context) {
       return Dialog(
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),

@@ -123,15 +123,6 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBarMessage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               FilterItemWidget(
-                title1: 'Đã đánh giá',
-                title2: 'Chưa đánh giá',
-                isTitle1: ref.watch(isCompleteProvider),
-                onSelected: (selectedValue) {
-                  ref.read(isCompleteProvider.notifier).state =
-                      (selectedValue == 'Đã đánh giá');
-                },
-              ),
-              FilterItemWidget(
                 title1: 'Tư vấn online',
                 title2: 'Tư vấn trực tiếp',
                 isTitle1: ref.watch(isOnlineProvider),

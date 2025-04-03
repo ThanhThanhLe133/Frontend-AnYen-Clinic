@@ -1,62 +1,63 @@
 import 'dart:async';
 
-import 'package:anyen_clinic/FilterOption.dart';
-import 'package:anyen_clinic/dialog/PaymentHistory.dart';
-import 'package:anyen_clinic/dialog/Prescription.dart';
-import 'package:anyen_clinic/dialog/UpdateInfoDialog.dart';
-import 'package:anyen_clinic/dialog/option_dialog.dart';
-import 'package:anyen_clinic/message/widget/FinishMessageCard.dart';
-import 'package:anyen_clinic/review/review_doctor_screen.dart';
-import 'package:anyen_clinic/widget/BottomFilterBar_appointment.dart';
-import 'package:anyen_clinic/widget/BottomFilterBar_message.dart';
-import 'package:anyen_clinic/widget/buildMoreOption.dart';
+import 'package:ayclinic_doctor_admin/FilterOption.dart';
+import 'package:ayclinic_doctor_admin/DOCTOR/appointment/widget/appointmentConnectedCard.dart';
+import 'package:ayclinic_doctor_admin/dialog/option_dialog.dart';
+import 'package:ayclinic_doctor_admin/widget/BottomFilterBar_appointment.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class FinishedMessageScreen extends ConsumerStatefulWidget {
-  const FinishedMessageScreen({super.key});
+class ConnectedAppointmentScreen extends ConsumerStatefulWidget {
+  const ConnectedAppointmentScreen({super.key});
   @override
-  ConsumerState<FinishedMessageScreen> createState() =>
-      _FinishedMessageScreenState();
+  ConsumerState<ConnectedAppointmentScreen> createState() =>
+      _ConnectedAppointmentScreenState();
 }
 
-class _FinishedMessageScreenState extends ConsumerState<FinishedMessageScreen> {
-  final List<Map<String, dynamic>> messages = [
+class _ConnectedAppointmentScreenState
+    extends ConsumerState<ConnectedAppointmentScreen> {
+  final List<Map<String, dynamic>> appointments = [
     {
       'isOnline': true,
       'date': "05/03/2025",
       'time': "9:00",
-      'status': "Đã đánh giá"
+      'status': "Đã hoàn thành",
+      'question': "ddddddddddddddddddddđ",
     },
     {
       'isOnline': false,
       'date': "05/03/2025",
       'time': "9:00",
-      'status': "Chưa đánh giá"
+      'status': "Sắp tới",
+      'question': "ddddddddddddddddddddđ",
     },
     {
       'isOnline': true,
       'date': "05/03/2025",
       'time': "9:00",
-      'status': "Đã đánh giá"
+      'status': "Đã hoàn thành",
+      'question': "ddddddddddddddddddddđ",
     },
     {
       'isOnline': false,
       'date': "05/03/2025",
       'time': "9:00",
-      'status': "Đã đánh giá"
+      'status': "Sắp tới",
+      'question': "ddddddddddddddddddddđ",
     },
     {
       'isOnline': true,
       'date': "05/03/2025",
       'time': "9:00",
-      'status': "Chưa đánh giá"
+      'status': "Đã hoàn thành",
+      'question': "ddddddddddddddddddddđ",
     },
     {
       'isOnline': false,
       'date': "05/03/2025",
       'time': "9:00",
-      'status': "Đã đánh giá"
+      'status': "Đã hoàn thành",
+      'question': "ddddddddddddddddddddđ",
     },
   ];
   @override
@@ -78,20 +79,23 @@ class _FinishedMessageScreenState extends ConsumerState<FinishedMessageScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: ListView.builder(
-        itemCount: messages.length,
+        itemCount: appointments.length,
         itemBuilder: (context, index) {
           return Dismissible(
-            key: Key(messages[index].toString()),
+            key: Key(appointments[index].toString()),
             direction: DismissDirection.endToStart,
             onDismissed: (direction) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content:
-                    Text('Tin nhắn ${messages[index]["date"]} đã được xoá'),
-                duration: Duration(milliseconds: 500),
-              ));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Lịch hẹn ${appointments[index]["date"]} đã được xoá',
+                  ),
+                  duration: Duration(milliseconds: 500),
+                ),
+              );
 
               setState(() {
-                messages.removeAt(index);
+                appointments.removeAt(index);
               });
             },
             confirmDismiss: (direction) async {
@@ -99,7 +103,7 @@ class _FinishedMessageScreenState extends ConsumerState<FinishedMessageScreen> {
               showOptionDialog(
                 context,
                 "Xác nhận",
-                "Bạn có chắc muốn xóa tin nhắn ngày ${messages[index]["date"]} không?",
+                "Bạn có chắc muốn xóa lịch hẹn ngày ${appointments[index]["date"]} không?",
                 "Huỷ",
                 "Xoá",
                 () {
@@ -113,24 +117,20 @@ class _FinishedMessageScreenState extends ConsumerState<FinishedMessageScreen> {
               alignment: Alignment.centerRight,
               child: Padding(
                 padding: const EdgeInsets.only(right: 20.0),
-                child: Icon(
-                  Icons.delete_outline,
-                  color: Colors.redAccent,
-                ),
+                child: Icon(Icons.delete_outline, color: Colors.redAccent),
               ),
             ),
-            child: MessageConnectedCard(
-              isOnline: messages[index]['isOnline'],
-              date: messages[index]['date'],
-              time: messages[index]['time'],
-              status: messages[index]['status'],
+            child: AppointmentConnectedCard(
+              isOnline: appointments[index]['isOnline'],
+              date: appointments[index]['date'],
+              time: appointments[index]['time'],
+              status: appointments[index]['status'],
+              question: appointments[index]['question'],
             ),
           );
         },
       ),
-      bottomNavigationBar: BottomFilterBarMessage(
-        screenWidth: screenWidth,
-      ),
+      bottomNavigationBar: BottomFilterBar(screenWidth: screenWidth),
     );
   }
 }

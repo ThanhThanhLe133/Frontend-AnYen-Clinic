@@ -10,6 +10,7 @@ void showChangeConsultationDialog(BuildContext context) {
       bool isSelected = true;
       return StatefulBuilder(builder: (context, setState) {
         return AlertDialog(
+          backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),

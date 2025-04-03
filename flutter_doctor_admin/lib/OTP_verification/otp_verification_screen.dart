@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:ayclinic_doctor_admin/OTP_verification/otp_provider.dart';
-import 'package:ayclinic_doctor_admin/dashboard_doctor/dashboard.dart';
+import 'package:ayclinic_doctor_admin/DOCTOR/dashboard_doctor/dashboard.dart';
 import 'package:ayclinic_doctor_admin/dialog/SuccessScreen.dart';
 import 'package:ayclinic_doctor_admin/user.dart';
 import 'package:ayclinic_doctor_admin/widget/normalButton.dart';

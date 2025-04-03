@@ -1,31 +1,31 @@
-import 'package:anyen_clinic/appointment/widget/DialogToChangeDoctor.dart';
-import 'package:anyen_clinic/dialog/ChangeConsultationDialog.dart';
-import 'package:anyen_clinic/dialog/EditDateAppointmentDialog.dart';
 import 'package:anyen_clinic/dialog/PaymentHistory.dart';
-import 'package:anyen_clinic/widget/BottomFilterBar_appointment.dart';
+import 'package:anyen_clinic/dialog/Prescription.dart';
+import 'package:anyen_clinic/dialog/UpdateInfoDialog.dart';
+import 'package:anyen_clinic/review/review_doctor_screen.dart';
 import 'package:anyen_clinic/widget/buildMoreOption.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AppointmentConnectingCard extends ConsumerWidget {
-  const AppointmentConnectingCard(
+class MessageConnectedCard extends StatelessWidget {
+  const MessageConnectedCard(
       {super.key,
       required this.isOnline,
       required this.date,
+      this.status,
       required this.time});
   final bool isOnline;
   final String date;
   final String time;
+  final String? status;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     return Container(
       margin: EdgeInsets.only(
         bottom: screenHeight * 0.03,
       ),
-      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.025),
+      padding: EdgeInsets.all(screenWidth * 0.03),
       constraints: BoxConstraints(
         minWidth: screenWidth * 0.9,
       ),
@@ -37,22 +37,17 @@ class AppointmentConnectingCard extends ConsumerWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Thông tin bác sĩ
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Text(
-                      "BS.CKI Macus Horizon",
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.045,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF40494F),
-                      ),
-                    ),
-                  ],
+                Text(
+                  "BS.CKI Macus Horizon",
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.045,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF40494F),
+                  ),
                 ),
                 SizedBox(height: screenWidth * 0.02),
                 Text(
@@ -129,35 +124,59 @@ class AppointmentConnectingCard extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  status != null && status!.isNotEmpty
+                      ? GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ReviewDoctorScreen()),
+                            );
+                          },
+                          child: Container(
+                            width: screenWidth * 0.18,
+                            padding: EdgeInsets.symmetric(
+                                horizontal: screenWidth * 0.01,
+                                vertical: screenWidth * 0.01),
+                            decoration: BoxDecoration(
+                              color: status == "Đã đánh giá"
+                                  ? Color(0xFFD9D9D9)
+                                  : Color(0xFFDB5B8B),
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: Text(
+                              textAlign: TextAlign.center,
+                              status!,
+                              style: TextStyle(
+                                fontSize: screenWidth * 0.025,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        )
+                      : SizedBox(),
                   MoreOptionsMenu(
                     options: [
-                      "Sửa lịch hẹn",
-                      "Thay đổi bác sĩ",
-                      "Thay đổi hình thức Tư vấn",
+                      "Xem đơn thuốc",
                       "Thông tin bác sĩ",
                       "Lịch sử thanh toán",
                     ],
                     onSelected: (value) {
                       switch (value) {
-                        case "Sửa lịch hẹn":
-                          EditDateAppointmentDialog(
-                            initialDate: DateTime(2025, 2, 5),
-                            selectedHour: "10:00",
+                        case "Xem đơn thuốc":
+                          showPrescriptionDialog(
+                            context,
+                            [
+                              {"name": "Paracetamol", "dosage": "Sáng 1v"},
+                              {"name": "Amoxicillin", "dosage": "Sáng 1v"},
+                              {"name": "Vitamin C", "dosage": "Sáng 1v"},
+                            ],
                           );
                           break;
-                        case "Thay đổi hình thức Tư vấn":
-                          showChangeConsultationDialog(context);
-                          break;
-                        case "Thay đổi bác sĩ":
-                          showOptionDialogToChangeDoctor(
-                              context,
-                              "Thay đổi bác sĩ",
-                              "Bạn có chắc chắn muốn thay đổi bác sĩ tư vấn?",
-                              "HUỶ",
-                              "ĐỒNG Ý");
-                          break;
                         case "Thông tin bác sĩ":
+                          break;
                         case "Lịch sử thanh toán":
                           showPaymentHistoryDialog(
                             context,
@@ -183,25 +202,31 @@ class AppointmentConnectingCard extends ConsumerWidget {
                 ),
               ),
               SizedBox(height: screenWidth * 0.03),
-              Container(
-                width: screenWidth * 0.2,
-                padding: const EdgeInsets.symmetric(vertical: 3),
-                decoration: BoxDecoration(
-                  color: Color(0xFFECF8FF),
-                  borderRadius: BorderRadius.circular(8),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5)),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  fixedSize: Size(screenWidth * 0.05, 16),
+                  minimumSize: Size(
+                    screenWidth * 0.2,
+                    screenHeight * 0.06,
+                  ),
                 ),
                 child: Text(
-                  "Liên hệ CSKH",
-                  maxLines: null,
+                  "ĐẶT LẠI",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: screenWidth * 0.035,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF40494F),
+                    fontSize: screenWidth * 0.03,
+                    color: Colors.white,
                   ),
                 ),
               ),
-              SizedBox(height: screenWidth * 0.03),
             ],
           ),
         ],

@@ -1,20 +1,22 @@
 import 'dart:math';
 
-import 'package:ayclinic_doctor_admin/dashboard_doctor/dashboard.dart';
+import 'package:ayclinic_doctor_admin/DOCTOR/appointment/appointment_screen.dart';
+import 'package:ayclinic_doctor_admin/DOCTOR/dashboard_doctor/dashboard.dart';
+import 'package:ayclinic_doctor_admin/DOCTOR/message/message_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:fab_circular_menu/fab_circular_menu.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final menuOpenProvider = StateProvider<bool>((ref) => false);
 
-class Menu extends ConsumerStatefulWidget {
-  const Menu({super.key});
+class MenuDoctor extends ConsumerStatefulWidget {
+  const MenuDoctor({super.key});
 
   @override
-  _MenuState createState() => _MenuState();
+  _MenuDoctorState createState() => _MenuDoctorState();
 }
 
-class _MenuState extends ConsumerState<Menu> {
+class _MenuDoctorState extends ConsumerState<MenuDoctor> {
   final GlobalKey<FabCircularMenuState> _fabKey = GlobalKey();
   @override
   Widget build(BuildContext context) {
@@ -55,8 +57,8 @@ class _MenuState extends ConsumerState<Menu> {
         buildMenuItem(Icons.home, "Trang chủ", Dashboard()),
         // buildMenuItem(Icons.local_hospital, "Danh sách bác sĩ",),
         // buildMenuItem(Icons.book, "Nhật ký", AccountScreen()), //tạm thời
-        // buildMenuItem(Icons.event, "Lịch hẹn", AppointmentScreen()),
-        // buildMenuItem(Icons.message, "Tin nhắn", MessageScreen()),
+        buildMenuItem(Icons.event, "Lịch hẹn", AppointmentScreen()),
+        buildMenuItem(Icons.message, "Tin nhắn", MessageScreen()),
         // buildMenuItem(Icons.settings, "Cài đặt", AccountScreen()),
         // buildMenuItem(
         //   Icons.support_agent,

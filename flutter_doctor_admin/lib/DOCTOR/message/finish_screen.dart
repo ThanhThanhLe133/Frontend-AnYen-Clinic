@@ -1,15 +1,9 @@
 import 'dart:async';
 
-import 'package:anyen_clinic/FilterOption.dart';
-import 'package:anyen_clinic/dialog/PaymentHistory.dart';
-import 'package:anyen_clinic/dialog/Prescription.dart';
-import 'package:anyen_clinic/dialog/UpdateInfoDialog.dart';
-import 'package:anyen_clinic/dialog/option_dialog.dart';
-import 'package:anyen_clinic/message/widget/FinishMessageCard.dart';
-import 'package:anyen_clinic/review/review_doctor_screen.dart';
-import 'package:anyen_clinic/widget/BottomFilterBar_appointment.dart';
-import 'package:anyen_clinic/widget/BottomFilterBar_message.dart';
-import 'package:anyen_clinic/widget/buildMoreOption.dart';
+import 'package:ayclinic_doctor_admin/FilterOption.dart';
+import 'package:ayclinic_doctor_admin/dialog/option_dialog.dart';
+import 'package:ayclinic_doctor_admin/DOCTOR/message/widget/FinishMessageCard.dart';
+import 'package:ayclinic_doctor_admin/widget/BottomFilterBar_message.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -26,37 +20,43 @@ class _FinishedMessageScreenState extends ConsumerState<FinishedMessageScreen> {
       'isOnline': true,
       'date': "05/03/2025",
       'time': "9:00",
-      'status': "Đã đánh giá"
+      'status': "Đã hoàn thành",
+      'question': "ddddddddddddddddddddđ",
     },
     {
       'isOnline': false,
       'date': "05/03/2025",
       'time': "9:00",
-      'status': "Chưa đánh giá"
+      'status': "Sắp tới",
+      'question': "ddddddddddddddddddddđ",
     },
     {
       'isOnline': true,
       'date': "05/03/2025",
       'time': "9:00",
-      'status': "Đã đánh giá"
+      'status': "Đã hoàn thành",
+      'question': "ddddddddddddddddddddđ",
     },
     {
       'isOnline': false,
       'date': "05/03/2025",
       'time': "9:00",
-      'status': "Đã đánh giá"
+      'status': "Sắp tới",
+      'question': "ddddddddddddddddddddđ",
     },
     {
       'isOnline': true,
       'date': "05/03/2025",
       'time': "9:00",
-      'status': "Chưa đánh giá"
+      'status': "Đã hoàn thành",
+      'question': "ddddddddddddddddddddđ",
     },
     {
       'isOnline': false,
       'date': "05/03/2025",
       'time': "9:00",
-      'status': "Đã đánh giá"
+      'status': "Đã hoàn thành",
+      'question': "ddddddddddddddddddddđ",
     },
   ];
   @override
@@ -84,11 +84,14 @@ class _FinishedMessageScreenState extends ConsumerState<FinishedMessageScreen> {
             key: Key(messages[index].toString()),
             direction: DismissDirection.endToStart,
             onDismissed: (direction) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content:
-                    Text('Tin nhắn ${messages[index]["date"]} đã được xoá'),
-                duration: Duration(milliseconds: 500),
-              ));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Tin nhắn ${messages[index]["date"]} đã được xoá',
+                  ),
+                  duration: Duration(milliseconds: 500),
+                ),
+              );
 
               setState(() {
                 messages.removeAt(index);
@@ -113,24 +116,20 @@ class _FinishedMessageScreenState extends ConsumerState<FinishedMessageScreen> {
               alignment: Alignment.centerRight,
               child: Padding(
                 padding: const EdgeInsets.only(right: 20.0),
-                child: Icon(
-                  Icons.delete_outline,
-                  color: Colors.redAccent,
-                ),
+                child: Icon(Icons.delete_outline, color: Colors.redAccent),
               ),
             ),
-            child: MessageConnectedCard(
+            child: FinishMessageCard(
               isOnline: messages[index]['isOnline'],
               date: messages[index]['date'],
               time: messages[index]['time'],
               status: messages[index]['status'],
+              question: messages[index]['question'],
             ),
           );
         },
       ),
-      bottomNavigationBar: BottomFilterBarMessage(
-        screenWidth: screenWidth,
-      ),
+      bottomNavigationBar: BottomFilterBarMessage(screenWidth: screenWidth),
     );
   }
 }

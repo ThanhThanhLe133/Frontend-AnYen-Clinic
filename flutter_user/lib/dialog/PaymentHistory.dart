@@ -37,6 +37,7 @@ class PaymentHistoryDialog extends StatelessWidget {
     final formatDate = DateFormat("dd/MM/yyyy, HH:mm");
     double screenWidth = MediaQuery.of(context).size.width;
     return Dialog(
+      backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: EdgeInsets.all(screenWidth * 0.04),

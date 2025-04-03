@@ -1,34 +1,35 @@
-import 'package:anyen_clinic/appointment/widget/DialogToChangeDoctor.dart';
-import 'package:anyen_clinic/dialog/ChangeConsultationDialog.dart';
-import 'package:anyen_clinic/dialog/EditDateAppointmentDialog.dart';
-import 'package:anyen_clinic/dialog/PaymentHistory.dart';
-import 'package:anyen_clinic/widget/BottomFilterBar_appointment.dart';
-import 'package:anyen_clinic/widget/buildMoreOption.dart';
+import 'dart:math';
+
+import 'package:ayclinic_doctor_admin/DOCTOR/dialog/PatientInfo.dart';
+import 'package:ayclinic_doctor_admin/dialog/ChangeConsultationDialog.dart';
+import 'package:ayclinic_doctor_admin/dialog/PaymentHistory.dart';
+import 'package:ayclinic_doctor_admin/widget/buildMoreOption.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class MessageConnectingCard extends ConsumerWidget {
-  const MessageConnectingCard(
-      {super.key,
-      required this.isOnline,
-      required this.date,
-      required this.time});
+class AppointmentConnectedCard extends ConsumerWidget {
+  const AppointmentConnectedCard({
+    super.key,
+    required this.isOnline,
+    required this.date,
+    this.status,
+    required this.time,
+    required this.question,
+  });
   final bool isOnline;
   final String date;
   final String time;
+  final String? status;
+  final String question;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     return Container(
-      margin: EdgeInsets.only(
-        bottom: screenHeight * 0.03,
-      ),
-      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.025),
-      constraints: BoxConstraints(
-        minWidth: screenWidth * 0.9,
-      ),
+      margin: EdgeInsets.only(bottom: screenHeight * 0.03),
+      padding: EdgeInsets.all(screenWidth * 0.03),
+      constraints: BoxConstraints(minWidth: screenWidth * 0.9),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(color: Color(0xFFD9D9D9)),
@@ -42,23 +43,22 @@ class MessageConnectingCard extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Text(
-                      "BS.CKI Macus Horizon",
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.045,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF40494F),
-                      ),
-                    ),
-                  ],
+                Text(
+                  "BS.CKI Macus Horizon",
+                  maxLines: null,
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.045,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF40494F),
+                  ),
                 ),
+
                 SizedBox(height: screenWidth * 0.02),
                 Text(
-                  "Tâm lý - Nội tổng quát",
+                  "Câu hỏi: ${question.length > 10 ? '${question.substring(0, 10)}...' : question}",
                   style: TextStyle(
                     fontSize: screenWidth * 0.04,
+                    fontWeight: FontWeight.w400,
                     color: Colors.grey[400],
                   ),
                 ),
@@ -68,8 +68,11 @@ class MessageConnectingCard extends ConsumerWidget {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.calendar_month,
-                            color: Colors.black, size: screenWidth * 0.05),
+                        Icon(
+                          Icons.calendar_month,
+                          color: Colors.black,
+                          size: screenWidth * 0.05,
+                        ),
                         const SizedBox(width: 6),
                         Text(
                           date,
@@ -84,8 +87,11 @@ class MessageConnectingCard extends ConsumerWidget {
                     SizedBox(width: screenWidth * 0.05),
                     Row(
                       children: [
-                        Icon(Icons.timer,
-                            color: Colors.black, size: screenWidth * 0.05),
+                        Icon(
+                          Icons.timer,
+                          color: Colors.black,
+                          size: screenWidth * 0.05,
+                        ),
                         const SizedBox(width: 6),
                         Text(
                           time,
@@ -103,11 +109,12 @@ class MessageConnectingCard extends ConsumerWidget {
                 Row(
                   children: [
                     Icon(
-                        isOnline
-                            ? Icons.chat_rounded
-                            : Icons.people_outline_rounded,
-                        color: isOnline ? Colors.blue : Color(0xFFDB5B8B),
-                        size: screenWidth * 0.05),
+                      isOnline
+                          ? Icons.chat_rounded
+                          : Icons.people_outline_rounded,
+                      color: isOnline ? Colors.blue : Color(0xFFDB5B8B),
+                      size: screenWidth * 0.05,
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       isOnline ? "Tư vấn online" : "Tư vấn trực tiếp",
@@ -123,30 +130,45 @@ class MessageConnectingCard extends ConsumerWidget {
             ),
           ),
 
-          // Ảnh bác sĩ và nút liên hệ
+          // Ảnhvà nút liên hệ
           Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Row(
                 children: [
+                  status != null && status!.isNotEmpty
+                      ? Container(
+                        width: screenWidth * 0.2,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth * 0.01,
+                          vertical: screenWidth * 0.01,
+                        ),
+                        decoration: BoxDecoration(
+                          color:
+                              status == "Đã hoàn thành"
+                                  ? Color(0xFF19EA31)
+                                  : Color(0xFF119CF0),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          textAlign: TextAlign.center,
+                          status!,
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.02,
+                            color: Colors.white,
+                          ),
+                        ),
+                      )
+                      : SizedBox(),
                   MoreOptionsMenu(
-                    options: [
-                      "Thông tin bác sĩ",
-                      "Lịch sử thanh toán",
-                    ],
+                    options: ["Thông tin bệnh nhân"],
                     onSelected: (value) {
                       switch (value) {
-                        case "Thông tin bác sĩ":
+                        case "Thông tin bệnh nhân":
+                          showPatientInfoDialog(context);
                           break;
-                        case "Lịch sử thanh toán":
-                          showPaymentHistoryDialog(
-                            context,
-                            "MOMO",
-                            true,
-                            -99000,
-                            DateTime(2025, 2, 23, 14, 58),
-                          );
+
                         default:
                       }
                     },
@@ -159,30 +181,32 @@ class MessageConnectingCard extends ConsumerWidget {
                   width: screenWidth * 0.2,
                   child: CircleAvatar(
                     radius: screenWidth * 0.07,
-                    backgroundImage: AssetImage("assets/images/doctor.png"),
+                    backgroundImage: AssetImage("assets/images/user.png"),
                   ),
                 ),
               ),
               SizedBox(height: screenWidth * 0.03),
-              Container(
-                width: screenWidth * 0.2,
-                padding: const EdgeInsets.symmetric(vertical: 3),
-                decoration: BoxDecoration(
-                  color: Color(0xFFECF8FF),
-                  borderRadius: BorderRadius.circular(8),
+              ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFECF8FF), //
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5), //
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  fixedSize: Size(screenWidth * 0.05, 16),
+                  minimumSize: Size(screenWidth * 0.2, screenHeight * 0.08),
                 ),
                 child: Text(
-                  "Liên hệ CSKH",
+                  "Liên hệ QTV",
                   maxLines: null,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: screenWidth * 0.035,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF40494F),
+                    fontSize: min(screenWidth * 0.035, 16),
+                    color: const Color(0xFF40494F),
                   ),
                 ),
               ),
-              SizedBox(height: screenWidth * 0.03),
             ],
           ),
         ],

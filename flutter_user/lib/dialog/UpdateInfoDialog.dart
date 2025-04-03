@@ -21,6 +21,7 @@ class UpdateInfoDialog extends StatelessWidget {
     double screenWidth = MediaQuery.of(context).size.width;
 
     return Dialog(
+      backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: SingleChildScrollView(
         child: Padding(

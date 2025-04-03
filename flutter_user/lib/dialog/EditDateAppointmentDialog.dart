@@ -81,6 +81,7 @@ class _EditDateAppointmentDialogState extends State<EditDateAppointmentDialog> {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     return AlertDialog(
+      backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       contentPadding: EdgeInsets.symmetric(
           horizontal: screenWidth * 0.02, vertical: screenWidth * 0.04),
