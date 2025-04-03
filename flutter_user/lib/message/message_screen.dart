@@ -1,6 +1,6 @@
 import 'package:anyen_clinic/message/finish_screen.dart';
 import 'package:anyen_clinic/message/unfinished_screen.dart';
-import 'package:anyen_clinic/widget/BottomFilterBar.dart';
+import 'package:anyen_clinic/widget/BottomFilterBar_appointment.dart';
 import 'package:anyen_clinic/widget/statusWidget.dart';
 import 'package:flutter/material.dart';
 
@@ -48,35 +48,31 @@ class _MessageScreenState extends State<MessageScreen> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: Padding(
-          padding: EdgeInsets.all(screenWidth * 0.05),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              StatusWidget(
-                text1: "Chưa kết thúc",
-                text2: "Đã kết thúc",
-                initialChosen: unfinished,
-                onToggle: (bool chosen) {
-                  setState(() {
-                    unfinished = chosen;
-                  });
-                },
-              ),
-              SizedBox(
-                height: screenHeight * 0.05,
-              ),
-              unfinished
+      body: Padding(
+        padding: EdgeInsets.all(screenWidth * 0.05),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            StatusWidget(
+              text1: "Chưa kết thúc",
+              text2: "Đã kết thúc",
+              initialChosen: unfinished,
+              onToggle: (bool chosen) {
+                setState(() {
+                  unfinished = chosen;
+                });
+              },
+            ),
+            SizedBox(
+              height: screenHeight * 0.05,
+            ),
+            Expanded(
+              child: unfinished
                   ? const UnfinishedMessageScreen()
                   : const FinishedMessageScreen(),
-            ],
-          ),
+            ),
+          ],
         ),
-      ),
-      bottomNavigationBar: BottomFilterBar(
-        screenWidth: screenWidth,
       ),
     );
   }

@@ -6,8 +6,8 @@ POST http://localhost:5000/api/auth/register
 Content-Type: application/json
 
 {
-    "phone_number":"",
-    "password":""
+    "phone_number":"+8423456855",
+    "password":"RSJSJSJ%%2222"
 }
 
 ###
@@ -15,7 +15,7 @@ POST http://localhost:5000/api/auth/login
 Content-Type: application/json
 
 {
-    "phone_number":"",
+    "phone_number":"+8",
     "password":""
 }
 ###

@@ -1,6 +1,6 @@
 import 'package:anyen_clinic/appointment/connected_appointment_screen%20copy.dart';
 import 'package:anyen_clinic/appointment/connecting_appointment_screen.dart';
-import 'package:anyen_clinic/widget/BottomFilterBar.dart';
+import 'package:anyen_clinic/widget/BottomFilterBar_appointment.dart';
 import 'package:anyen_clinic/widget/statusWidget.dart';
 import 'package:flutter/material.dart';
 
@@ -48,35 +48,31 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: Padding(
-          padding: EdgeInsets.all(screenWidth * 0.05),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              StatusWidget(
-                text1: "Đang kết nối",
-                text2: "Đã kết nối",
-                initialChosen: isConnecting,
-                onToggle: (bool chosen) {
-                  setState(() {
-                    isConnecting = chosen;
-                  });
-                },
-              ),
-              SizedBox(
-                height: screenHeight * 0.05,
-              ),
-              isConnecting
-                  ? const ConnectingAppointmentScreen()
-                  : const ConnectedAppointmentScreen(),
-            ],
-          ),
+      body: Padding(
+        padding: EdgeInsets.all(screenWidth * 0.05),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            StatusWidget(
+              text1: "Đang kết nối",
+              text2: "Đã kết nối",
+              initialChosen: isConnecting,
+              onToggle: (bool chosen) {
+                setState(() {
+                  isConnecting = chosen;
+                });
+              },
+            ),
+            SizedBox(
+              height: screenHeight * 0.05,
+            ),
+            Expanded(
+              child: isConnecting
+                  ? ConnectingAppointmentScreen()
+                  : ConnectedAppointmentScreen(),
+            ),
+          ],
         ),
-      ),
-      bottomNavigationBar: BottomFilterBar(
-        screenWidth: screenWidth,
       ),
     );
   }

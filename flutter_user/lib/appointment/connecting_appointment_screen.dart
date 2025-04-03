@@ -1,31 +1,114 @@
-import 'package:anyen_clinic/appointment/widget/appointmentConnectingCard%20copy.dart';
-import 'package:flutter/material.dart';
+import 'dart:async';
 
-class ConnectingAppointmentScreen extends StatelessWidget {
+import 'package:anyen_clinic/FilterOption.dart';
+import 'package:anyen_clinic/appointment/widget/appointmentConnectingCard%20copy.dart';
+import 'package:anyen_clinic/dialog/option_dialog.dart';
+import 'package:anyen_clinic/widget/BottomFilterBar_appointment.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+class ConnectingAppointmentScreen extends ConsumerStatefulWidget {
   const ConnectingAppointmentScreen({super.key});
+  @override
+  ConsumerState<ConnectingAppointmentScreen> createState() =>
+      _ConnectingAppointmentScreenState();
+}
+
+class _ConnectingAppointmentScreenState
+    extends ConsumerState<ConnectingAppointmentScreen> {
+  final List<Map<String, dynamic>> appointments = [
+    {'isOnline': true, 'date': "05/03/2025", 'time': "9:00"},
+    {'isOnline': false, 'date': "05/03/2025", 'time': "9:00"},
+    {'isOnline': true, 'date': "05/03/2025", 'time': "9:00"},
+    {'isOnline': false, 'date': "05/03/2025", 'time': "9:00"},
+    {'isOnline': true, 'date': "05/03/2025", 'time': "9:00"},
+    {'isOnline': false, 'date': "05/03/2025", 'time': "9:00"},
+  ];
 
   @override
-  Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(isCompleteProvider.notifier).reset();
+      ref.read(isOnlineProvider.notifier).reset();
+      ref.read(isCancelProvider.notifier).reset();
+      ref.read(isNewestProvider.notifier).reset();
+    });
+  }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        AppointmentConnectingCard(
-          isOnline: true,
-          date: "05/03/2025",
-          time: "9:00",
-        ),
-        SizedBox(
-          height: screenHeight * 0.05,
-        ),
-        AppointmentConnectingCard(
-          isOnline: false,
-          date: "05/03/2025",
-          time: "9:00",
-        ),
-      ],
+// Future<void> loadData() async {
+//   // Thực hiện các thao tác tải lại dữ liệu, ví dụ gọi API hoặc query database
+//   // Sau khi tải dữ liệu, gọi setState để cập nhật lại danh sách appointments
+//   setState(() {
+//     // Giả sử sau khi tải lại dữ liệu, bạn gán lại cho appointments
+//     appointments = await fetchAppointmentsFromDatabase(); // Ví dụ
+//   });
+// }
+  @override
+  Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: ListView.builder(
+        itemCount: appointments.length,
+        itemBuilder: (context, index) {
+          return Dismissible(
+            key: Key(appointments[index].toString()),
+            direction: DismissDirection.endToStart,
+            onDismissed: (direction) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content:
+                    Text('Lịch hẹn ${appointments[index]["date"]} đã được xoá'),
+                duration: Duration(milliseconds: 500),
+              ));
+
+              setState(() {
+                appointments.removeAt(index);
+              });
+              // await loadData();
+            },
+            confirmDismiss: (direction) async {
+              Completer<bool> completer = Completer<bool>();
+              showOptionDialog(
+                context,
+                "Xác nhận",
+                "Bạn có chắc muốn xóa lịch hẹn ngày ${appointments[index]["date"]} không?",
+                "Huỷ",
+                "Xoá",
+                () {
+                  completer.complete(true);
+                },
+              );
+              return await completer.future ?? false;
+            },
+            background: Container(
+              color: Colors.white,
+              alignment: Alignment.centerRight,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 20.0),
+                child: Icon(
+                  Icons.delete_outline,
+                  color: Colors.redAccent,
+                ),
+              ),
+            ),
+            dismissThresholds: {
+              DismissDirection.endToStart: 0.2,
+            },
+            movementDuration: Duration(milliseconds: 100),
+            child: AppointmentConnectingCard(
+              isOnline: appointments[index]['isOnline'],
+              date: appointments[index]['date'],
+              time: appointments[index]['time'],
+            ),
+          );
+        },
+      ),
+      bottomNavigationBar: BottomFilterBar(
+        screenWidth: screenWidth,
+      ),
     );
   }
 }

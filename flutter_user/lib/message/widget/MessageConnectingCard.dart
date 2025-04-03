@@ -1,21 +1,21 @@
+import 'package:anyen_clinic/appointment/widget/DialogToChangeDoctor.dart';
 import 'package:anyen_clinic/dialog/ChangeConsultationDialog.dart';
+import 'package:anyen_clinic/dialog/EditDateAppointmentDialog.dart';
 import 'package:anyen_clinic/dialog/PaymentHistory.dart';
 import 'package:anyen_clinic/widget/BottomFilterBar_appointment.dart';
 import 'package:anyen_clinic/widget/buildMoreOption.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AppointmentConnectedCard extends ConsumerWidget {
-  const AppointmentConnectedCard(
+class MessageConnectingCard extends ConsumerWidget {
+  const MessageConnectingCard(
       {super.key,
       required this.isOnline,
       required this.date,
-      this.status,
       required this.time});
   final bool isOnline;
   final String date;
   final String time;
-  final String? status;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -25,7 +25,7 @@ class AppointmentConnectedCard extends ConsumerWidget {
       margin: EdgeInsets.only(
         bottom: screenHeight * 0.03,
       ),
-      padding: EdgeInsets.all(screenWidth * 0.03),
+      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.025),
       constraints: BoxConstraints(
         minWidth: screenWidth * 0.9,
       ),
@@ -130,40 +130,15 @@ class AppointmentConnectedCard extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  status != null && status!.isNotEmpty
-                      ? Container(
-                          width: screenWidth * 0.2,
-                          padding: EdgeInsets.symmetric(
-                              horizontal: screenWidth * 0.01,
-                              vertical: screenWidth * 0.01),
-                          decoration: BoxDecoration(
-                            color: status == "Đã hoàn thành"
-                                ? Color(0xFF19EA31)
-                                : Color(0xFF119CF0),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            textAlign: TextAlign.center,
-                            status!,
-                            style: TextStyle(
-                              fontSize: screenWidth * 0.02,
-                              color: Colors.white,
-                            ),
-                          ),
-                        )
-                      : SizedBox(),
                   MoreOptionsMenu(
                     options: [
-                      "Thay đổi hình thức Tư vấn",
                       "Thông tin bác sĩ",
                       "Lịch sử thanh toán",
                     ],
                     onSelected: (value) {
                       switch (value) {
-                        case "Thay đổi hình thức Tư vấn":
-                          showChangeConsultationDialog(context);
+                        case "Thông tin bác sĩ":
                           break;
-                        case 3:
                         case "Lịch sử thanh toán":
                           showPaymentHistoryDialog(
                             context,
@@ -207,6 +182,7 @@ class AppointmentConnectedCard extends ConsumerWidget {
                   ),
                 ),
               ),
+              SizedBox(height: screenWidth * 0.03),
             ],
           ),
         ],

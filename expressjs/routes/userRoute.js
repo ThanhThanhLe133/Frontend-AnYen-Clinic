@@ -1,6 +1,6 @@
 import express from "express";
 import { body } from "express-validator";
-import verifyToken from '../middleWares/verify_token'
+import verifyToken from '../middlewares/verify_token'
 import * as controllers from '../controllers'
 import { authenticate } from "../middlewares/authMiddleware.js";
 

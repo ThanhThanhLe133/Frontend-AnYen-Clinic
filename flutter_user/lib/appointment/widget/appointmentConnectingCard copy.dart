@@ -2,10 +2,12 @@ import 'package:anyen_clinic/appointment/widget/DialogToChangeDoctor.dart';
 import 'package:anyen_clinic/dialog/ChangeConsultationDialog.dart';
 import 'package:anyen_clinic/dialog/EditDateAppointmentDialog.dart';
 import 'package:anyen_clinic/dialog/PaymentHistory.dart';
+import 'package:anyen_clinic/widget/BottomFilterBar_appointment.dart';
 import 'package:anyen_clinic/widget/buildMoreOption.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AppointmentConnectingCard extends StatelessWidget {
+class AppointmentConnectingCard extends ConsumerWidget {
   const AppointmentConnectingCard(
       {super.key,
       required this.isOnline,
@@ -16,9 +18,13 @@ class AppointmentConnectingCard extends StatelessWidget {
   final String time;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
     return Container(
+      margin: EdgeInsets.only(
+        bottom: screenHeight * 0.03,
+      ),
       padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.025),
       constraints: BoxConstraints(
         minWidth: screenWidth * 0.9,

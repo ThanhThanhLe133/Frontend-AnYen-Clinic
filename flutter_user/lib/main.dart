@@ -1,4 +1,6 @@
+import 'package:anyen_clinic/appointment/appointment_screen.dart';
 import 'package:anyen_clinic/login/login_screen.dart';
+import 'package:anyen_clinic/message/message_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -23,7 +25,7 @@ class MainApp extends StatelessWidget {
           bodySmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
         ),
       ),
-      home: LoginScreen(),
+      home: MessageScreen(),
     );
   }
 }

@@ -1,12 +1,12 @@
-import 'package:anyen_clinic/dialog/ChangeConsultationDialog.dart';
 import 'package:anyen_clinic/dialog/PaymentHistory.dart';
-import 'package:anyen_clinic/widget/BottomFilterBar_appointment.dart';
+import 'package:anyen_clinic/dialog/Prescription.dart';
+import 'package:anyen_clinic/dialog/UpdateInfoDialog.dart';
+import 'package:anyen_clinic/review/review_doctor_screen.dart';
 import 'package:anyen_clinic/widget/buildMoreOption.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AppointmentConnectedCard extends ConsumerWidget {
-  const AppointmentConnectedCard(
+class MessageConnectedCard extends StatelessWidget {
+  const MessageConnectedCard(
       {super.key,
       required this.isOnline,
       required this.date,
@@ -18,7 +18,7 @@ class AppointmentConnectedCard extends ConsumerWidget {
   final String? status;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     return Container(
@@ -129,41 +129,59 @@ class AppointmentConnectedCard extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   status != null && status!.isNotEmpty
-                      ? Container(
-                          width: screenWidth * 0.2,
-                          padding: EdgeInsets.symmetric(
-                              horizontal: screenWidth * 0.01,
-                              vertical: screenWidth * 0.01),
-                          decoration: BoxDecoration(
-                            color: status == "Đã hoàn thành"
-                                ? Color(0xFF19EA31)
-                                : Color(0xFF119CF0),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            textAlign: TextAlign.center,
-                            status!,
-                            style: TextStyle(
-                              fontSize: screenWidth * 0.02,
-                              color: Colors.white,
+                      ? GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ReviewDoctorScreen()),
+                            );
+                          },
+                          child: Container(
+                            width: screenWidth * 0.18,
+                            padding: EdgeInsets.symmetric(
+                                horizontal: screenWidth * 0.01,
+                                vertical: screenWidth * 0.01),
+                            decoration: BoxDecoration(
+                              color: status == "Đã đánh giá"
+                                  ? Color(0xFFD9D9D9)
+                                  : Color(0xFFDB5B8B),
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: Text(
+                              textAlign: TextAlign.center,
+                              status!,
+                              style: TextStyle(
+                                fontSize: screenWidth * 0.025,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         )
                       : SizedBox(),
                   MoreOptionsMenu(
                     options: [
-                      "Thay đổi hình thức Tư vấn",
+                      "Xem đơn thuốc",
                       "Thông tin bác sĩ",
                       "Lịch sử thanh toán",
                     ],
                     onSelected: (value) {
                       switch (value) {
-                        case "Thay đổi hình thức Tư vấn":
-                          showChangeConsultationDialog(context);
+                        case "Xem đơn thuốc":
+                          showPrescriptionDialog(
+                            context,
+                            [
+                              {"name": "Paracetamol", "dosage": "Sáng 1v"},
+                              {"name": "Amoxicillin", "dosage": "Sáng 1v"},
+                              {"name": "Vitamin C", "dosage": "Sáng 1v"},
+                            ],
+                          );
                           break;
-                        case 3:
+                        case "Thông tin bác sĩ":
+                          break;
                         case "Lịch sử thanh toán":
                           showPaymentHistoryDialog(
                             context,
@@ -189,21 +207,22 @@ class AppointmentConnectedCard extends ConsumerWidget {
                 ),
               ),
               SizedBox(height: screenWidth * 0.03),
-              Container(
-                width: screenWidth * 0.2,
-                padding: const EdgeInsets.symmetric(vertical: 3),
-                decoration: BoxDecoration(
-                  color: Color(0xFFECF8FF),
-                  borderRadius: BorderRadius.circular(8),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(3)),
+                  padding: EdgeInsets.all(0),
                 ),
                 child: Text(
-                  "Liên hệ CSKH",
-                  maxLines: null,
+                  "ĐẶT LẠI",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: screenWidth * 0.035,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF40494F),
+                    fontSize: screenWidth * 0.03,
                   ),
                 ),
               ),

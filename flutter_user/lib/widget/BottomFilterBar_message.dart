@@ -1,12 +1,13 @@
 import 'dart:ffi';
 
+import 'package:anyen_clinic/FilterOption.dart';
+
 import 'package:anyen_clinic/widget/FilterItemWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
-class BottomFilterBar extends ConsumerStatefulWidget {
-  const BottomFilterBar({
+class BottomFilterBarMessage extends ConsumerStatefulWidget {
+  const BottomFilterBarMessage({
     super.key,
     required this.screenWidth,
   });
@@ -17,22 +18,17 @@ class BottomFilterBar extends ConsumerStatefulWidget {
   _BottomFilterBarState createState() => _BottomFilterBarState();
 }
 
-class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
+class _BottomFilterBarState extends ConsumerState<BottomFilterBarMessage> {
   late DateTime selectedDate;
-  late TextEditingController _dateController;
-  bool isChosenTitle1 = false;
-  bool isChosenTitle2 = false;
-  late Bool isComplete;
-  late Bool isOnline;
-  late Bool isCancel;
+
+  bool isComplete = false;
+  bool isOnline = false;
+  bool isCancel = false;
 
   @override
   void initState() {
     super.initState();
     selectedDate = DateTime.now();
-    _dateController = TextEditingController(
-      text: DateFormat('dd/MM/yyyy').format(selectedDate),
-    );
   }
 
   @override
@@ -40,7 +36,7 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
     return Container(
       margin: EdgeInsets.all(widget.screenWidth * 0.05),
       padding: EdgeInsets.symmetric(
-          horizontal: widget.screenWidth * 0.1,
+          horizontal: widget.screenWidth * 0.05,
           vertical: widget.screenWidth * 0.03),
       decoration: BoxDecoration(
         color: Colors.blue.shade50,
@@ -55,7 +51,8 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
           _buildFilterOption(context, Icons.calendar_month, "Thời gian",
               () => _showDatePicker(context)),
           _buildDivider(),
-          _buildFilterOption(context, Icons.sort, "Sắp xếp", () {}),
+          _buildFilterOption(
+              context, Icons.sort, "Sắp xếp", () => showSortMenu(context)),
         ],
       ),
     );
@@ -72,9 +69,36 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
-        _dateController.text = DateFormat('dd/MM/yyyy').format(selectedDate);
       });
     }
+  }
+
+  void showSortMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FilterItemWidget(
+                title1: 'Mới nhất',
+                title2: 'Cũ nhất',
+                isTitle1: ref.watch(isNewestProvider),
+                onSelected: (selectedValue) {
+                  ref.read(isNewestProvider.notifier).state =
+                      (selectedValue == 'Mới nhất');
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   void showFilterMenu(BuildContext context) {
@@ -90,34 +114,38 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
             mainAxisSize: MainAxisSize.min,
             children: [
               FilterItemWidget(
-                title1: 'Đã hoàn thành',
-                title2: 'Sắp tới',
-                isChosenTitle1: isChosenTitle1,
-                isChosenTitle2: isChosenTitle2,
+                title1: 'Đã đánh giá',
+                title2: 'Chưa đánh giá',
+                isTitle1: ref.watch(isCompleteProvider),
+                onSelected: (selectedValue) {
+                  ref.read(isCompleteProvider.notifier).state =
+                      (selectedValue == 'Đã đánh giá');
+                },
               ),
               FilterItemWidget(
                 title1: 'Tư vấn online',
                 title2: 'Tư vấn trực tiếp',
-                isStatus: false,
+                isTitle1: ref.watch(isOnlineProvider),
+                onSelected: (selectedValue) {
+                  ref.read(isOnlineProvider.notifier).state =
+                      (selectedValue == 'Tư vấn online');
+                },
               ),
-              FilterItemWidget(title1: "Đã huỷ", isStatus: false),
+              FilterItemWidget(
+                title1: 'Đã huỷ',
+                isTitle1: ref.watch(isCancelProvider),
+                onSelected: (selectedValue) {
+                  setState(() {
+                    ref.read(isOnlineProvider.notifier).state =
+                        selectedValue == 'Đã huỷ';
+                  });
+                },
+              ),
             ],
           ),
         );
       },
     );
-  }
-
-  void updateSelection(bool value, String title) {
-    setState(() {
-      if (title == "title1") {
-        isChosenTitle1 = value;
-        // Đồng bộ giá trị với isComplete khi thay đổi
-        isComplete = isChosenTitle1;
-      } else if (title == "title2") {
-        isChosenTitle2 = value;
-      }
-    });
   }
 
   Widget _buildFilterOption(BuildContext context, IconData icon, String text,
