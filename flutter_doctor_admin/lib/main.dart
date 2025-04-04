@@ -1,5 +1,6 @@
 import 'package:ayclinic_doctor_admin/DOCTOR/appointment/appointment_screen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/appointment/connecting_appointment_screen.dart';
+import 'package:ayclinic_doctor_admin/DOCTOR/chat/chat_screen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/dashboard_doctor/dashboard.dart';
 import 'package:ayclinic_doctor_admin/login/login_screen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/message/message_screen.dart';
@@ -29,7 +30,7 @@ class MainApp extends StatelessWidget {
           bodySmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
         ),
       ),
-      home: MessageScreen(),
+      home: ChatScreen(),
     );
   }
 }

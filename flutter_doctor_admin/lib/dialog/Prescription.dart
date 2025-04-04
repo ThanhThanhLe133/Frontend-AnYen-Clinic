@@ -53,6 +53,7 @@ class PrescriptionDialog extends StatelessWidget {
                   text: "ĐÓNG",
                   isPrimary: false,
                   screenWidth: screenWidth,
+                  onPressed: () => Navigator.pop(context),
                 ),
               ],
             ),

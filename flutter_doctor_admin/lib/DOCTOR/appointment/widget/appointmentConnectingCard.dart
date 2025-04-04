@@ -6,6 +6,7 @@ import 'package:ayclinic_doctor_admin/DOCTOR/dialog/InputSummary.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/dialog/PatientInfo.dart';
 import 'package:ayclinic_doctor_admin/dialog/ChangeConsultationDialog.dart';
 import 'package:ayclinic_doctor_admin/dialog/PaymentHistory.dart';
+import 'package:ayclinic_doctor_admin/dialog/option_dialog.dart';
 import 'package:ayclinic_doctor_admin/widget/buildMoreOption.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -170,7 +171,15 @@ class AppointmentConnectingCard extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed:
+                          () => showOptionDialog(
+                            context,
+                            "Xác nhận lịch hẹn",
+                            "Bạn muốn xác nhận thực hiện ca tư vấn này?",
+                            "HUỶ",
+                            "ĐỒNG Ý",
+                            null,
+                          ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xFF119CF0), //
                         shape: RoundedRectangleBorder(
