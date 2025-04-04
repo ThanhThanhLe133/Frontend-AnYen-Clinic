@@ -53,7 +53,7 @@ class _DashboardState extends ConsumerState<Dashboard> {
                   ),
                   SizedBox(width: screenWidth * 0.02),
                   Text(
-                    "BS. CKI MACUS HORIZON",
+                    "Admin Thanh Thanh",
                     style: TextStyle(
                       color: Color(0xFF119CF0),
                       fontSize: screenWidth * 0.04,

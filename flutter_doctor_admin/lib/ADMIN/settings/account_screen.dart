@@ -1,9 +1,9 @@
-import 'package:ayclinic_doctor_admin/DOCTOR/settings/about_us_screen.dart';
-import 'package:ayclinic_doctor_admin/DOCTOR/settings/change_pass_screen.dart';
-import 'package:ayclinic_doctor_admin/DOCTOR/settings/notification_screen.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/menu_admin.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/settings/about_us_screen.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/settings/change_pass_screen.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/settings/notification_screen.dart';
 import 'package:ayclinic_doctor_admin/widget/CustomBackButton.dart';
 import 'package:ayclinic_doctor_admin/widget/SettingsMenu.dart';
-import 'package:ayclinic_doctor_admin/DOCTOR/menu_doctor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -48,7 +48,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
           child: Container(color: Color(0xFF9BA5AC), height: 1.0),
         ),
       ),
-      floatingActionButton: MenuDoctor(),
+      floatingActionButton: MenuAdmin(),
       body: GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();
