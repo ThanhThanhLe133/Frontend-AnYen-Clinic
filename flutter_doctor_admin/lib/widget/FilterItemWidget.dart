@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class FilterItemWidget extends StatefulWidget {
   final String title1;
@@ -49,9 +48,10 @@ class _FilterItemWidgetState extends State<FilterItemWidget> {
             ),
             leading: Radio<String>(
               value: widget.title1,
-              groupValue: isComplete == null
-                  ? null
-                  : (isComplete == true ? widget.title1 : widget.title2),
+              groupValue:
+                  isComplete == null
+                      ? null
+                      : (isComplete == true ? widget.title1 : widget.title2),
               activeColor: Colors.blue,
               onChanged: (String? value) {
                 if (value != null) _onSelected(value);
@@ -74,9 +74,10 @@ class _FilterItemWidgetState extends State<FilterItemWidget> {
               leading: Radio<String>(
                 value: widget.title2!,
                 activeColor: Colors.blue,
-                groupValue: isComplete == null
-                    ? null
-                    : (isComplete == true ? widget.title1 : widget.title2),
+                groupValue:
+                    isComplete == null
+                        ? null
+                        : (isComplete == true ? widget.title1 : widget.title2),
                 onChanged: (String? value) {
                   if (value != null) _onSelected(value);
                 },

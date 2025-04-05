@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:anyen_clinic/login/login_screen.dart';
 import 'package:anyen_clinic/register/register_screen.dart';
 import 'package:anyen_clinic/widget/normalButton.dart';
