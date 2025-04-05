@@ -197,8 +197,8 @@ class AppointmentConnectedCard extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   fixedSize: Size(screenWidth * 0.05, 16),
                   minimumSize: Size(
-                    screenWidth * 0.2,
-                    screenHeight * 0.1,
+                    screenWidth * 0.15,
+                    screenHeight * 0.08,
                   ),
                 ),
                 child: Text(
