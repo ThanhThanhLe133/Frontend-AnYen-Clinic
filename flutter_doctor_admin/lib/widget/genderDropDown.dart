@@ -24,9 +24,12 @@ class _GenderDropdownState extends State<GenderDropdown> {
         border: Border.all(color: Color(0xFFD9D9D9), width: 1),
       ),
       padding: EdgeInsets.symmetric(
-          vertical: screenWidth * 0.03, horizontal: screenWidth * 0.02),
+        vertical: screenWidth * 0.03,
+        horizontal: screenWidth * 0.02,
+      ),
       height: screenWidth * 0.13,
       child: DropdownButton<String>(
+        dropdownColor: Colors.white,
         value: _selectedGender,
         underline: SizedBox(),
         isExpanded: true,
@@ -36,18 +39,19 @@ class _GenderDropdownState extends State<GenderDropdown> {
             _selectedGender = newValue!;
           });
         },
-        items: _genders.map((String gender) {
-          return DropdownMenuItem<String>(
-            value: gender,
-            child: Center(
-              child: Text(
-                gender,
-                style: TextStyle(fontSize: screenWidth * 0.04),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          );
-        }).toList(),
+        items:
+            _genders.map((String gender) {
+              return DropdownMenuItem<String>(
+                value: gender,
+                child: Center(
+                  child: Text(
+                    gender,
+                    style: TextStyle(fontSize: screenWidth * 0.04),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              );
+            }).toList(),
       ),
     );
   }

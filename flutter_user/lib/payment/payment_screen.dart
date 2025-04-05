@@ -1,5 +1,6 @@
 import 'package:anyen_clinic/payment/PaymentOptionWidget.dart';
 import 'package:anyen_clinic/settings/account_screen.dart';
+import 'package:anyen_clinic/widget/CustomBackButton.dart';
 import 'package:anyen_clinic/widget/DoctorCard.dart';
 import 'package:anyen_clinic/widget/consultationBottomBar.dart';
 import 'package:flutter/material.dart';
@@ -70,13 +71,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.chevron_left, color: Color(0xFF9BA5AC)),
-          iconSize: screenWidth * 0.08,
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+        leading: CustomBackButton(),
         title: Text(
           "Tin nhắn",
           style: TextStyle(
@@ -122,8 +117,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               DoctorCard(
                 doctorName: "BS.CKI Macus Horizon",
                 specialty: "Tâm lý - Nội tổng quát",
-                imageUrl:
-                    "https://images.unsplash.com/photo-1537368910025-700350fe46c7",
+                imageUrl: "https://i.imgur.com/Y6W5JhB.png",
               ),
               SizedBox(
                 height: screenWidth * 0.03,
@@ -329,35 +323,37 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     SizedBox(height: 20),
                     Divider(height: 1),
                     SizedBox(height: 20),
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      alignment: WrapAlignment.center,
-                      children: List.generate(times.length, (index) {
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              selectedTimeIndex = index;
-                            });
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                                vertical: screenWidth * 0.02,
-                                horizontal: screenWidth * 0.04),
-                            decoration: BoxDecoration(
-                              color: selectedTimeIndex == index
-                                  ? Colors.blue[50]
-                                  : Colors.white,
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: Colors.grey.shade300),
+                    Center(
+                      child: Wrap(
+                        spacing: 5,
+                        runSpacing: 10,
+                        alignment: WrapAlignment.center,
+                        children: List.generate(times.length, (index) {
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                selectedTimeIndex = index;
+                              });
+                            },
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: screenWidth * 0.02,
+                                  horizontal: screenWidth * 0.04),
+                              decoration: BoxDecoration(
+                                color: selectedTimeIndex == index
+                                    ? Colors.blue[50]
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: Colors.grey.shade300),
+                              ),
+                              child: Text(
+                                times[index],
+                                style: TextStyle(fontSize: screenWidth * 0.04),
+                              ),
                             ),
-                            child: Text(
-                              times[index],
-                              style: TextStyle(fontSize: screenWidth * 0.04),
-                            ),
-                          ),
-                        );
-                      }),
+                          );
+                        }),
+                      ),
                     ),
                     SizedBox(
                       height: 10,

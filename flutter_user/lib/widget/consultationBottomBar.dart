@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:anyen_clinic/widget/circleButton.dart';
 import 'package:flutter/material.dart';
 
@@ -21,7 +23,7 @@ class ConsultationBottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: screenHeight * 0.15,
+      height: max(screenHeight * 0.15, screenWidth * 0.2),
       padding: EdgeInsets.symmetric(
           vertical: screenWidth * 0.02, horizontal: screenHeight * 0.04),
       decoration: const BoxDecoration(
@@ -60,7 +62,7 @@ class ConsultationBottomBar extends StatelessWidget {
               ],
             ),
             SizedBox(
-              height: screenWidth * 0.04,
+              height: screenHeight * 0.02,
             ),
             circleButton(
               nextScreen: nextScreen,

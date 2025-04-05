@@ -1,4 +1,5 @@
 import 'package:anyen_clinic/settings/edit_account_screen.dart';
+import 'package:anyen_clinic/widget/CustomBackButton.dart';
 import 'package:anyen_clinic/widget/MedicalRecord.dart';
 import 'package:anyen_clinic/widget/buildButton.dart';
 import 'package:anyen_clinic/widget/dateTimePicker.dart';
@@ -20,13 +21,7 @@ class MedicalRecordsScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.chevron_left, color: Color(0xFF9BA5AC)),
-          iconSize: screenWidth * 0.08,
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+        leading: CustomBackButton(),
         title: Text(
           "Hồ sơ y tế",
           style: TextStyle(
@@ -220,6 +215,7 @@ void _showHealthDialog(BuildContext context) {
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
         ),

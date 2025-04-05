@@ -36,7 +36,7 @@ class PaymentOptionWidget extends StatelessWidget {
               ),
             ),
             Image.asset(
-              isMoMo ? "Assets/Images/momo.png" : "Assets/Images/banking.png",
+              isMoMo ? "assets/images/momo.png" : "assets/images/banking.png",
               width: screenWidth * 0.08,
               height: screenWidth * 0.08,
               fit: BoxFit.contain,

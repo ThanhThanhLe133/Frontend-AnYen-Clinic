@@ -1,6 +1,7 @@
 import 'package:anyen_clinic/appointment/connected_appointment_screen%20copy.dart';
 import 'package:anyen_clinic/appointment/connecting_appointment_screen.dart';
 import 'package:anyen_clinic/widget/BottomFilterBar_appointment.dart';
+import 'package:anyen_clinic/widget/CustomBackButton.dart';
 import 'package:anyen_clinic/widget/menu.dart';
 import 'package:anyen_clinic/widget/statusWidget.dart';
 import 'package:flutter/material.dart';
@@ -25,13 +26,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
       floatingActionButton: Menu(),
       appBar: AppBar(
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.chevron_left, color: Color(0xFF9BA5AC)),
-          iconSize: screenWidth * 0.08,
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+        leading: CustomBackButton(),
         title: Text(
           "Lịch hẹn",
           style: TextStyle(

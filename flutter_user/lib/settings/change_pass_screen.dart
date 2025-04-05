@@ -1,4 +1,5 @@
 import 'package:anyen_clinic/login/login_screen.dart';
+import 'package:anyen_clinic/widget/CustomBackButton.dart';
 import 'package:anyen_clinic/widget/buildPasswordField.dart';
 import 'package:anyen_clinic/widget/normalButton.dart';
 import 'package:flutter/material.dart';
@@ -21,13 +22,7 @@ class _ChangePassScreenState extends State<ChangePassScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.chevron_left, color: Color(0xFF9BA5AC)),
-          iconSize: screenWidth * 0.08,
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+        leading: CustomBackButton(),
         title: Text(
           "Đổi mật khẩu",
           style: TextStyle(

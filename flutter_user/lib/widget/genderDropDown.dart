@@ -27,6 +27,7 @@ class _GenderDropdownState extends State<GenderDropdown> {
           vertical: screenWidth * 0.03, horizontal: screenWidth * 0.02),
       height: screenWidth * 0.13,
       child: DropdownButton<String>(
+        dropdownColor: Colors.white,
         value: _selectedGender,
         underline: SizedBox(),
         isExpanded: true,

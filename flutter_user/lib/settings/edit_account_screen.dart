@@ -1,4 +1,5 @@
 import 'package:anyen_clinic/login/login_screen.dart';
+import 'package:anyen_clinic/widget/CustomBackButton.dart';
 import 'package:anyen_clinic/widget/dateTimePicker.dart';
 import 'package:anyen_clinic/widget/genderDropDown.dart';
 import 'package:anyen_clinic/widget/normalButton.dart';
@@ -21,13 +22,7 @@ class _EditAccountScreenSate extends State<EditAccountScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.chevron_left, color: Color(0xFF9BA5AC)),
-          iconSize: screenWidth * 0.08,
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+        leading: CustomBackButton(),
         title: Text(
           "Sửa hồ sơ",
           style: TextStyle(

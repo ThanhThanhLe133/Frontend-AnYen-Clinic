@@ -120,10 +120,8 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
         final responseData = jsonDecode(response.body);
 
         if (response.statusCode == 200) {
-          // Nếu đăng nhập thành công, chuyển đến màn hình Dashboard
           showSuccessScreen(context, Dashboard());
         } else {
-          // Nếu có lỗi, ném ngoại lệ và quay lại LoginScreen
           throw Exception(responseData["message"] ?? "Lỗi đăng nhập");
         }
       } catch (e) {

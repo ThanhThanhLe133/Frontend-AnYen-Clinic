@@ -9,12 +9,14 @@ class EmotionHistory extends StatefulWidget {
 }
 
 class _EmotionHistoryState extends State<EmotionHistory> {
+  int selectedMonth = DateTime.now().month;
+  int selectedYear = DateTime.now().year;
+
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
-    int selectedMonth = 2;
-    int selectedYear = 2025;
+    List<int> yearList = [for (var y = 2024; y <= DateTime.now().year; y++) y];
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -103,11 +105,12 @@ class _EmotionHistoryState extends State<EmotionHistory> {
                   ),
                   child: DropdownButton<int>(
                     value: selectedYear,
+                    dropdownColor: Colors.white,
                     icon: Icon(Icons.keyboard_arrow_down, color: Colors.grey),
                     underline: SizedBox(),
                     style: TextStyle(
                         fontSize: screenWidth * 0.06, color: Colors.black),
-                    items: [2024, 2025, 2026].map((int value) {
+                    items: yearList.map((int value) {
                       return DropdownMenuItem<int>(
                         value: value,
                         child: Text(value.toString()),
@@ -116,6 +119,7 @@ class _EmotionHistoryState extends State<EmotionHistory> {
                     onChanged: (value) {
                       setState(() {
                         selectedYear = value!;
+                        // yearController.text=value!.toString();
                       });
                     },
                   ),
