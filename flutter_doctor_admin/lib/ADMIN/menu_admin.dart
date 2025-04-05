@@ -2,8 +2,9 @@ import 'dart:math';
 
 import 'package:ayclinic_doctor_admin/ADMIN/dashboard_admin/dashboard.dart';
 import 'package:flutter/material.dart';
-import 'package:fab_circular_menu/fab_circular_menu.dart';
+//import 'package:fab_circular_menu/fab_circular_menu.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fab_circular_menu_plus/fab_circular_menu_plus.dart';
 
 final menuOpenProvider = StateProvider<bool>((ref) => false);
 
@@ -15,7 +16,7 @@ class MenuAdmin extends ConsumerStatefulWidget {
 }
 
 class _MenuAdminState extends ConsumerState<MenuAdmin> {
-  final GlobalKey<FabCircularMenuState> _fabKey = GlobalKey();
+  final GlobalKey<FabCircularMenuPlusState> _fabKey = GlobalKey();
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -42,7 +43,7 @@ class _MenuAdminState extends ConsumerState<MenuAdmin> {
       );
     }
 
-    return FabCircularMenu(
+    return FabCircularMenuPlus(
       key: _fabKey,
       ringColor: Colors.blue.withOpacity(0.5),
       ringDiameter: max(screenWidth, screenHeight) * 0.65,
