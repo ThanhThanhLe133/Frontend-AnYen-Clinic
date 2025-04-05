@@ -2,9 +2,11 @@ import 'dart:math';
 
 import 'package:ayclinic_doctor_admin/ADMIN/dashboard_admin/dashboard.dart';
 import 'package:flutter/material.dart';
-//import 'package:fab_circular_menu/fab_circular_menu.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fab_circular_menu_plus/fab_circular_menu_plus.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/add_doctor_screen.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/doctor_list_screen.dart';
+import 'manage_doctor/listReview_doctor_screen.dart';
 
 final menuOpenProvider = StateProvider<bool>((ref) => false);
 
@@ -54,9 +56,9 @@ class _MenuAdminState extends ConsumerState<MenuAdmin> {
       fabCloseIcon: const Icon(Icons.close, color: Colors.white),
       children: [
         buildMenuItem(Icons.home, "Trang chủ", Dashboard()),
-        // buildMenuItem(Icons.event, "Lịch hẹn", AppointmentScreen()),
-        // buildMenuItem(Icons.message, "Tin nhắn", MessageScreen()),
-        // buildMenuItem(Icons.settings, "Cài đặt", AccountScreen()),
+        buildMenuItem(Icons.add, "Thêm bác sĩ", AddDoctorScreen()),
+        buildMenuItem(Icons.list, "Danh sách bác sĩ", DoctorListScreen()),
+        buildMenuItem(Icons.settings, "Cài đặt", ListReviewDoctorScreen()),
         // buildMenuItem(Icons.support_agent, "Liên hệ CSKH", ChatScreen()),
       ],
     );
