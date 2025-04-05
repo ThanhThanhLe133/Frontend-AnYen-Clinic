@@ -73,7 +73,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         elevation: 0,
         leading: CustomBackButton(),
         title: Text(
-          "Tin nhắn",
+          "Thanh toán",
           style: TextStyle(
             color: Colors.blue,
             fontSize: screenWidth * 0.065,

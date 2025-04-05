@@ -4,6 +4,7 @@ import 'package:anyen_clinic/chat/CallScreen.dart';
 import 'package:anyen_clinic/chat/chat_screen.dart';
 import 'package:anyen_clinic/dashboard/dashboard.dart';
 import 'package:anyen_clinic/doctor/details_doctor_screen.dart';
+import 'package:anyen_clinic/forgotPass/create_new_pass_screen.dart';
 import 'package:anyen_clinic/forgotPass/forgot_pass_screen.dart';
 import 'package:anyen_clinic/login/login_screen.dart';
 import 'package:anyen_clinic/message/message_screen.dart';
@@ -33,6 +34,6 @@ class MainApp extends StatelessWidget {
             bodySmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
           ),
         ),
-        home: AppointmentScreen());
+        home: PaymentScreen());
   }
 }
