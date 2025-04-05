@@ -10,12 +10,14 @@ class HistoryConsulting extends StatefulWidget {
 }
 
 class _HistoryConsultingState extends State<HistoryConsulting> {
+  int selectedMonth = DateTime.now().month;
+  int selectedYear = DateTime.now().year;
+
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
-    int selectedMonth = 2;
-    int selectedYear = 2025;
+    List<int> yearList = [for (var y = 2024; y <= DateTime.now().year; y++) y];
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -106,6 +108,7 @@ class _HistoryConsultingState extends State<HistoryConsulting> {
                   ),
                   child: DropdownButton<int>(
                     value: selectedYear,
+                    dropdownColor: Colors.white,
                     icon: Icon(Icons.keyboard_arrow_down, color: Colors.grey),
                     underline: SizedBox(),
                     style: TextStyle(
@@ -113,7 +116,7 @@ class _HistoryConsultingState extends State<HistoryConsulting> {
                       color: Colors.black,
                     ),
                     items:
-                        [2024, 2025, 2026].map((int value) {
+                        yearList.map((int value) {
                           return DropdownMenuItem<int>(
                             value: value,
                             child: Text(value.toString()),
@@ -130,6 +133,7 @@ class _HistoryConsultingState extends State<HistoryConsulting> {
             ),
             RadialBarChart(screenWidth: screenWidth),
             Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   "Tổng số ca tư vấn trong tháng",

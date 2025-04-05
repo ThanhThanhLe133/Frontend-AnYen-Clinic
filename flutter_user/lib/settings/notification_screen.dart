@@ -81,7 +81,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   ),
                   BuildToggleOption(
                     screenWidth: screenWidth,
-                    icon: Icons.lock,
+                    icon: Icons.people_alt_rounded,
                     title: "Lịch hẹn",
                     value: toggle2,
                     onChanged: (value) {

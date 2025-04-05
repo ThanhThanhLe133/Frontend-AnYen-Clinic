@@ -84,6 +84,7 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
 
   void showSortMenu(BuildContext context) {
     showModalBottomSheet(
+      backgroundColor: Colors.white,
       context: context,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -112,6 +113,7 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
 
   void showFilterMenu(BuildContext context) {
     showModalBottomSheet(
+      backgroundColor: Colors.white,
       context: context,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),

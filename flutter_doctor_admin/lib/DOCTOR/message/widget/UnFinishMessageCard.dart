@@ -183,7 +183,7 @@ class UnFinishMessageCard extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         fixedSize: Size(screenWidth * 0.05, 16),
                         minimumSize: Size(
-                          screenWidth * 0.2,
+                          screenWidth * 0.15,
                           screenHeight * 0.08,
                         ),
                       ),
@@ -208,7 +208,7 @@ class UnFinishMessageCard extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         fixedSize: Size(screenWidth * 0.05, 16),
                         minimumSize: Size(
-                          screenWidth * 0.2,
+                          screenWidth * 0.15,
                           screenHeight * 0.08,
                         ),
                       ),

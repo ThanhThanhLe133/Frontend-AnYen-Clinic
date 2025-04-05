@@ -54,47 +54,56 @@ class _NotificationScreenState extends State<NotificationScreen> {
             horizontal: screenWidth * 0.08,
             vertical: screenHeight * 0.1,
           ),
-          child: Container(
-            height: max(screenHeight * 0.5, 250),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Color(0xFFD9D9D9), width: 1),
-            ),
-            child: Center(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  SizedBox(height: screenHeight * 0.03),
-                  sectionTitle(
-                    title: "Cài đặt để nhận thông báo khi ngoại tuyến",
-                    screenHeight: screenHeight,
-                    screenWidth: screenWidth,
-                  ),
-                  BuildToggleOption(
-                    screenWidth: screenWidth,
-                    icon: Icons.lock,
-                    title: "Lịch hẹn",
-                    value: toggle2,
-                    onChanged: (value) {
-                      setState(() => toggle2 = value);
-                    },
-                  ),
-                  BuildToggleOption(
-                    screenWidth: screenWidth,
-                    icon: Icons.notifications,
-                    title: "Tin nhắn",
-                    value: toggle3,
-                    onChanged: (value) {
-                      setState(() => toggle3 = value);
-                    },
-                  ),
-
-                  SizedBox(height: screenHeight * 0.03),
-                ],
+          child: Column(
+            children: [
+              Text(
+                "Cài đặt để nhận thông báo khi ngoại tuyến",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: screenWidth * 0.04,
+                ),
+                maxLines: null,
               ),
-            ),
+              SizedBox(height: screenHeight * 0.05),
+              Container(
+                height: max(screenHeight * 0.3, 150),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Color(0xFFD9D9D9), width: 1),
+                ),
+                child: Center(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      SizedBox(height: screenHeight * 0.03),
+
+                      BuildToggleOption(
+                        screenWidth: screenWidth,
+                        icon: Icons.people_alt_rounded,
+                        title: "Lịch hẹn",
+                        value: toggle2,
+                        onChanged: (value) {
+                          setState(() => toggle2 = value);
+                        },
+                      ),
+                      BuildToggleOption(
+                        screenWidth: screenWidth,
+                        icon: Icons.message,
+                        title: "Tin nhắn",
+                        value: toggle3,
+                        onChanged: (value) {
+                          setState(() => toggle3 = value);
+                        },
+                      ),
+
+                      SizedBox(height: screenHeight * 0.03),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

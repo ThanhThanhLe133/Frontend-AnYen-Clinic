@@ -193,9 +193,9 @@ class AppointmentConnectedCard extends ConsumerWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5), //
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  padding: const EdgeInsets.symmetric(vertical: 4),
                   fixedSize: Size(screenWidth * 0.05, 16),
-                  minimumSize: Size(screenWidth * 0.2, screenHeight * 0.08),
+                  minimumSize: Size(screenWidth * 0.15, screenHeight * 0.06),
                 ),
                 child: Text(
                   "Liên hệ QTV",

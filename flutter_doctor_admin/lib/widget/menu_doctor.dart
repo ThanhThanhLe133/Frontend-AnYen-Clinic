@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:ayclinic_doctor_admin/DOCTOR/HistoryConsulting/HistoryConsulting.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/appointment/appointment_screen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/chat/chat_screen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/dashboard_doctor/dashboard.dart';
@@ -48,8 +49,8 @@ class _MenuDoctorState extends ConsumerState<MenuDoctor> {
 
     return FabCircularMenu(
       key: _fabKey,
-      ringColor: Colors.blue.withOpacity(0.5),
-      ringDiameter: max(screenWidth, screenHeight) * 0.65,
+      ringColor: Colors.blue.withOpacity(0.3),
+      ringDiameter: max(screenWidth, screenHeight) * 0.5,
       fabColor: Color(0xFF119CF0).withOpacity(0.8),
       fabSize: screenWidth * 0.1,
       ringWidth: screenWidth * 0.13,
@@ -57,6 +58,7 @@ class _MenuDoctorState extends ConsumerState<MenuDoctor> {
       fabCloseIcon: const Icon(Icons.close, color: Colors.white),
       children: [
         buildMenuItem(Icons.home, "Trang chủ", Dashboard()),
+        buildMenuItem(Icons.history, "Lịch sử tư vấn", HistoryConsulting()),
         buildMenuItem(Icons.event, "Lịch hẹn", AppointmentScreen()),
         buildMenuItem(Icons.message, "Tin nhắn", MessageScreen()),
         buildMenuItem(Icons.settings, "Cài đặt", AccountScreen()),
