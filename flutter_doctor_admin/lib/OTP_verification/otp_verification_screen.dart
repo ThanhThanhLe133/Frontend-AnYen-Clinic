@@ -12,7 +12,6 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class OTPVerificationScreen extends ConsumerStatefulWidget {
   const OTPVerificationScreen({super.key, required this.source});

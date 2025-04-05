@@ -1,6 +1,5 @@
 import 'package:anyen_clinic/dialog/PaymentHistory.dart';
 import 'package:anyen_clinic/dialog/Prescription.dart';
-import 'package:anyen_clinic/dialog/UpdateInfoDialog.dart';
 import 'package:anyen_clinic/review/review_doctor_screen.dart';
 import 'package:anyen_clinic/widget/buildMoreOption.dart';
 import 'package:flutter/material.dart';

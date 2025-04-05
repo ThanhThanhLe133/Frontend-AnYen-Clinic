@@ -3,7 +3,7 @@ import 'package:ayclinic_doctor_admin/DOCTOR/settings/change_pass_screen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/settings/notification_screen.dart';
 import 'package:ayclinic_doctor_admin/widget/CustomBackButton.dart';
 import 'package:ayclinic_doctor_admin/widget/SettingsMenu.dart';
-import 'package:ayclinic_doctor_admin/widget/menu_doctor.dart';
+import 'package:ayclinic_doctor_admin/DOCTOR/menu_doctor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

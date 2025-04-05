@@ -1,8 +1,6 @@
 import 'dart:math';
 
 import 'package:ayclinic_doctor_admin/DOCTOR/dialog/PatientInfo.dart';
-import 'package:ayclinic_doctor_admin/dialog/ChangeConsultationDialog.dart';
-import 'package:ayclinic_doctor_admin/dialog/PaymentHistory.dart';
 import 'package:ayclinic_doctor_admin/widget/buildMoreOption.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

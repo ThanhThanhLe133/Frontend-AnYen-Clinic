@@ -5,7 +5,6 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/chat/CallScreen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/chat/CameraScreen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/dialog/PatientInfo.dart';
-import 'package:ayclinic_doctor_admin/dialog/PaymentHistory.dart';
 import 'package:ayclinic_doctor_admin/dialog/option_dialog.dart';
 import 'package:ayclinic_doctor_admin/widget/CustomBackButton.dart';
 import 'package:ayclinic_doctor_admin/widget/buildButton.dart';

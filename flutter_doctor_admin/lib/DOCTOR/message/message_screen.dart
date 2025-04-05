@@ -1,6 +1,6 @@
 import 'package:ayclinic_doctor_admin/DOCTOR/message/finish_screen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/message/unfinished_screen.dart';
-import 'package:ayclinic_doctor_admin/widget/menu_doctor.dart';
+import 'package:ayclinic_doctor_admin/DOCTOR/menu_doctor.dart';
 import 'package:ayclinic_doctor_admin/widget/statusWidget.dart';
 import 'package:flutter/material.dart';
 

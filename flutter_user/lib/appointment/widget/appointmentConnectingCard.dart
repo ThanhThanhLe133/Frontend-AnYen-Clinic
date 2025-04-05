@@ -4,7 +4,6 @@ import 'package:anyen_clinic/appointment/widget/DialogToChangeDoctor.dart';
 import 'package:anyen_clinic/dialog/ChangeConsultationDialog.dart';
 import 'package:anyen_clinic/dialog/EditDateAppointmentDialog.dart';
 import 'package:anyen_clinic/dialog/PaymentHistory.dart';
-import 'package:anyen_clinic/widget/BottomFilterBar_appointment.dart';
 import 'package:anyen_clinic/widget/buildMoreOption.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
