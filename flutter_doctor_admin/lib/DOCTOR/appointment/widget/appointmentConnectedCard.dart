@@ -146,6 +146,8 @@ class AppointmentConnectedCard extends ConsumerWidget {
                           color:
                               status == "Đã hoàn thành"
                                   ? Color(0xFF19EA31)
+                                  : status == "Đã huỷ"
+                                  ? Color(0xFF9BA5AC)
                                   : Color(0xFF119CF0),
                           borderRadius: BorderRadius.circular(12),
                         ),
