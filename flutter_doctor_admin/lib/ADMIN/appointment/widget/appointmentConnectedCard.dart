@@ -42,7 +42,7 @@ class AppointmentConnectedCard extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "BS.CKI Macus Horizon",
+                  "User1, 19 tuổi",
                   maxLines: null,
                   style: TextStyle(
                     fontSize: screenWidth * 0.045,
@@ -51,13 +51,13 @@ class AppointmentConnectedCard extends ConsumerWidget {
                   ),
                 ),
 
-                SizedBox(height: screenWidth * 0.02),
                 Text(
-                  "Câu hỏi: ${question.length > 10 ? '${question.substring(0, 10)}...' : question}",
+                  "BS.CKI Macus Horizon",
+                  maxLines: null,
                   style: TextStyle(
-                    fontSize: screenWidth * 0.04,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.grey[400],
+                    fontSize: screenWidth * 0.045,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF40494F),
                   ),
                 ),
                 SizedBox(height: screenWidth * 0.03),
@@ -146,6 +146,8 @@ class AppointmentConnectedCard extends ConsumerWidget {
                           color:
                               status == "Đã hoàn thành"
                                   ? Color(0xFF19EA31)
+                                  : status == "Đã huỷ"
+                                  ? Color(0xFF9BA5AC)
                                   : Color(0xFF119CF0),
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -160,7 +162,15 @@ class AppointmentConnectedCard extends ConsumerWidget {
                       )
                       : SizedBox(),
                   MoreOptionsMenu(
-                    options: ["Thông tin bệnh nhân"],
+                    options: [
+                      "Thông tin bệnh nhân",
+                      "Thông tin bác sĩ",
+                      "Huỷ lịch hẹn",
+                      "Sửa lịch hẹn",
+                      "Thay đổi hình thức",
+                      "Đổi trạng thái",
+                      "Xem lịch sử thanh toán",
+                    ],
                     onSelected: (value) {
                       switch (value) {
                         case "Thông tin bệnh nhân":
@@ -173,38 +183,107 @@ class AppointmentConnectedCard extends ConsumerWidget {
                   ),
                 ],
               ),
-              Align(
-                alignment: Alignment.center,
-                child: SizedBox(
-                  width: screenWidth * 0.2,
-                  child: CircleAvatar(
-                    radius: screenWidth * 0.07,
-                    backgroundImage: AssetImage("assets/images/user.png"),
+              Row(
+                children: [
+                  Align(
+                    alignment: Alignment.center,
+                    child: SizedBox(
+                      width: screenWidth * 0.15,
+                      child: CircleAvatar(
+                        radius: screenWidth * 0.07,
+                        backgroundImage: AssetImage("assets/images/user.png"),
+                      ),
+                    ),
                   ),
+                  Align(
+                    alignment: Alignment.center,
+                    child: SizedBox(
+                      width: screenWidth * 0.15,
+                      child: CircleAvatar(
+                        radius: screenWidth * 0.07,
+                        backgroundImage: AssetImage("assets/images/doctor.png"),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: screenWidth * 0.03),
+              Padding(
+                padding: EdgeInsets.only(top: 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    status == "Đã huỷ"
+                        ? Text(
+                          "Lý do: Bác sĩ bận",
+                          maxLines: null,
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.04,
+                            fontWeight: FontWeight.w400,
+                            color: Color(0xFFFF0000),
+                          ),
+                        )
+                        : Row(
+                          children: [
+                            ElevatedButton(
+                              onPressed: () {},
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFECF8FF), //
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5), //
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 4,
+                                ),
+                                fixedSize: Size(screenWidth * 0.05, 16),
+                                minimumSize: Size(
+                                  screenWidth * 0.15,
+                                  screenHeight * 0.08,
+                                ),
+                              ),
+                              child: Text(
+                                "Liên hệ KH",
+                                maxLines: null,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: min(screenWidth * 0.035, 16),
+                                  color: const Color(0xFF40494F),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: screenWidth * 0.02),
+                            ElevatedButton(
+                              onPressed: () {},
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFECF8FF), //
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5), //
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 4,
+                                ),
+                                fixedSize: Size(screenWidth * 0.05, 16),
+                                minimumSize: Size(
+                                  screenWidth * 0.15,
+                                  screenHeight * 0.08,
+                                ),
+                              ),
+                              child: Text(
+                                "Liên hệ bác sĩ",
+                                maxLines: null,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: min(screenWidth * 0.035, 16),
+                                  color: const Color(0xFF40494F),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                  ],
                 ),
               ),
               SizedBox(height: screenWidth * 0.03),
-              ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFECF8FF), //
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5), //
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  fixedSize: Size(screenWidth * 0.05, 16),
-                  minimumSize: Size(screenWidth * 0.15, screenHeight * 0.08),
-                ),
-                child: Text(
-                  "Liên hệ QTV",
-                  maxLines: null,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: min(screenWidth * 0.035, 16),
-                    color: const Color(0xFF40494F),
-                  ),
-                ),
-              ),
             ],
           ),
         ],

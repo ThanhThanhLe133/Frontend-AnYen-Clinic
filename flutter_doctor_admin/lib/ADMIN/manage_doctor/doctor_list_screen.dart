@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ayclinic_doctor_admin/widget/DoctorCardInList.dart';
-import 'package:ayclinic_doctor_admin/ADMIN/menu_admin.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/widget/menu_admin.dart';
 
 class DoctorListScreen extends StatefulWidget {
   const DoctorListScreen({super.key});

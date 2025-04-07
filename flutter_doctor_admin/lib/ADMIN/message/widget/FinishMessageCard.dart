@@ -1,31 +1,31 @@
 import 'dart:math';
 
 import 'package:ayclinic_doctor_admin/dialog/PatientInfo.dart';
-import 'package:ayclinic_doctor_admin/dialog/option_dialog.dart';
+import 'package:ayclinic_doctor_admin/dialog/Prescription.dart';
+import 'package:ayclinic_doctor_admin/dialog/Summary.dart';
 import 'package:ayclinic_doctor_admin/widget/buildMoreOption.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class UnFinishMessageCard extends ConsumerWidget {
-  const UnFinishMessageCard({
+class FinishMessageCard extends StatelessWidget {
+  const FinishMessageCard({
     super.key,
-    required this.isOnline,
+    required this.isPatient,
     required this.date,
     required this.time,
     required this.question,
   });
-  final bool isOnline;
   final String date;
   final String time;
+  final bool isPatient;
   final String question;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     return Container(
       margin: EdgeInsets.only(bottom: screenHeight * 0.03),
-      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.025),
+      padding: EdgeInsets.all(screenWidth * 0.03),
       constraints: BoxConstraints(minWidth: screenWidth * 0.9),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -35,20 +35,19 @@ class UnFinishMessageCard extends ConsumerWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Thông tin bác sĩ
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "BS.CKI Macus Horizon",
+                  "User1, 19 tuổi",
+                  maxLines: null,
                   style: TextStyle(
                     fontSize: screenWidth * 0.045,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF40494F),
                   ),
                 ),
-
                 SizedBox(height: screenWidth * 0.02),
                 Text(
                   "Câu hỏi: ${question.length > 10 ? '${question.substring(0, 10)}...' : question}",
@@ -102,26 +101,6 @@ class UnFinishMessageCard extends ConsumerWidget {
                   ],
                 ),
                 SizedBox(height: screenWidth * 0.05),
-                Row(
-                  children: [
-                    Icon(
-                      isOnline
-                          ? Icons.chat_rounded
-                          : Icons.people_outline_rounded,
-                      color: isOnline ? Colors.blue : Color(0xFFDB5B8B),
-                      size: screenWidth * 0.05,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      isOnline ? "Tư vấn online" : "Tư vấn trực tiếp",
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.04,
-                        fontWeight: FontWeight.w500,
-                        color: isOnline ? Colors.blue : Color(0xFFDB5B8B),
-                      ),
-                    ),
-                  ],
-                ),
               ],
             ),
           ),
@@ -132,9 +111,13 @@ class UnFinishMessageCard extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  SizedBox(),
                   MoreOptionsMenu(
-                    options: ["Thông tin bệnh nhân"],
+                    options: [
+                      isPatient ? "Thông tin bệnh nhân" : "Thông tin bác sĩ",
+                    ],
                     onSelected: (value) {
                       switch (value) {
                         case "Thông tin bệnh nhân":
@@ -153,78 +136,13 @@ class UnFinishMessageCard extends ConsumerWidget {
                   width: screenWidth * 0.2,
                   child: CircleAvatar(
                     radius: screenWidth * 0.07,
-                    backgroundImage: AssetImage("assets/images/user.png"),
+                    backgroundImage:
+                        isPatient
+                            ? AssetImage("assets/images/user.png")
+                            : AssetImage("assets/images/doctor.png"),
                   ),
                 ),
               ),
-              SizedBox(height: screenWidth * 0.03),
-              Padding(
-                padding: EdgeInsets.only(top: 8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    ElevatedButton(
-                      onPressed:
-                          () => showOptionDialog(
-                            context,
-                            "Xác nhận kết thúc",
-                            "Bạn muốn xác nhận kết thúc ca tư vấn này?",
-                            "HUỶ",
-                            "ĐỒNG Ý",
-                            null,
-                          ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF119CF0), //
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5), //
-                        ),
-
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        fixedSize: Size(screenWidth * 0.05, 16),
-                        minimumSize: Size(
-                          screenWidth * 0.15,
-                          screenHeight * 0.08,
-                        ),
-                      ),
-                      child: Text(
-                        "Kết thúc",
-                        maxLines: null,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: min(screenWidth * 0.035, 16),
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: screenWidth * 0.02),
-                    ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFECF8FF), //
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5), //
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        fixedSize: Size(screenWidth * 0.05, 16),
-                        minimumSize: Size(
-                          screenWidth * 0.15,
-                          screenHeight * 0.08,
-                        ),
-                      ),
-                      child: Text(
-                        "Liên hệ QTV",
-                        maxLines: null,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: min(screenWidth * 0.035, 16),
-                          color: const Color(0xFF40494F),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
               SizedBox(height: screenWidth * 0.03),
             ],
           ),

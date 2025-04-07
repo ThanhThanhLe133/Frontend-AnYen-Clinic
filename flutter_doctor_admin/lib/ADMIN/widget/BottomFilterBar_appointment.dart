@@ -1,10 +1,11 @@
-import 'package:ayclinic_doctor_admin/FilterOption.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/Provider/FilterOptionProvider.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/widget/FilterItemList.dart';
 import 'package:ayclinic_doctor_admin/widget/FilterItemWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class BottomFilterBarMessage extends ConsumerStatefulWidget {
-  const BottomFilterBarMessage({super.key, required this.screenWidth});
+class BottomFilterBar extends ConsumerStatefulWidget {
+  const BottomFilterBar({super.key, required this.screenWidth});
 
   final double screenWidth;
 
@@ -12,7 +13,7 @@ class BottomFilterBarMessage extends ConsumerStatefulWidget {
   _BottomFilterBarState createState() => _BottomFilterBarState();
 }
 
-class _BottomFilterBarState extends ConsumerState<BottomFilterBarMessage> {
+class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
   late DateTime selectedDate;
 
   bool isComplete = false;
@@ -122,6 +123,37 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBarMessage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              FilterItemList(
+                title1: 'Bác sĩ',
+                chosenOption: ref.watch(selectedDoctorProvider),
+                onSelected: (selectedValue) {
+                  setState(() {
+                    ref.read(selectedDoctorProvider.notifier).state =
+                        selectedValue;
+                  });
+                },
+                dropdownItems: ['Tất cả', 'Bác sĩ A', 'Bác sĩ B', 'Bác sĩ C'],
+              ),
+              FilterItemList(
+                title1: 'Bệnh nhân',
+                chosenOption: ref.watch(selectedPatientProvider),
+                onSelected: (selectedValue) {
+                  setState(() {
+                    ref.read(selectedPatientProvider.notifier).state =
+                        selectedValue;
+                  });
+                },
+                dropdownItems: ['Tất cả', 'User1', 'User2', 'User3'],
+              ),
+              FilterItemWidget(
+                title1: 'Đã hoàn thành',
+                title2: 'Sắp tới',
+                isTitle1: ref.watch(isCompleteProvider),
+                onSelected: (selectedValue) {
+                  ref.read(isCompleteProvider.notifier).state =
+                      (selectedValue == 'Đã hoàn thành');
+                },
+              ),
               FilterItemWidget(
                 title1: 'Tư vấn online',
                 title2: 'Tư vấn trực tiếp',

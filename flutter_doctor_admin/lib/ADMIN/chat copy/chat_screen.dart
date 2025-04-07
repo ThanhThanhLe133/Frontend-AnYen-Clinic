@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:ayclinic_doctor_admin/DOCTOR/chat/CallScreen.dart';
-import 'package:ayclinic_doctor_admin/DOCTOR/chat/CameraScreen.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/chat/CallScreen.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/chat/CameraScreen.dart';
 import 'package:ayclinic_doctor_admin/dialog/PatientInfo.dart';
 import 'package:ayclinic_doctor_admin/dialog/option_dialog.dart';
 import 'package:ayclinic_doctor_admin/widget/CustomBackButton.dart';
@@ -17,8 +17,8 @@ import 'package:uuid/uuid.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
-
+  const ChatScreen({super.key, required this.isPatient});
+  final bool isPatient;
   @override
   _ChatScreenState createState() => _ChatScreenState();
 }
@@ -338,16 +338,15 @@ class _ChatScreenState extends State<ChatScreen> {
             itemBuilder:
                 (BuildContext context) => [
                   PopupMenuItem<String>(
-                    value: "Xem thông tin bệnh nhân",
+                    value:
+                        widget.isPatient
+                            ? "Xem thông tin bệnh nhân"
+                            : "Xem thông tin bác sĩ",
                     child: Text("Xem thông tin bệnh nhân"),
                   ),
                   PopupMenuItem<String>(
-                    value: "Kết thúc tư vấn",
+                    value: "Kết thúc trò chuyện",
                     child: Text("Kết thúc tư vấn"),
-                  ),
-                  PopupMenuItem<String>(
-                    value: "Yêu cầu xem kết quả trắc nghiệm",
-                    child: Text("Yêu cầu xem kết quả trắc nghiệm"),
                   ),
                 ],
             onSelected: (String value) {
@@ -355,26 +354,20 @@ class _ChatScreenState extends State<ChatScreen> {
                 case "Xem thông tin bệnh nhân":
                   showPatientInfoDialog(context);
                   break;
-                case "Kết thúc tư vấn":
+                case "Xem thông tin bác sĩ":
+                  showPatientInfoDialog(context);
+                  break;
+                case "Kết thúc trò chuyện":
                   showOptionDialog(
                     context,
                     "Xác nhận kết thúc",
-                    "Bạn muốn xác nhận kết thúc ca tư vấn này?",
+                    "Bạn muốn xác nhận kết thúc cuộc trò chuyện này?",
                     "HUỶ",
                     "ĐỒNG Ý",
                     null,
                   );
                   break;
-                case "Yêu cầu xem kết quả trắc nghiệm":
-                  showOptionDialog(
-                    context,
-                    "Yêu cầu xem KQ trắc nghiệm",
-                    "Bạn có chắc chắn muốn yêu cầu xem kết quả trắc nghiệm tâm lý của bệnh nhân này?",
-                    "HUỶ",
-                    "ĐỒNG Ý",
-                    null,
-                  );
-                  break;
+
                 default:
                   break;
               }

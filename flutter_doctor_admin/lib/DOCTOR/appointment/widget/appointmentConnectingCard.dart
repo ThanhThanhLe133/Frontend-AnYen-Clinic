@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:ayclinic_doctor_admin/DOCTOR/dialog/PatientInfo.dart';
+import 'package:ayclinic_doctor_admin/dialog/PatientInfo.dart';
 import 'package:ayclinic_doctor_admin/dialog/option_dialog.dart';
 import 'package:ayclinic_doctor_admin/widget/buildMoreOption.dart';
 import 'package:flutter/material.dart';
@@ -185,7 +185,7 @@ class AppointmentConnectingCard extends ConsumerWidget {
                         fixedSize: Size(screenWidth * 0.05, 16),
                         minimumSize: Size(
                           screenWidth * 0.15,
-                          screenHeight * 0.06,
+                          screenHeight * 0.08,
                         ),
                       ),
                       child: Text(
@@ -210,7 +210,7 @@ class AppointmentConnectingCard extends ConsumerWidget {
                         fixedSize: Size(screenWidth * 0.05, 16),
                         minimumSize: Size(
                           screenWidth * 0.15,
-                          screenHeight * 0.06,
+                          screenHeight * 0.08,
                         ),
                       ),
                       child: Text(

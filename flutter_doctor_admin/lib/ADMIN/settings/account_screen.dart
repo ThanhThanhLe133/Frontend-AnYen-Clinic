@@ -1,4 +1,4 @@
-import 'package:ayclinic_doctor_admin/ADMIN/menu_admin.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/widget/menu_admin.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/settings/about_us_screen.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/settings/change_pass_screen.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/settings/notification_screen.dart';

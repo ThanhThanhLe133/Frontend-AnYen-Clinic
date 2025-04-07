@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:ayclinic_doctor_admin/DOCTOR/dialog/PatientInfo.dart';
+import 'package:ayclinic_doctor_admin/dialog/PatientInfo.dart';
 import 'package:ayclinic_doctor_admin/dialog/Prescription.dart';
 import 'package:ayclinic_doctor_admin/dialog/Summary.dart';
 import 'package:ayclinic_doctor_admin/widget/buildMoreOption.dart';

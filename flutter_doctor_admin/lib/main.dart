@@ -1,7 +1,12 @@
+import 'package:ayclinic_doctor_admin/login/login_screen.dart';
 import 'package:ayclinic_doctor_admin/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'ADMIN/appointment/appointment_screen.dart';
+import 'ADMIN/appointment/widget/appointmentConnectingCard.dart';
+import 'ADMIN/message/message_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,7 +29,7 @@ class MainApp extends StatelessWidget {
           bodySmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
         ),
       ),
-      home: Dashboard(),
+      home: AppointmentScreen(),
     );
   }
 }

@@ -3,7 +3,7 @@ import 'package:ayclinic_doctor_admin/widget/radialBarChart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ayclinic_doctor_admin/ADMIN/menu_admin.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/widget/menu_admin.dart';
 
 class Dashboard extends ConsumerStatefulWidget {
   const Dashboard({super.key});
