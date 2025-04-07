@@ -6,13 +6,13 @@ import 'package:ayclinic_doctor_admin/widget/buildMoreOption.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AppointmentConnectingCard extends ConsumerWidget {
-  const AppointmentConnectingCard({
+class UnFinishConsultingCard extends ConsumerWidget {
+  const UnFinishConsultingCard({
     super.key,
     required this.isOnline,
     required this.date,
-    required this.time,
     required this.question,
+    required this.time,
   });
   final bool isOnline;
   final String date;
@@ -49,7 +49,6 @@ class AppointmentConnectingCard extends ConsumerWidget {
                     color: Color(0xFF40494F),
                   ),
                 ),
-
                 Text(
                   "BS.CKI Macus Horizon",
                   maxLines: null,
@@ -59,7 +58,15 @@ class AppointmentConnectingCard extends ConsumerWidget {
                     color: Color(0xFF40494F),
                   ),
                 ),
-
+                SizedBox(height: screenWidth * 0.02),
+                Text(
+                  "Câu hỏi: ${question.length > 10 ? '${question.substring(0, 10)}...' : question}",
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.04,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.grey[400],
+                  ),
+                ),
                 SizedBox(height: screenWidth * 0.03),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -137,12 +144,7 @@ class AppointmentConnectingCard extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   MoreOptionsMenu(
-                    options: [
-                      "Thông tin bệnh nhân",
-                      "Thông tin bác sĩ",
-                      "Huỷ lịch hẹn",
-                      "Sửa lịch hẹn",
-                    ],
+                    options: ["Thông tin bệnh nhân", "Thông tin bác sĩ"],
                     onSelected: (value) {
                       switch (value) {
                         case "Thông tin bệnh nhân":

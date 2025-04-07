@@ -9,12 +9,12 @@ class MessageConnectedCard extends StatelessWidget {
       {super.key,
       required this.isOnline,
       required this.date,
-      this.status,
+      required this.status,
       required this.time});
   final bool isOnline;
   final String date;
   final String time;
-  final String? status;
+  final String status;
 
   @override
   Widget build(BuildContext context) {
@@ -125,7 +125,7 @@ class MessageConnectedCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  status != null && status!.isNotEmpty
+                  status.isNotEmpty
                       ? GestureDetector(
                           onTap: () {
                             Navigator.push(
@@ -135,7 +135,7 @@ class MessageConnectedCard extends StatelessWidget {
                             );
                           },
                           child: Container(
-                            width: screenWidth * 0.18,
+                            width: screenWidth * 0.2,
                             padding: EdgeInsets.symmetric(
                                 horizontal: screenWidth * 0.01,
                                 vertical: screenWidth * 0.01),
@@ -147,7 +147,7 @@ class MessageConnectedCard extends StatelessWidget {
                             ),
                             child: Text(
                               textAlign: TextAlign.center,
-                              status!,
+                              status,
                               style: TextStyle(
                                 fontSize: screenWidth * 0.025,
                                 color: Colors.white,
