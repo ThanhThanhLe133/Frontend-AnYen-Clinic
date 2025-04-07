@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:ayclinic_doctor_admin/ADMIN/appointment/appointment_screen.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/consulting/consulting_screen.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/dashboard_admin/dashboard.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/message/message_screen.dart';
 import 'package:flutter/material.dart';
@@ -62,6 +63,7 @@ class _MenuAdminState extends ConsumerState<MenuAdmin> {
         buildMenuItem(Icons.list, "Danh sách bác sĩ", DoctorListScreen()),
         buildMenuItem(Icons.event, "Lịch hẹn", AppointmentScreen()),
         buildMenuItem(Icons.message, "Tin nhắn", MessageScreen()),
+        buildMenuItem(Icons.question_answer, "DS Tư vấn", ConsultingScreen()),
         buildMenuItem(Icons.settings, "Cài đặt", ListReviewDoctorScreen()),
         // buildMenuItem(Icons.support_agent, "Liên hệ CSKH", ChatScreen()),
       ],
