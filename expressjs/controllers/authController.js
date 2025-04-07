@@ -29,6 +29,7 @@ export const register = async (req, res) => {
     return internalServerError(res)
   }
 }
+
 export const login = async (req, res) => {
   try {
     const { error } = joi.object({ phone_number, password }).validate(req.body)

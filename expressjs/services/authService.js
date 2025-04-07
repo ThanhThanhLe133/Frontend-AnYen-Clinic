@@ -10,14 +10,20 @@ const hashPassword = password => bcrypt.hashSync(password, bcrypt.genSaltSync(10
 
 export const register = ({ phone_number, password }) => new Promise(async (resolve, reject) => {
   try {
-    const [user, created] = await db.Patient.findOrCreate({
+    const [patientRole, createdRole] = await db.Role.findOrCreate({
+      where: { value: 'patient' }
+    });
+
+    const [user, created] = await db.User.findOrCreate({
       where: { phone_number },
       raw: true,
       defaults: {
         phone_number,
-        password: hashPassword(password)
+        password: hashPassword(password),
+        role_id: patientRole.id
       }
     })
+
     if (!created) {
       return resolve({
         err: 1,
@@ -26,11 +32,17 @@ export const register = ({ phone_number, password }) => new Promise(async (resol
         refresh_token: null
       });
     }
+
     const access_token = jwt.sign(
-      { id: user.id, phone_number: user.phone_number },
+      {
+        id: user.id,
+        phone_number: user.phone_number,
+        role: 'patient'
+      },
       process.env.JWT_SECRET,
-      { expiresIn: "30s" }
+      { expiresIn: "5m" }
     );
+
     const refresh_token = jwt.sign(
       { id: user.id },
       process.env.JWT_SECRET_REFRESH_TOKEN,
@@ -65,16 +77,26 @@ export const register = ({ phone_number, password }) => new Promise(async (resol
 
 export const login = ({ phone_number, password }) => new Promise(async (resolve, reject) => {
   try {
-    const response = await db.Patient.findOne({
+    const response = await db.User.findOne({
       where: { phone_number },
-      raw: true //tra ve object 
+      raw: true,
+      nest: true,
+      include: [
+        {
+          model: db.Role,
+          foreignKey: 'role_id',
+          as: 'roleData',
+          attributes: ['value']
+        }
+      ]
     })
     if (!response) {
       return resolve({
         err: 1,
         mes: 'Phone number has not been registered',
         access_token: null,
-        refresh_token: null
+        refresh_token: null,
+        role: null,
       });
     }
     const isChecked = response && bcrypt.compareSync(password, response.password)
@@ -83,12 +105,13 @@ export const login = ({ phone_number, password }) => new Promise(async (resolve,
         err: 1,
         mes: 'Password is incorrect',
         access_token: null,
-        refresh_token: null
+        refresh_token: null,
+        role: null,
       });
     }
 
     const access_token = isChecked
-      ? jwt.sign({ id: response.id, phone_number: response.phone_number }, process.env.JWT_SECRET, { expiresIn: '5m' })
+      ? jwt.sign({ id: response.id, phone_number: response.phone_number, role: response.roleData.value }, process.env.JWT_SECRET, { expiresIn: '5m' })
       : null
 
     const refresh_token = jwt.sign({ id: response.id }, process.env.JWT_SECRET_REFRESH_TOKEN, { expiresIn: '7d' })
@@ -98,9 +121,10 @@ export const login = ({ phone_number, password }) => new Promise(async (resolve,
       mes: 'Login successfully',
       access_token: `Bearer ${access_token}`,
       refresh_token,
+      role: response.roleData.value,
     });
 
-    await db.Patient.update(
+    await db.User.update(
       { refresh_token },
       { where: { id: response.id } }
     );
@@ -151,39 +175,3 @@ export const refreshToken = (refresh_token) => new Promise(async (resolve, rejec
     reject(error)
   }
 })
-
-
-// const router = express.Router();
-
-
-// // Update profile route
-// router.put(
-//   "/profile",
-//   [
-//     body("email")
-//       .optional()
-//       .isEmail()
-//       .withMessage("Please provide a valid email"),
-//   ],
-//   userController.updateProfile
-// );
-
-// // Change password route
-// router.put(
-//   "/change-password",
-//   [
-//     body("currentPassword")
-//       .notEmpty()
-//       .withMessage("Current password is required"),
-//     body("newPassword")
-//       .isLength({ min: 8 })
-//       .withMessage("Password must be at least 8 characters long")
-//       .matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*])/)
-//       .withMessage(
-//         "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
-//       ),
-//   ],
-//   userController.changePassword
-// );
-
-// export { router };

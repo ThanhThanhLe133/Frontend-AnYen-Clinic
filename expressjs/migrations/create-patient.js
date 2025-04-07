@@ -4,26 +4,15 @@ module.exports = {
     async up(queryInterface, Sequelize) {
 
         await queryInterface.createTable('Patients', {
-            id: {
+            patient_id: {
                 allowNull: false,
                 type: Sequelize.UUID,
-                defaultValue: Sequelize.UUIDV4,
                 primaryKey: true,
             },
-            phone_number: {
+            fullname: {
                 type: Sequelize.STRING,
                 allowNull: false,
                 unique: true,
-            },
-            password: {
-                type: Sequelize.STRING,
-                allowNull: false,
-            },
-            avatar_url: {
-                type: Sequelize.TEXT,
-            },
-            refresh_token: {
-                type: Sequelize.STRING,
             },
             date_of_birth: {
                 type: Sequelize.DATE,
@@ -33,7 +22,8 @@ module.exports = {
             },
             anonymous_name: {
                 type: Sequelize.STRING,
-                unique: true,
+                defaultValue: 'UserUnknown',
+                allowNull: false,
             },
             medical_history: {
                 type: Sequelize.TEXT,
@@ -41,19 +31,6 @@ module.exports = {
             allergies: {
                 type: Sequelize.TEXT,
             },
-            refresh_token: {
-                type: Sequelize.STRING
-            },
-            createdAt: {
-                allowNull: false,
-                type: 'TIMESTAMP',
-                defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
-            },
-            updatedAt: {
-                allowNull: false,
-                type: 'TIMESTAMP',
-                defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
-            }
         });
     },
     async down(queryInterface, Sequelize) {

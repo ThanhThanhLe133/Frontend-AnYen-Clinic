@@ -1,7 +1,7 @@
 'use strict';
 const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-    class Patient extends Model {
+    class User extends Model {
         /**
          * Helper method for defining associations.
          * This method is not a part of Sequelize lifecycle.
@@ -9,40 +9,44 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             // define association here
-            Patient.hasOne(models.User, { foreignKey: 'patient_id', targetKey: 'id', as: 'patientId' })
+            User.belongsTo(models.Role, { foreignKey: 'role_id', targetKey: 'id', as: 'roleData' })
         }
     }
-    Patient.init({
-        patient_id: {
+    User.init({
+        id: {
             allowNull: false,
             type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
             primaryKey: true,
         },
-        fullname: {
+        role_id: {
+            allowNull: false,
+            type: DataTypes.UUID,
+        },
+        phone_number: {
             type: DataTypes.STRING,
             allowNull: false,
             unique: true,
         },
-        date_of_birth: {
-            type: DataTypes.DATE,
+        is_active: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
         },
-        gender: {
-            type: DataTypes.ENUM('male', 'female', 'other'),
-        },
-        anonymous_name: {
+        password: {
             type: DataTypes.STRING,
             allowNull: false,
         },
-        medical_history: {
-            type: DataTypes.TEXT,
+        avatar_url: {
+            type: DataTypes.STRING,
         },
-        allergies: {
-            type: DataTypes.TEXT,
+        refresh_token: {
+            type: DataTypes.STRING,
         },
+
     }, {
         sequelize,
-        modelName: 'Patient',
-        tableName: 'Patients'
+        modelName: 'User',
+        tableName: 'Users'
     });
-    return Patient;
+    return User;
 };

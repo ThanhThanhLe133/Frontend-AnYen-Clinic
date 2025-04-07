@@ -1,4 +1,4 @@
-import 'package:anyen_clinic/FilterOption.dart';
+import 'package:anyen_clinic/provider/FilterOptionProvider.dart';
 
 import 'package:anyen_clinic/widget/FilterItemWidget.dart';
 import 'package:flutter/material.dart';

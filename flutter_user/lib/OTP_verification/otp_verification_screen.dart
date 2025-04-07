@@ -1,15 +1,19 @@
 import 'dart:convert';
 
-import 'package:anyen_clinic/OTP_verification/otp_provider.dart';
+import 'package:anyen_clinic/provider/otp_provider.dart';
 import 'package:anyen_clinic/dashboard/dashboard.dart';
 import 'package:anyen_clinic/dialog/SuccessScreen.dart';
-import 'package:anyen_clinic/patient_provider.dart';
+import 'package:anyen_clinic/provider/patient_provider.dart';
+import 'package:anyen_clinic/register/register_screen.dart';
+import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/normalButton.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -125,17 +129,52 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
         final responseData = jsonDecode(response.body);
 
         if (response.statusCode == 200) {
-          // Nếu đăng nhập thành công, chuyển đến màn hình Dashboard
-          showSuccessScreen(context, Dashboard());
+          await storage.write(
+              key: 'access_token', value: responseData['access_token']);
+          await storage.write(key: 'role', value: responseData['role']);
+          String role = responseData['role'];
+          if (role == 'patient') {
+            showSuccessScreen(context, Dashboard());
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: RichText(
+                  text: TextSpan(
+                    text:
+                        'Chưa có tài khoản. ', // Văn bản hiển thị trước "Đăng ký"
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.black,
+                    ),
+                    children: [
+                      TextSpan(
+                        text: 'Đăng ký',
+                        style: TextStyle(
+                          color: Color(0xFF119CF0),
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => RegisterScreen(),
+                              ),
+                            );
+                          },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
         } else {
-          // Nếu có lỗi, ném ngoại lệ và quay lại LoginScreen
           throw Exception(responseData["message"] ?? "Lỗi đăng nhập");
         }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Lỗi đăng nhập: ${e.toString()}")),
         );
-
         Navigator.pop(context);
       }
     }

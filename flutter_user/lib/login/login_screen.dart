@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:anyen_clinic/OTP_verification/otp_verification_screen.dart';
 import 'package:anyen_clinic/forgotPass/forgot_pass_screen.dart';
-import 'package:anyen_clinic/patient_provider.dart';
+import 'package:anyen_clinic/provider/patient_provider.dart';
 import 'package:anyen_clinic/register/register_screen.dart';
 import 'package:anyen_clinic/widget/buildPasswordField.dart';
 import 'package:anyen_clinic/widget/inputPhoneNumber.dart';
