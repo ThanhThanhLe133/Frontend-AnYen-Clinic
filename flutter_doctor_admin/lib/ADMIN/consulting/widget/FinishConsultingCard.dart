@@ -1,31 +1,34 @@
 import 'dart:math';
 
+import 'package:ayclinic_doctor_admin/ADMIN/review/review_doctor_screen.dart';
 import 'package:ayclinic_doctor_admin/dialog/PatientInfo.dart';
-import 'package:ayclinic_doctor_admin/dialog/option_dialog.dart';
+import 'package:ayclinic_doctor_admin/dialog/Prescription.dart';
+import 'package:ayclinic_doctor_admin/dialog/Summary.dart';
 import 'package:ayclinic_doctor_admin/widget/buildMoreOption.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AppointmentConnectingCard extends ConsumerWidget {
-  const AppointmentConnectingCard({
+class FinishConsultingCard extends StatelessWidget {
+  const FinishConsultingCard({
     super.key,
     required this.isOnline,
     required this.date,
+    required this.status,
     required this.time,
     required this.question,
   });
   final bool isOnline;
   final String date;
   final String time;
+  final String status;
   final String question;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     return Container(
       margin: EdgeInsets.only(bottom: screenHeight * 0.03),
-      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.025),
+      padding: EdgeInsets.all(screenWidth * 0.03),
       constraints: BoxConstraints(minWidth: screenWidth * 0.9),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -35,7 +38,6 @@ class AppointmentConnectingCard extends ConsumerWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Thông tin bác sĩ
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -59,7 +61,15 @@ class AppointmentConnectingCard extends ConsumerWidget {
                     color: Color(0xFF40494F),
                   ),
                 ),
-
+                SizedBox(height: screenWidth * 0.02),
+                Text(
+                  "Câu hỏi: ${question.length > 10 ? '${question.substring(0, 10)}...' : question}",
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.04,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.grey[400],
+                  ),
+                ),
                 SizedBox(height: screenWidth * 0.03),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -136,19 +146,69 @@ class AppointmentConnectingCard extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  status.isNotEmpty
+                      ? GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ReviewDoctorScreen(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: screenWidth * 0.2,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: screenWidth * 0.01,
+                            vertical: screenWidth * 0.01,
+                          ),
+                          decoration: BoxDecoration(
+                            color:
+                                status == "Đã đánh giá"
+                                    ? Color(0xFFD9D9D9)
+                                    : Color(0xFFDB5B8B),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: Text(
+                            textAlign: TextAlign.center,
+                            status,
+                            style: TextStyle(
+                              fontSize: screenWidth * 0.025,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      )
+                      : SizedBox(),
                   MoreOptionsMenu(
                     options: [
                       "Thông tin bệnh nhân",
                       "Thông tin bác sĩ",
-                      "Huỷ lịch hẹn",
-                      "Sửa lịch hẹn",
+                      "Xem đơn thuốc",
+                      "Xem lịch sử thanh toán",
+                      "Xem tổng kết",
                     ],
                     onSelected: (value) {
                       switch (value) {
                         case "Thông tin bệnh nhân":
                           showPatientInfoDialog(context);
                           break;
-
+                        case "Thông tin bác sĩ":
+                          showSummaryDialog(context);
+                          break;
+                        case "Xem lịch sử thanh toán":
+                          showSummaryDialog(context);
+                          break;
+                        case "Xem tổng kết":
+                          showSummaryDialog(context);
+                          break;
+                        case "Xem đơn thuốc":
+                          showPrescriptionDialog(context, [
+                            {"name": "Paracetamol", "dosage": "Sáng 1v"},
+                            {"name": "Amoxicillin", "dosage": "Sáng 1v"},
+                            {"name": "Vitamin C", "dosage": "Sáng 1v"},
+                          ]);
+                          break;
                         default:
                       }
                     },
@@ -179,7 +239,7 @@ class AppointmentConnectingCard extends ConsumerWidget {
                   ),
                 ],
               ),
-              SizedBox(height: screenWidth * 0.01),
+              SizedBox(height: screenWidth * 0.03),
               Padding(
                 padding: EdgeInsets.only(top: 8),
                 child: Row(
@@ -237,7 +297,6 @@ class AppointmentConnectingCard extends ConsumerWidget {
                   ],
                 ),
               ),
-              SizedBox(height: screenWidth * 0.03),
             ],
           ),
         ],
