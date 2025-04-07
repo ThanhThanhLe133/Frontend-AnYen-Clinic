@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:ayclinic_doctor_admin/widget/DoctorCardInList.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/widget/menu_admin.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/add_doctor_screen.dart';
+import 'details_doctor_screen.dart';
 
 class DoctorListScreen extends StatefulWidget {
   const DoctorListScreen({super.key});
@@ -157,7 +159,7 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
           child: Container(color: Color(0xFF9BA5AC), height: 1.0),
         ),
       ),
-      floatingActionButton: MenuAdmin(),
+      // floatingActionButton: MenuAdmin(),
       body: Padding(
         padding: EdgeInsets.symmetric(
           horizontal: screenWidth * 0.05,
@@ -170,17 +172,47 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
             if (index == _displayedDoctors.length) {
               return Center(child: CircularProgressIndicator());
             }
-            return DoctorCardInList(
-              screenWidth: screenWidth,
-              screenHeight: screenHeight,
-              name: _displayedDoctors[index]['name']!,
-              specialty: _displayedDoctors[index]['specialty']!,
-              workplace: _displayedDoctors[index]['workplace']!,
-              imageUrl: _displayedDoctors[index]['image']!,
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) => DetailsDoctorScreen(
+                          // doctor: _displayedDoctors[index], // Truyền dữ liệu bác sĩ
+                        ),
+                  ),
+                );
+              },
+              child: DoctorCardInList(
+                screenWidth: screenWidth,
+                screenHeight: screenHeight,
+                name: _displayedDoctors[index]['name']!,
+                specialty: _displayedDoctors[index]['specialty']!,
+                workplace: _displayedDoctors[index]['workplace']!,
+                imageUrl: _displayedDoctors[index]['image']!,
+              ),
             );
           },
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          print("Floating Action Button Pressed");
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AddDoctorScreen()),
+          );
+        },
+        backgroundColor: Colors.blue,
+        shape: const CircleBorder(), // Đảm bảo hình tròn rõ ràng
+        child: const Icon(
+          Icons.add,
+          size: 30,
+          color: Colors.white, // Dấu + màu trắng
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }

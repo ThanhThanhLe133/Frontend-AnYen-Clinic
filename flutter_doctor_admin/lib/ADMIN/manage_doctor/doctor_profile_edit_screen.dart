@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class AddDoctorScreen extends StatelessWidget {
-  const AddDoctorScreen({super.key});
+class DoctorProfileEditScreen extends StatelessWidget {
+  const DoctorProfileEditScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +64,7 @@ class AddDoctorScreen extends StatelessWidget {
           },
         ),
         title: Text(
-          "Thêm mới bác sĩ",
+          "Sửa thông tin bác sĩ",
           style: TextStyle(
             color: Colors.blue,
             fontSize: screenWidth * 0.065,
