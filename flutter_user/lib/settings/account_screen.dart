@@ -1,13 +1,18 @@
+import 'package:anyen_clinic/dialog/SuccessDialog.dart';
+import 'package:anyen_clinic/dialog/option_dialog.dart';
+import 'package:anyen_clinic/login/login_screen.dart';
 import 'package:anyen_clinic/settings/about_us_screen.dart';
 import 'package:anyen_clinic/settings/change_pass_screen.dart';
 import 'package:anyen_clinic/settings/medical_records_screen.dart';
 import 'package:anyen_clinic/settings/notification_screen.dart';
+import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/CustomBackButton.dart';
 import 'package:anyen_clinic/widget/SettingsMenu.dart';
 import 'package:anyen_clinic/widget/menu.dart';
 import 'package:anyen_clinic/widget/sectionTitle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 
 final patientDataProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
   await Future.delayed(Duration(seconds: 1));
@@ -36,6 +41,28 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
   void onCancelEdit() {
     controller.text = ref.read(savedTextProvider) ?? '';
     ref.read(isEditingProvider.notifier).state = false;
+  }
+
+  Future<void> callLogoutAPI() async {
+    final accessToken = await storage.read(key: 'access_token');
+    final response = await http.post(
+      Uri.parse('$apiUrl/auth/logout'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      await storage.delete(key: 'access_token');
+      await storage.delete(key: 'refresh_token');
+      showSuccessDialog(
+          context, LoginScreen(), "Đăng xuất thành công", "Đăng nhập");
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Đăng xuất thất bại")),
+      );
+    }
   }
 
   @override
@@ -332,7 +359,16 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                       width: screenWidth * 0.5,
                       height: screenWidth * 0.12,
                       child: TextButton(
-                        onPressed: () {},
+                        onPressed: () => showOptionDialog(
+                          context,
+                          "Đăng xuất",
+                          "Bạn có chắc chắn muốn đăng xuất",
+                          "HUỶ",
+                          "Đồng ý",
+                          () {
+                            callLogoutAPI();
+                          },
+                        ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.center,

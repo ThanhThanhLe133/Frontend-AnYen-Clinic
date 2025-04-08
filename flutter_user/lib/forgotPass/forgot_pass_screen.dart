@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:anyen_clinic/OTP_verification/otp_verification_screen.dart';
 import 'package:anyen_clinic/provider/patient_provider.dart';
+import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/inputPhoneNumber.dart';
 import 'package:anyen_clinic/widget/normalButton.dart';
 import 'package:anyen_clinic/widget/phoneCode_drop_down/country_code_provider.dart';
@@ -19,7 +20,6 @@ class ForgotPassScreen extends ConsumerStatefulWidget {
 
 class _ForgotPassScreenState extends ConsumerState<ForgotPassScreen> {
   final phoneController = TextEditingController();
-  String apiUrl = dotenv.env['API_URL'] ?? 'https://default-api.com';
   Future<void> sendOTP() async {
     final selectedCountryCode = ref.read(countryCodeProvider);
 

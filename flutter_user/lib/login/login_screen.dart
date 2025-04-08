@@ -4,6 +4,7 @@ import 'package:anyen_clinic/OTP_verification/otp_verification_screen.dart';
 import 'package:anyen_clinic/forgotPass/forgot_pass_screen.dart';
 import 'package:anyen_clinic/provider/patient_provider.dart';
 import 'package:anyen_clinic/register/register_screen.dart';
+import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/buildPasswordField.dart';
 import 'package:anyen_clinic/widget/inputPhoneNumber.dart';
 import 'package:anyen_clinic/widget/normalButton.dart';
@@ -23,8 +24,6 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  String apiUrl = dotenv.env['API_URL'] ?? 'https://default-api.com';
-  bool obscurePassword = true;
   final phoneController = TextEditingController();
   final passController = TextEditingController();
   Future<void> sendOTP() async {
@@ -71,7 +70,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         throw Exception(responseData["message"] ?? "Lỗi đăng nhập");
       }
     } catch (e) {
-      debugPrint("🔍$e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Lỗi đăng nhập: ${e.toString()}")),
       );
