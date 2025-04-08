@@ -1,4 +1,7 @@
+import 'package:ayclinic_doctor_admin/ADMIN/chat/CallScreen.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/consulting/consulting_screen.dart';
+import 'package:ayclinic_doctor_admin/DOCTOR/dashboard_doctor/dashboard.dart';
+
 import 'package:ayclinic_doctor_admin/login/login_screen.dart';
 import 'package:ayclinic_doctor_admin/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +33,7 @@ class MainApp extends StatelessWidget {
           bodySmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
         ),
       ),
-      home: ConsultingScreen(),
+      home: CallScreen(),
     );
   }
 }
