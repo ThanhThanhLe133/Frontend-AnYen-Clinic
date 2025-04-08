@@ -1,3 +1,4 @@
+import 'package:ayclinic_doctor_admin/widget/normalButton.dart';
 import 'package:flutter/material.dart';
 
 class AddDoctorScreen extends StatelessWidget {
@@ -115,7 +116,10 @@ class AddDoctorScreen extends StatelessWidget {
                       RichText(
                         text: TextSpan(
                           text: 'Giới tính',
-                          style: TextStyle(color: Colors.black, fontSize: 14),
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: screenWidth * 0.04,
+                          ),
                           children: [
                             TextSpan(
                               text: ' *',
@@ -159,24 +163,10 @@ class AddDoctorScreen extends StatelessWidget {
             buildTextField("Chứng chỉ hành nghề"),
             buildTextField("Chi phí tư vấn", isRequired: true),
             const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  // xử lý lưu
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  backgroundColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-                child: const Text(
-                  "Lưu",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
+            normalButton(
+              screenWidth: screenWidth,
+              screenHeight: screenHeight,
+              label: "Lưu",
             ),
           ],
         ),

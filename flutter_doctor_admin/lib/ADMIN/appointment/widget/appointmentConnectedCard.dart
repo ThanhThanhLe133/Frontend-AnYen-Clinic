@@ -238,7 +238,7 @@ class AppointmentConnectedCard extends ConsumerWidget {
                                 fixedSize: Size(screenWidth * 0.05, 16),
                                 minimumSize: Size(
                                   screenWidth * 0.15,
-                                  screenHeight * 0.08,
+                                  screenHeight * 0.06,
                                 ),
                               ),
                               child: Text(
@@ -265,7 +265,7 @@ class AppointmentConnectedCard extends ConsumerWidget {
                                 fixedSize: Size(screenWidth * 0.05, 16),
                                 minimumSize: Size(
                                   screenWidth * 0.15,
-                                  screenHeight * 0.08,
+                                  screenHeight * 0.06,
                                 ),
                               ),
                               child: Text(
