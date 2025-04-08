@@ -214,7 +214,6 @@ export const resetPassword = ({ userId, oldPassword, newPassword }) => new Promi
       }
     );
 
-
     resolve({
       err: 0,
       mes: 'Change password successfully.'
