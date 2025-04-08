@@ -10,7 +10,7 @@ const hashPassword = password => bcrypt.hashSync(password, bcrypt.genSaltSync(10
 
 export const register = ({ phone_number, password }) => new Promise(async (resolve, reject) => {
   try {
-    const [patientRole, createdRole] = await db.Role.findOrCreate({
+    const [role] = await db.Role.findOrCreate({
       where: { value: 'patient' }
     });
 
@@ -20,25 +20,30 @@ export const register = ({ phone_number, password }) => new Promise(async (resol
       defaults: {
         phone_number,
         password: hashPassword(password),
-        role_id: patientRole.id
       }
     });
 
-    if (!created) {
+    const existingRole = await db.UserRole.findOne({
+      where: { user_id: user.id, role_id: role.id }
+    });
+
+    // Đã tồn tại user + đã có role 'patient' => không tạo thêm gì
+    if (existingRole && !created) {
       return resolve({
         err: 1,
-        mes: "Phone number is already in use",
-        access_token: null,
-        refresh_token: null
+        mes: "Phone number already exists, added 'patient' role if missing"
       });
     }
-    const [patient, patientCreated] = await db.Patient.findOrCreate({
-      where: { patient_id: user.id },
-      raw: true,
-      defaults: {
-        patient_id: user.id
-      }
-    });
+
+    // Nếu là user mới hoặc user chưa có role 'patient' => thêm role
+    if (!existingRole) {
+      await db.UserRole.create({
+        user_id: user.id,
+        role_id: role.id
+      });
+    }
+    //tạo bệnh nhân
+    await db.Patient.create({ patient_id: user.id, });
 
     const access_token = jwt.sign(
       {
@@ -92,8 +97,9 @@ export const login = ({ phone_number, password }) => new Promise(async (resolve,
         {
           model: db.Role,
           foreignKey: 'role_id',
-          as: 'roleData',
-          attributes: ['value']
+          as: 'roles',
+          attributes: ['value'],
+          through: { attributes: [] }
         }
       ]
     })
@@ -103,7 +109,7 @@ export const login = ({ phone_number, password }) => new Promise(async (resolve,
         mes: 'Phone number has not been registered',
         access_token: null,
         refresh_token: null,
-        role: null,
+        roles: null,
       });
     }
     const isChecked = response && bcrypt.compareSync(password, response.password)
@@ -113,12 +119,14 @@ export const login = ({ phone_number, password }) => new Promise(async (resolve,
         mes: 'Password is incorrect',
         access_token: null,
         refresh_token: null,
-        role: null,
+        roles: null,
       });
     }
 
+    const roleValues = response.roles.map(r => r.value);
+
     const access_token = isChecked
-      ? jwt.sign({ id: response.id, phone_number: response.phone_number, role: response.roleData.value }, process.env.JWT_SECRET, { expiresIn: '5m' })
+      ? jwt.sign({ id: response.id, phone_number: response.phone_number, roles: roleValues }, process.env.JWT_SECRET, { expiresIn: '5m' })
       : null
 
     const refresh_token = jwt.sign({ id: response.id }, process.env.JWT_SECRET_REFRESH_TOKEN, { expiresIn: '7d' })
@@ -128,7 +136,7 @@ export const login = ({ phone_number, password }) => new Promise(async (resolve,
       mes: 'Login successfully',
       access_token: `Bearer ${access_token}`,
       refresh_token,
-      role: response.roleData.value,
+      roles: roleValues,
     });
 
     await db.User.update(

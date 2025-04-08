@@ -3,32 +3,30 @@
 module.exports = {
     async up(queryInterface, Sequelize) {
 
-        await queryInterface.createTable('Users', {
+        await queryInterface.createTable('UserRoles', {
             id: {
                 allowNull: false,
+                primaryKey: true,
                 type: Sequelize.UUID,
                 defaultValue: Sequelize.literal('gen_random_uuid()'),
-                primaryKey: true,
             },
-            phone_number: {
-                type: Sequelize.STRING,
-                allowNull: false,
-                unique: true,
+            user_id: {
+                type: Sequelize.UUID,
+                references: {
+                    model: 'Users',
+                    key: 'id'
+                },
+                onDelete: 'SET NULL',
+                onUpdate: 'CASCADE'
             },
-            is_active: {
-                type: Sequelize.BOOLEAN,
-                allowNull: false,
-                defaultValue: true,
-            },
-            password: {
-                type: Sequelize.STRING,
-                allowNull: false,
-            },
-            avatar_url: {
-                type: Sequelize.TEXT,
-            },
-            refresh_token: {
-                type: Sequelize.STRING
+            role_id: {
+                type: Sequelize.UUID,
+                references: {
+                    model: 'Roles',
+                    key: 'id'
+                },
+                onDelete: 'SET NULL',
+                onUpdate: 'CASCADE'
             },
             createdAt: {
                 allowNull: false,
@@ -43,6 +41,6 @@ module.exports = {
         });
     },
     async down(queryInterface, Sequelize) {
-        await queryInterface.dropTable('Users');
+        await queryInterface.dropTable('UserRoles');
     }
 };

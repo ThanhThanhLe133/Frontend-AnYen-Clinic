@@ -8,8 +8,13 @@ module.exports = (sequelize, DataTypes) => {
          * The `models/index` file will call this method automatically.
          */
         static associate(models) {
-            // define association here
-            User.belongsTo(models.Role, { foreignKey: 'role_id', targetKey: 'id', as: 'roleData' })
+            User.belongsToMany(models.Role, {
+                through: models.UserRole,
+                foreignKey: 'user_id',
+                otherKey: 'role_id',
+                as: 'roles'
+            });
+
         }
     }
     User.init({
@@ -18,10 +23,6 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4,
             primaryKey: true,
-        },
-        role_id: {
-            allowNull: false,
-            type: DataTypes.UUID,
         },
         phone_number: {
             type: DataTypes.STRING,

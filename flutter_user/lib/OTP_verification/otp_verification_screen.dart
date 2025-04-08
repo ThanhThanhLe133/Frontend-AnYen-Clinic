@@ -132,8 +132,8 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
           await storage.write(
               key: 'access_token', value: responseData['access_token']);
           await storage.write(key: 'role', value: responseData['role']);
-          String role = responseData['role'];
-          if (role == 'patient') {
+          List<String> roles = responseData['roles'];
+          if (roles.contains('patient')) {
             showSuccessScreen(context, Dashboard());
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
