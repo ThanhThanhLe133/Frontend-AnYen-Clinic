@@ -1,7 +1,3 @@
-import express from "express";
-import { body } from "express-validator";
-import * as userController from "../controllers/userController.js";
-import { authenticate } from "../middlewares/authMiddleware.js";
 import bcrypt from "bcryptjs"
 import db from '../models'
 import jwt from 'jsonwebtoken'
@@ -103,6 +99,7 @@ export const login = ({ phone_number, password }) => new Promise(async (resolve,
         mes: 'Phone number has not been registered',
         access_token: null,
         refresh_token: null,
+        id: null,
         role: null,
       });
     }
@@ -113,6 +110,7 @@ export const login = ({ phone_number, password }) => new Promise(async (resolve,
         mes: 'Password is incorrect',
         access_token: null,
         refresh_token: null,
+        id: null,
         role: null,
       });
     }
@@ -128,6 +126,7 @@ export const login = ({ phone_number, password }) => new Promise(async (resolve,
       mes: 'Login successfully',
       access_token: `Bearer ${access_token}`,
       refresh_token,
+      id: response.id,
       role: response.roleData.value,
     });
 
@@ -139,6 +138,34 @@ export const login = ({ phone_number, password }) => new Promise(async (resolve,
     reject(error)
   }
 })
+
+export const forgotPassword = ({ phone_number, password }) => new Promise(async (resolve, reject) => {
+  try {
+    const user = await db.User.findOne({ where: { phone_number } });
+
+    if (!user) {
+      return resolve({
+        err: 1,
+        mes: 'Phone number is not exist.'
+      });
+    }
+
+    const hashedPassword = hashPassword(password);
+
+    await db.User.update(
+      { password: hashedPassword },
+      { where: { phone_number } }
+    );
+
+    resolve({
+      err: 0,
+      mes: 'Change password successfully.'
+    });
+  } catch (error) {
+    reject(error);
+  }
+});
+
 
 export const refreshToken = (refresh_token) => new Promise(async (resolve, reject) => {
   try {
@@ -182,3 +209,26 @@ export const refreshToken = (refresh_token) => new Promise(async (resolve, rejec
     reject(error)
   }
 })
+
+export const logout = ({ userId }) => new Promise(async (resolve, reject) => {
+  try {
+    const updated = await db.User.update(
+      { refresh_token: null },
+      { where: { id: userId } }
+    );
+
+    if (updated[0] === 0) {
+      return resolve({
+        err: 1,
+        mes: 'User not found or already logged out'
+      });
+    }
+
+    resolve({
+      err: 0,
+      mes: 'Logout successfully'
+    });
+  } catch (error) {
+    reject(error);
+  }
+});

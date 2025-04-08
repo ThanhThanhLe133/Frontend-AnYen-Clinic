@@ -12,10 +12,12 @@ router.post("/register", controllers.register);
 // Login route
 router.post('/login', controllers.login);
 
-
+router.post("/forgot-pass", controllers.forgotPassword);
 // Refresh token route
 router.post("/refresh-token", controllers.refreshTokenController);
 
+
+router.post("/logout", verifyToken, controllers.logout);
 // // Logout route
 // router.post("/logout", controllers.logout);
 
