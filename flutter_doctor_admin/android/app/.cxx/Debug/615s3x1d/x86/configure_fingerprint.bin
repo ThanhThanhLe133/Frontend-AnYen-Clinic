@@ -2,6 +2,7 @@ C/C++ Structured Log}
 {
 yC:\Users\MSI\Downloads\flutter_windows_3.29.2-stable\flutter\packages\flutter_tools\gradle\src\main\groovy\CMakeLists.txtC
 A
+<<<<<<< HEAD
 ?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	íÒž³á2§ µ¯ˆŠÙ2j
 h
 fD:\flutter\se346\flutter_doctor_admin\android\app\.cxx\Debug\615s3x1d\x86\additional_project_files.txt	íÒž³á2 •ä‹³á2g
@@ -26,3 +27,29 @@ iD:\flutter\se346\flutter_doctor_admin\android\app\.cxx\Debug\615s3x1d\x86\metad
 \D:\flutter\se346\flutter_doctor_admin\android\app\.cxx\Debug\615s3x1d\x86\prefab_config.json	íÒž³á2( ™ä‹³á2e
 c
 aD:\flutter\se346\flutter_doctor_admin\android\app\.cxx\Debug\615s3x1d\x86\symbol_folder_index.txt	íÒž³á2X ™ä‹³á2
+=======
+?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	ãþï°á2§ µ¯ˆŠÙ2j
+h
+fD:\flutter\se346\flutter_doctor_admin\android\app\.cxx\Debug\615s3x1d\x86\additional_project_files.txt	ãþï°á2 ë¥¿¯á2g
+e
+cD:\flutter\se346\flutter_doctor_admin\android\app\.cxx\Debug\615s3x1d\x86\android_gradle_build.json	ãþï°á2Ö í¥¿¯á2l
+j
+hD:\flutter\se346\flutter_doctor_admin\android\app\.cxx\Debug\615s3x1d\x86\android_gradle_build_mini.json	ãþï°á2µ í¥¿¯á2Y
+W
+UD:\flutter\se346\flutter_doctor_admin\android\app\.cxx\Debug\615s3x1d\x86\build.ninja	ãþï°á2ƒÒ ¡¥¿¯á2]
+[
+YD:\flutter\se346\flutter_doctor_admin\android\app\.cxx\Debug\615s3x1d\x86\build.ninja.txt	ãþï°á2b
+`
+^D:\flutter\se346\flutter_doctor_admin\android\app\.cxx\Debug\615s3x1d\x86\build_file_index.txt	ãþï°á2y î¥¿¯á2c
+a
+_D:\flutter\se346\flutter_doctor_admin\android\app\.cxx\Debug\615s3x1d\x86\compile_commands.json	ãþï°á2	g
+e
+cD:\flutter\se346\flutter_doctor_admin\android\app\.cxx\Debug\615s3x1d\x86\compile_commands.json.bin	ãþï°á2
+m
+k
+iD:\flutter\se346\flutter_doctor_admin\android\app\.cxx\Debug\615s3x1d\x86\metadata_generation_command.txt	ãþï°á2Ú î¥¿¯á2`
+^
+\D:\flutter\se346\flutter_doctor_admin\android\app\.cxx\Debug\615s3x1d\x86\prefab_config.json	ãþï°á2( î¥¿¯á2e
+c
+aD:\flutter\se346\flutter_doctor_admin\android\app\.cxx\Debug\615s3x1d\x86\symbol_folder_index.txt	ãþï°á2X î¥¿¯á2
+>>>>>>> 73db9e30ba063b444ea755860cbc34cb65e2c2cd
