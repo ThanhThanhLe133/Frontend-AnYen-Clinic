@@ -1,3 +1,5 @@
+import 'package:ayclinic_doctor_admin/ADMIN/appointment/appointment_screen.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/message/message_screen.dart';
 import 'package:ayclinic_doctor_admin/login/login_screen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/menu_doctor.dart';
 import 'package:ayclinic_doctor_admin/widget/radialBarChart.dart';
@@ -180,7 +182,7 @@ class _DashboardState extends ConsumerState<Dashboard> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => LoginScreen(),
+                              builder: (context) => AppointmentScreen(),
                             ),
                           );
                         },
@@ -221,7 +223,7 @@ class _DashboardState extends ConsumerState<Dashboard> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => LoginScreen(),
+                              builder: (context) => MessageScreen(),
                             ),
                           );
                         },

@@ -67,20 +67,24 @@ class _CallScreenState extends State<CallScreen> {
             children: [
               CircleAvatar(
                 radius: screenWidth * 0.25,
-                backgroundImage: AssetImage("assets/images/doctor.png"),
+                backgroundImage: AssetImage("assets/images/user.png"),
                 backgroundColor: Color(0xFF119CF0),
               ),
               SizedBox(height: screenWidth * 0.03),
               Text(
-                "BS.CKI Macus Horizon",
+                "User1",
                 style: TextStyle(
-                    fontSize: screenWidth * 0.06, fontWeight: FontWeight.bold),
+                  fontSize: screenWidth * 0.06,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               SizedBox(height: screenWidth * 0.03),
               Text(
                 formatTime(seconds),
                 style: TextStyle(
-                    fontSize: screenWidth * 0.05, color: Colors.grey[700]),
+                  fontSize: screenWidth * 0.05,
+                  color: Colors.grey[700],
+                ),
               ),
             ],
           ),
@@ -114,14 +118,9 @@ class _CallScreenState extends State<CallScreen> {
                   screenWidth,
                 ),
                 SizedBox(width: 30),
-                buildCallButton(
-                  Icons.call_end,
-                  Colors.red,
-                  () {
-                    Navigator.pop(context);
-                  },
-                  screenWidth,
-                ),
+                buildCallButton(Icons.call_end, Colors.red, () {
+                  Navigator.pop(context);
+                }, screenWidth),
               ],
             ),
           ),
@@ -132,16 +131,16 @@ class _CallScreenState extends State<CallScreen> {
 
   // Widget nút tròn
   Widget buildCallButton(
-      IconData icon, Color color, VoidCallback onPressed, double screenWidth) {
+    IconData icon,
+    Color color,
+    VoidCallback onPressed,
+    double screenWidth,
+  ) {
     return CircleAvatar(
       radius: screenWidth * 0.08,
       backgroundColor: color,
       child: IconButton(
-        icon: Icon(
-          icon,
-          color: Colors.white,
-          size: screenWidth * 0.1,
-        ),
+        icon: Icon(icon, color: Colors.white, size: screenWidth * 0.1),
         onPressed: onPressed,
       ),
     );

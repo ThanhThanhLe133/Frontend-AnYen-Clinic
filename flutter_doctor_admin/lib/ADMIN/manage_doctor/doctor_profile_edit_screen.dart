@@ -1,8 +1,7 @@
-import 'package:ayclinic_doctor_admin/widget/normalButton.dart';
 import 'package:flutter/material.dart';
 
-class AddDoctorScreen extends StatelessWidget {
-  const AddDoctorScreen({super.key});
+class DoctorProfileEditScreen extends StatelessWidget {
+  const DoctorProfileEditScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +64,7 @@ class AddDoctorScreen extends StatelessWidget {
           },
         ),
         title: Text(
-          "Thêm mới bác sĩ",
+          "Sửa thông tin bác sĩ",
           style: TextStyle(
             color: Colors.blue,
             fontSize: screenWidth * 0.065,
@@ -116,10 +115,7 @@ class AddDoctorScreen extends StatelessWidget {
                       RichText(
                         text: TextSpan(
                           text: 'Giới tính',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: screenWidth * 0.04,
-                          ),
+                          style: TextStyle(color: Colors.black, fontSize: 14),
                           children: [
                             TextSpan(
                               text: ' *',
@@ -163,10 +159,24 @@ class AddDoctorScreen extends StatelessWidget {
             buildTextField("Chứng chỉ hành nghề"),
             buildTextField("Chi phí tư vấn", isRequired: true),
             const SizedBox(height: 16),
-            normalButton(
-              screenWidth: screenWidth,
-              screenHeight: screenHeight,
-              label: "Lưu",
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  // xử lý lưu
+                },
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  backgroundColor: Colors.blue,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                child: const Text(
+                  "Lưu",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
             ),
           ],
         ),

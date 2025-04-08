@@ -1,9 +1,12 @@
+import 'package:ayclinic_doctor_admin/ADMIN/chat/CallScreen.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/consulting/consulting_screen.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/doctor_profile_edit_screen.dart';
 import 'package:ayclinic_doctor_admin/login/login_screen.dart';
 import 'package:ayclinic_doctor_admin/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/dashboard_admin/dashboard.dart';
 
 import 'ADMIN/appointment/appointment_screen.dart';
 import 'ADMIN/appointment/widget/appointmentConnectingCard.dart';
@@ -30,7 +33,7 @@ class MainApp extends StatelessWidget {
           bodySmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
         ),
       ),
-      home: ConsultingScreen(),
+      home: DoctorProfileEditScreen(),
     );
   }
 }

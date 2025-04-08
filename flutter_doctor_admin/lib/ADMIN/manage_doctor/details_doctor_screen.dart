@@ -4,18 +4,19 @@
 // import 'package:anyen_clinic/widget/consultationBottomBar.dart';
 // import 'package:anyen_clinic/widget/sectionTitle.dart' show sectionTitle;
 
+import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/doctor_profile_edit_screen.dart';
 import 'package:flutter/material.dart';
 
 import 'package:ayclinic_doctor_admin/widget/DoctorCardInList.dart';
-import 'package:ayclinic_doctor_admin/ADMIN/widget/menu_admin.dart';
+import 'doctor_list_screen.dart';
 import 'listReview_doctor_screen.dart';
 import 'package:ayclinic_doctor_admin/widget/reviewCard_widget.dart';
 import 'package:ayclinic_doctor_admin/widget/consultationBottomBar.dart';
 import 'package:ayclinic_doctor_admin/widget/sectionTitle.dart'
     show sectionTitle;
 
-class DoctorDetailScreen extends StatelessWidget {
-  const DoctorDetailScreen({super.key});
+class DetailsDoctorScreen extends StatelessWidget {
+  const DetailsDoctorScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -248,6 +249,14 @@ class DoctorDetailScreen extends StatelessWidget {
             SizedBox(height: screenHeight * 0.03),
           ],
         ),
+      ),
+      bottomNavigationBar: ConsultationBottomBar(
+        screenHeight: screenHeight,
+        screenWidth: screenWidth,
+        content: "Chi phí tư vấn",
+        totalMoney: "99.000 đ",
+        nameButton: "SỬA THÔNG TIN",
+        nextScreen: DoctorProfileEditScreen(),
       ),
     );
   }
