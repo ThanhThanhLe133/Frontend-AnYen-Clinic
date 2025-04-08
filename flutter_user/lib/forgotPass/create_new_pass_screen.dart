@@ -38,7 +38,7 @@ class _CreateNewPassScreenState extends ConsumerState<CreateNewPassScreen> {
     }
     if (password != retypePassword) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Mật khẩu xác thực không khớp")),
+        SnackBar(content: Text("Mật khẩu xác nhận không khớp")),
       );
       return;
     }
@@ -59,7 +59,7 @@ class _CreateNewPassScreenState extends ConsumerState<CreateNewPassScreen> {
         ref.read(phoneNumberProvider.notifier).state = '';
         ref.read(passwordProvider.notifier).state = '';
       } else {
-        throw Exception(responseData["message"] ?? "Lỗi đăng nhập");
+        throw Exception(responseData["message"] ?? "Lỗi tạo mật khẩu mới");
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

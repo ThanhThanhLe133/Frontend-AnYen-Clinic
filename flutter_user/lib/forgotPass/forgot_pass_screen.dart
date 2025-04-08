@@ -56,7 +56,6 @@ class _ForgotPassScreenState extends ConsumerState<ForgotPassScreen> {
         throw Exception(responseData["message"] ?? "Lỗi xác thực");
       }
     } catch (e) {
-      debugPrint("🔍$e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Lỗi xác thực: ${e.toString()}")),
       );
