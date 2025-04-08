@@ -1,7 +1,3 @@
-import express from "express";
-import { body } from "express-validator";
-import * as userController from "../controllers/userController.js";
-import { authenticate } from "../middlewares/authMiddleware.js";
 import bcrypt from "bcryptjs"
 import db from '../models'
 import jwt from 'jsonwebtoken'
@@ -148,6 +144,34 @@ export const login = ({ phone_number, password }) => new Promise(async (resolve,
   }
 })
 
+export const forgotPassword = ({ phone_number, password }) => new Promise(async (resolve, reject) => {
+  try {
+    const user = await db.User.findOne({ where: { phone_number } });
+
+    if (!user) {
+      return resolve({
+        err: 1,
+        mes: 'Phone number is not exist.'
+      });
+    }
+
+    const hashedPassword = hashPassword(password);
+
+    await db.User.update(
+      { password: hashedPassword },
+      { where: { phone_number } }
+    );
+
+    resolve({
+      err: 0,
+      mes: 'Change password successfully.'
+    });
+  } catch (error) {
+    reject(error);
+  }
+});
+
+
 export const refreshToken = (refresh_token) => new Promise(async (resolve, reject) => {
   try {
     if (!refresh_token) {
@@ -190,3 +214,26 @@ export const refreshToken = (refresh_token) => new Promise(async (resolve, rejec
     reject(error)
   }
 })
+
+export const logout = ({ userId }) => new Promise(async (resolve, reject) => {
+  try {
+    const updated = await db.User.update(
+      { refresh_token: null },
+      { where: { id: userId } }
+    );
+
+    if (updated[0] === 0) {
+      return resolve({
+        err: 1,
+        mes: 'User not found or already logged out'
+      });
+    }
+
+    resolve({
+      err: 0,
+      mes: 'Logout successfully'
+    });
+  } catch (error) {
+    reject(error);
+  }
+});

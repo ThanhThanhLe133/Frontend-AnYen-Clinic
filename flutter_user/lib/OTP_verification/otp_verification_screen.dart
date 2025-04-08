@@ -140,8 +140,7 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
               SnackBar(
                 content: RichText(
                   text: TextSpan(
-                    text:
-                        'Chưa có tài khoản. ', // Văn bản hiển thị trước "Đăng ký"
+                    text: 'Chưa có tài khoản. ',
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.black,
@@ -190,7 +189,6 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
             "otp": otpCode,
           }),
         );
-        debugPrint("🔍 API Response: ${response.body}");
         final responseData = jsonDecode(response.body);
 
         if (response.statusCode == 200) {
@@ -204,7 +202,6 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
           throw Exception(responseData["message"] ?? "Xác thực OTP thất bại");
         }
       } catch (e) {
-        debugPrint("🔍$e");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Lỗi OTP: ${e.toString()}")),
         );
