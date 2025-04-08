@@ -8,8 +8,7 @@ module.exports = (sequelize, DataTypes) => {
          * The `models/index` file will call this method automatically.
          */
         static associate(models) {
-            // define association here
-            Doctor.hasOne(models.User, { foreignKey: 'doctor_id', targetKey: 'id', as: 'doctorId' })
+
         }
     }
     Doctor.init({
@@ -21,7 +20,6 @@ module.exports = (sequelize, DataTypes) => {
 
         name: {
             type: DataTypes.STRING,
-            allowNull: false,
         },
         specialization: {
             type: DataTypes.STRING,
@@ -34,6 +32,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         year_experience: {
             type: DataTypes.INTEGER,
+            allowNull: false,
         },
         work_experience: {
             type: DataTypes.STRING,
@@ -55,6 +54,7 @@ module.exports = (sequelize, DataTypes) => {
         sequelize,
         modelName: 'Doctor',
         tableName: 'Doctors',
+        timestamps: false
     });
     return Doctor;
 };

@@ -40,7 +40,7 @@ export const verifyOtp = async (req, res, next) => {
         });
 
         if (error) {
-            return next(createError(401, "OTP không hợp lệ hoặc đã hết hạn"));
+            return res.status(401).send("OTP không hợp lệ hoặc đã hết hạn");
         }
 
         next();

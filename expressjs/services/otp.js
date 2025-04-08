@@ -20,6 +20,6 @@ export const verifyOtp = async (phone_number, otp) => {
     type: "sms",
   });
 
-  if (error) throw new Error(error.message);
+  if (error) return error.message;
   return data;
 };

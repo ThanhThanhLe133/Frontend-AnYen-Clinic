@@ -7,7 +7,7 @@ Content-Type: application/json
 
 {
     "phone_number":"+8423456855",
-    "password":"RSJSJSJ%%2222"
+    "password":"tttRSJSJSJ%%2222"
 }
 
 ###
@@ -15,8 +15,8 @@ POST http://localhost:5000/api/auth/login
 Content-Type: application/json
 
 {
-    "phone_number":"+8",
-    "password":""
+    "phone_number":"+84397813398",
+    "password":"TTSHS7sssh**"
 }
 
 ###
@@ -32,13 +32,13 @@ POST http://localhost:5000/api/otp/verify-otp
 Content-Type: application/json
 
 {
-    "phone_number":"",
-    "otp": ""
+    "phone_number":"+84397813398",
+    "otp": "123452"
 }
 
 ###
-GET http://localhost:5000/api/user/
-Authorization: 
+POST http://localhost:5000/api/auth/logout
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjdmM2U0NmIzLTg3NGYtNDcxNC1iZDIyLTQ4MDRjMDQ2OGRkNSIsInBob25lX251bWJlciI6Iis4NDM5NzgxMzM5OCIsInJvbGVzIjpbInBhdGllbnQiXSwiaWF0IjoxNzQ0MTAzOTU2LCJleHAiOjE3NDQxMDQyNTZ9.1Ji7xyJfJ0TwU87I61LfhtK-uFg3EDqfbnE0KSErWcI
 
 ###
 POST http://localhost:5000/api/auth/refresh-token/

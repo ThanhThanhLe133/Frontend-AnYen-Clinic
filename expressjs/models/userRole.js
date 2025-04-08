@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
                 { foreignKey: 'role_id', as: 'role' });
         }
     }
-    User.init({
+    UserRole.init({
         id: {
             type: DataTypes.UUID,
             defaultValue: sequelize.literal('gen_random_uuid()'),
@@ -25,8 +25,8 @@ module.exports = (sequelize, DataTypes) => {
 
     }, {
         sequelize,
-        modelName: 'User',
-        tableName: 'Users'
+        modelName: 'UserRole',
+        tableName: 'UserRoles'
     });
     return UserRole;
 };

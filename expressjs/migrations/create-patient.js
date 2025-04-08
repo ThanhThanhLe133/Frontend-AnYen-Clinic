@@ -30,6 +30,7 @@ module.exports = {
             allergies: {
                 type: Sequelize.TEXT,
             },
+
         });
     },
     async down(queryInterface, Sequelize) {

@@ -11,7 +11,6 @@ module.exports = {
             },
             name: {
                 type: Sequelize.STRING,
-                allowNull: false,
             },
             avatar_url: {
                 type: Sequelize.TEXT,
@@ -31,6 +30,7 @@ module.exports = {
             year_experience: {
                 type: Sequelize.INTEGER,
                 defaultValue: 0,
+                allowNull: false,
             },
             work_experience: {
                 type: Sequelize.STRING,
@@ -46,6 +46,7 @@ module.exports = {
                 allowNull: false,
                 defaultValue: 0,
             },
+
         });
     },
     async down(queryInterface, Sequelize) {

@@ -15,6 +15,7 @@ export const register = ({ phone_number, password }) => new Promise(async (resol
       raw: true,
       defaults: {
         phone_number,
+        is_active: true,
         password: hashPassword(password),
       }
     });
@@ -27,7 +28,7 @@ export const register = ({ phone_number, password }) => new Promise(async (resol
     if (existingRole && !created) {
       return resolve({
         err: 1,
-        mes: "Phone number already exists, added 'patient' role if missing"
+        mes: "Phone number already exists."
       });
     }
 
@@ -39,7 +40,10 @@ export const register = ({ phone_number, password }) => new Promise(async (resol
       });
     }
     //tạo bệnh nhân
-    await db.Patient.create({ patient_id: user.id, });
+    await db.Patient.create({
+      patient_id: user.id,
+      anonymous_name: `User${user.id.substring(0, 3)}`
+    });
 
     const access_token = jwt.sign(
       {
@@ -87,15 +91,15 @@ export const login = ({ phone_number, password }) => new Promise(async (resolve,
   try {
     const response = await db.User.findOne({
       where: { phone_number },
-      raw: true,
-      nest: true,
       include: [
         {
           model: db.Role,
-          foreignKey: 'role_id',
           as: 'roles',
           attributes: ['value'],
-          through: { attributes: [] }
+          through: {
+            model: db.UserRole,
+            attributes: []
+          }
         }
       ]
     })
@@ -119,7 +123,7 @@ export const login = ({ phone_number, password }) => new Promise(async (resolve,
       });
     }
 
-    const roleValues = response.roles.map(r => r.value);
+    const roleValues = response.roles?.map(r => r.value) || [];
 
     const access_token = isChecked
       ? jwt.sign({ id: response.id, phone_number: response.phone_number, roles: roleValues }, process.env.JWT_SECRET, { expiresIn: '5m' })
