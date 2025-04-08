@@ -174,6 +174,55 @@ export const forgotPassword = ({ phone_number, password }) => new Promise(async 
     reject(error);
   }
 });
+export const resetPassword = ({ userId, oldPassword, newPassword }) => new Promise(async (resolve, reject) => {
+  try {
+    const user = await db.User.findOne({ where: { id: userId } });
+
+    if (!user) {
+      return resolve({
+        err: 1,
+        mes: 'Phone number is not exist.'
+      });
+    }
+    console.log("Password matched:", oldPassword);
+
+    if (!user.password) {
+      return resolve({
+        err: 1,
+        mes: 'Password is not set for this user',
+      });
+    }
+
+    const isChecked = bcrypt.compareSync(oldPassword, user.password);
+
+    if (!isChecked) {
+      return resolve({
+        err: 1,
+        mes: 'Password is incorrect',
+      });
+    }
+
+    const hashedPassword = hashPassword(newPassword);
+
+    await db.User.update(
+      {
+        password: hashedPassword,
+        refresh_token: null
+      },
+      {
+        where: { id: userId }
+      }
+    );
+
+
+    resolve({
+      err: 0,
+      mes: 'Change password successfully.'
+    });
+  } catch (error) {
+    reject(error);
+  }
+});
 
 
 export const refreshToken = (refresh_token) => new Promise(async (resolve, reject) => {
@@ -235,7 +284,9 @@ export const logout = ({ userId }) => new Promise(async (resolve, reject) => {
 
     resolve({
       err: 0,
-      mes: 'Logout successfully'
+      mes: 'Logout successfully',
+      access_token: null,
+      refresh_token: null,
     });
   } catch (error) {
     reject(error);

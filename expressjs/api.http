@@ -35,6 +35,14 @@ Content-Type: application/json
     "phone_number":"+84397813398",
     "otp": "123452"
 }
+###
+POST http://localhost:5000/api/auth/reset-pass
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjdmM2U0NmIzLTg3NGYtNDcxNC1iZDIyLTQ4MDRjMDQ2OGRkNSIsInBob25lX251bWJlciI6Iis4NDM5NzgxMzM5OCIsInJvbGVzIjpbInBhdGllbnQiXSwiaWF0IjoxNzQ0MTEyNDQ5LCJleHAiOjE3NDQxMTI3NDl9.xtoBL1_Ciai0x9x1n1ItIHmHoQUZ9wGazV_--deoy0M
+Content-Type: application/json
+{
+    "oldPassword":"TTSHS7sssh**",
+    "newPassword": "TTSHS7sssh**123"
+}
 
 ###
 POST http://localhost:5000/api/auth/logout

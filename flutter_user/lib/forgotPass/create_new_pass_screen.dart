@@ -44,8 +44,10 @@ class _CreateNewPassScreenState extends ConsumerState<CreateNewPassScreen> {
     }
     try {
       final response = await http.post(
-        Uri.parse('$apiUrl/otp/forgot-pass'),
-        headers: {"Content-Type": "application/json"},
+        Uri.parse('$apiUrl/auth/forgot-pass'),
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: jsonEncode({"phone_number": phoneNumber, "password": password}),
       );
 

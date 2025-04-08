@@ -44,7 +44,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
   }
 
   Future<void> callLogoutAPI() async {
-    final accessToken = await storage.read(key: 'access_token');
+    final accessToken = await getToken();
     final response = await http.post(
       Uri.parse('$apiUrl/auth/logout'),
       headers: {

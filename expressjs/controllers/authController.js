@@ -64,6 +64,32 @@ export const forgotPassword = async (req, res) => {
   }
 }
 
+export const resetPassword = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) return badRequest('Missing user id', res);
+    const { oldPassword, newPassword } = req.body;
+    const { error } = joi.object({
+      newPassword: password
+    }).validate({ newPassword });
+    if (error)
+      return badRequest(error.details[0]?.message, res)
+
+    const response = await services.resetPassword({
+      userId,
+      oldPassword,
+      newPassword
+    });
+
+
+    return res.status(200).json(response)
+  } catch (error) {
+    console.log(error);
+    return internalServerError(res)
+  }
+}
+
 export const logout = async (req, res) => {
   try {
     const userId = req.user?.id;
