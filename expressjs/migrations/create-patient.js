@@ -11,7 +11,6 @@ module.exports = {
             },
             fullname: {
                 type: Sequelize.STRING,
-                allowNull: false,
                 unique: true,
             },
             date_of_birth: {

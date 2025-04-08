@@ -18,6 +18,7 @@ Content-Type: application/json
     "phone_number":"+8",
     "password":""
 }
+
 ###
 POST http://localhost:5000/api/otp/send-otp
 Content-Type: application/json

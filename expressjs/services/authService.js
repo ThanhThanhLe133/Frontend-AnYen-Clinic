@@ -22,7 +22,7 @@ export const register = ({ phone_number, password }) => new Promise(async (resol
         password: hashPassword(password),
         role_id: patientRole.id
       }
-    })
+    });
 
     if (!created) {
       return resolve({
@@ -32,6 +32,13 @@ export const register = ({ phone_number, password }) => new Promise(async (resol
         refresh_token: null
       });
     }
+    const [patient, patientCreated] = await db.Patient.findOrCreate({
+      where: { patient_id: user.id },
+      raw: true,
+      defaults: {
+        patient_id: user.id
+      }
+    });
 
     const access_token = jwt.sign(
       {
@@ -49,7 +56,7 @@ export const register = ({ phone_number, password }) => new Promise(async (resol
       { expiresIn: "15d" }
     );
 
-    const [updateCount] = await db.Patient.update(
+    const [updateCount] = await db.User.update(
       { refresh_token },
       { where: { id: user.id } }
     );
