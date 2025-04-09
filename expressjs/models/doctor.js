@@ -8,7 +8,11 @@ module.exports = (sequelize, DataTypes) => {
          * The `models/index` file will call this method automatically.
          */
         static associate(models) {
-
+            Doctor.belongsTo(models.User, {
+                foreignKey: 'doctor_id',
+                targetKey: 'id',
+                as: 'doctor'
+            });
         }
     }
     Doctor.init({
@@ -17,7 +21,9 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.UUID,
             primaryKey: true,
         },
-
+        avatar_url: {
+            type: DataTypes.STRING,
+        },
         name: {
             type: DataTypes.STRING,
         },

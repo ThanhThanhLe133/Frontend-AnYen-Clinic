@@ -184,7 +184,6 @@ export const resetPassword = ({ userId, oldPassword, newPassword }) => new Promi
         mes: 'Phone number is not exist.'
       });
     }
-    console.log("Password matched:", oldPassword);
 
     if (!user.password) {
       return resolve({
@@ -213,7 +212,6 @@ export const resetPassword = ({ userId, oldPassword, newPassword }) => new Promi
         where: { id: userId }
       }
     );
-
 
     resolve({
       err: 0,

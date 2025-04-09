@@ -16,9 +16,10 @@ router.post("/forgot-pass", controllers.forgotPassword);
 // Refresh token route
 router.post("/refresh-token", controllers.refreshTokenController);
 
-router.post("/reset-pass", verifyToken, controllers.resetPassword);
+router.use(verifyToken);
+router.post("/reset-pass", controllers.resetPassword);
 
-router.post("/logout", verifyToken, controllers.logout);
+router.post("/logout", controllers.logout);
 // // Logout route
 // router.post("/logout", controllers.logout);
 

@@ -8,7 +8,11 @@ module.exports = (sequelize, DataTypes) => {
          * The `models/index` file will call this method automatically.
          */
         static associate(models) {
-
+            Patient.belongsTo(models.User, {
+                foreignKey: 'patient_id',
+                targetKey: 'id',
+                as: 'patient'
+            });
         }
     }
     Patient.init({
@@ -32,6 +36,9 @@ module.exports = (sequelize, DataTypes) => {
         },
         medical_history: {
             type: DataTypes.TEXT,
+        },
+        avatar_url: {
+            type: DataTypes.STRING,
         },
         allergies: {
             type: DataTypes.TEXT,

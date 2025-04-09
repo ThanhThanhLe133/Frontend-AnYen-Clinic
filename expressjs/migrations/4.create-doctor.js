@@ -8,6 +8,12 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.UUID,
                 primaryKey: true,
+                references: {
+                    model: 'Users',
+                    key: 'id'
+                },
+                onDelete: 'CASCADE',
+                onUpdate: 'CASCADE'
             },
             name: {
                 type: Sequelize.STRING,
@@ -46,7 +52,10 @@ module.exports = {
                 allowNull: false,
                 defaultValue: 0,
             },
-
+            avatar_url: {
+                type: Sequelize.TEXT,
+                defaultValue: 'https://jqbpguplezywjemitmna.supabase.co/storage/v1/object/public/image-mobile-app//user.png'
+            },
         });
     },
     async down(queryInterface, Sequelize) {
