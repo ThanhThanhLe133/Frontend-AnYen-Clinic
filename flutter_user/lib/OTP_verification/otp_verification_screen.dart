@@ -135,10 +135,9 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
       final responseData = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        await storage.write(
-            key: 'access_token', value: responseData['access_token']);
-        await storage.write(
-            key: 'refresh_token', value: responseData['refresh_token']);
+        await saveAccessToken(responseData['access_token']);
+        await saveRefreshToken(responseData['refresh_token']);
+
         List<String> roles = responseData['roles'];
         if (roles.contains('patient')) {
           showSuccessDialog(

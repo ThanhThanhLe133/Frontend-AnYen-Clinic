@@ -1,6 +1,7 @@
 import 'package:anyen_clinic/dialog/SuccessDialog.dart';
 import 'package:anyen_clinic/dialog/option_dialog.dart';
 import 'package:anyen_clinic/login/login_screen.dart';
+import 'package:anyen_clinic/makeRequest.dart';
 import 'package:anyen_clinic/settings/about_us_screen.dart';
 import 'package:anyen_clinic/settings/change_pass_screen.dart';
 import 'package:anyen_clinic/settings/medical_records_screen.dart';
@@ -44,18 +45,14 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
   }
 
   Future<void> callLogoutAPI() async {
-    final accessToken = await getToken();
-    final response = await http.post(
-      Uri.parse('$apiUrl/auth/logout'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken',
-      },
+    final response = await makeRequest(
+      url: '$apiUrl/auth/logout',
+      method: 'POST',
     );
 
     if (response.statusCode == 200) {
-      await storage.delete(key: 'access_token');
-      await storage.delete(key: 'refresh_token');
+      await deleteAccessToken();
+      await deleteRefreshToken();
       showSuccessDialog(
           context, LoginScreen(), "Đăng xuất thành công", "Đăng nhập");
     } else {

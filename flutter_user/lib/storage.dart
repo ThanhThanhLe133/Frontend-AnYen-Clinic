@@ -5,14 +5,26 @@ String apiUrl = dotenv.env['API_URL'] ?? 'https://default-api.com';
 final storage = FlutterSecureStorage();
 
 // Hàm lưu token
-Future<void> saveToken(String token) async {
+Future<void> saveAccessToken(String token) async {
   await storage.write(key: 'access_token', value: token);
 }
 
-Future<String?> getToken() async {
+Future<void> saveRefreshToken(String token) async {
+  await storage.write(key: 'refresh_token', value: token);
+}
+
+Future<String?> getAccessToken() async {
   return await storage.read(key: 'access_token');
 }
 
-Future<void> deleteToken() async {
+Future<String?> getRefreshToken() async {
+  return await storage.read(key: 'refresh_token');
+}
+
+Future<void> deleteAccessToken() async {
   await storage.delete(key: 'access_token');
+}
+
+Future<void> deleteRefreshToken() async {
+  await storage.delete(key: 'refresh_token');
 }

@@ -1,4 +1,7 @@
 import { gender as genderSchema, dateOfBirth as dobSchema, healthRecordSchema } from '../helpers/joi_schema'
+import joi from 'joi'
+import * as services from '../services'
+import { internalServerError, badRequest } from '../middlewares/handle_errors.js'
 
 export const editProfile = async (req, res) => {
     try {
@@ -6,9 +9,9 @@ export const editProfile = async (req, res) => {
 
         if (!userId) return badRequest('Missing user id', res);
 
-        const { fullName, dateOfBirth, gender, medicalHistory, allergies } = req.body;
+        const { fullName, dateOfBirth, gender, medicalHistory, allergies, avatar } = req.body;
 
-        const { error } = Joi.object({
+        const { error } = joi.object({
             dateOfBirth: dobSchema,
             gender: genderSchema
         }).validate({ dateOfBirth, gender });
@@ -54,6 +57,7 @@ export const editAnonymousName = async (req, res) => {
 export const getProfile = async (req, res) => {
     try {
         const userId = req.user?.id;
+        console.log(userId);
 
         if (!userId) return badRequest('Missing user id', res);
 

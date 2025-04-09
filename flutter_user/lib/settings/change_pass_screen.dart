@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:anyen_clinic/dialog/SuccessDialog.dart';
 import 'package:anyen_clinic/login/login_screen.dart';
+import 'package:anyen_clinic/makeRequest.dart';
 import 'package:anyen_clinic/provider/patient_provider.dart';
 import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/CustomBackButton.dart';
@@ -51,17 +52,11 @@ class _ChangePassScreenState extends ConsumerState<ChangePassScreen> {
       );
       return;
     }
-    final accessToken = await getToken();
+    final response = await makeRequest(
+        url: '$apiUrl/auth/reset-pass',
+        method: 'POST',
+        body: {"oldPassword": oldPassword, "newPassword": newPassword});
 
-    final response = await http.post(
-      Uri.parse('$apiUrl/auth/reset-pass'),
-      headers: {
-        "Content-Type": "application/json",
-        'Authorization': 'Bearer $accessToken',
-      },
-      body:
-          jsonEncode({"oldPassword": oldPassword, "newPassword": newPassword}),
-    );
     final responseData = jsonDecode(response.body);
     if (response.statusCode == 200) {
       showSuccessDialog(

@@ -15,7 +15,7 @@ router.post('/upload/avatar', upload.single('avatar'), controllers.uploadAvatar)
 
 router.get("/health-records", controllers.getHealthRecords);
 router.post("/health-records", controllers.addHealthRecord);
-router.patch("/health-records/:id", controllers.editHealthRecord);
-router.delete("/health-records/:id", controllers.deleteHealthRecord);
+router.patch("/health-records", controllers.editHealthRecord);
+router.delete("/health-records", controllers.deleteHealthRecord);
 
 export { router };

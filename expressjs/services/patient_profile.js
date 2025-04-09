@@ -71,7 +71,6 @@ export const getProfile = ({ userId }) => new Promise(async (resolve, reject) =>
     try {
         const patient = await db.Patient.findOne({
             where: { patient_id: userId },
-            attributes: ['full_name', 'date_of_birth', 'gender', 'medical_history', 'allergies', 'anonymous_name', 'avatar_url']
         });
 
         if (!patient) {
@@ -84,7 +83,15 @@ export const getProfile = ({ userId }) => new Promise(async (resolve, reject) =>
         resolve({
             err: 0,
             mes: 'Get profile successfully',
-            data: patient
+            data: {
+                full_name: patient.full_name ?? '',
+                date_of_birth: new Date(patient.date_of_birth).toISOString().split('T')[0] ?? '',
+                gender: patient.gender ?? '',
+                medical_history: patient.medical_history ?? '',
+                allergies: patient.allergies ?? '',
+                anonymous_name: patient.anonymous_name ?? '',
+                avatar_url: patient.avatar_url ?? ''
+            }
         });
     } catch (error) {
         reject(error);
@@ -141,7 +148,7 @@ export const addHealthRecord = ({ userId, recordDate, height, weight }) => new P
                 mes: 'Patient is not exist.'
             });
         }
-        const healthRecord = await db.Health_records.create({
+        const healthRecord = await db.Health_record.create({
             patient_id: patient.patient_id,
             record_date: recordDate,
             height: height,
@@ -190,6 +197,12 @@ export const getHealthRecords = ({ userId }) => new Promise(async (resolve, reje
 });
 export const editHealthRecord = ({ userId, id, recordDate, height, weight }) => new Promise(async (resolve, reject) => {
     try {
+        if (!id) {
+            return resolve({
+                err: 1,
+                mes: 'Patient does not have any health records.'
+            });
+        }
         const patient = await db.Patient.findOne({ where: { patient_id: userId } });
 
         if (!patient) {
@@ -230,6 +243,12 @@ export const editHealthRecord = ({ userId, id, recordDate, height, weight }) => 
 
 export const deleteHealthRecord = ({ userId, id }) => new Promise(async (resolve, reject) => {
     try {
+        if (!id) {
+            return resolve({
+                err: 1,
+                mes: 'Patient does not have any health records.'
+            });
+        }
         const patient = await db.Patient.findOne({ where: { patient_id: userId } });
 
         if (!patient) {

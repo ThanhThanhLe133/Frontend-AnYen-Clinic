@@ -48,3 +48,4 @@ export const healthRecordSchema = joi.object({
         'number.min': 'weight must be a positive number'
     }),
 });
+export const refresh_token = joi.string().required()

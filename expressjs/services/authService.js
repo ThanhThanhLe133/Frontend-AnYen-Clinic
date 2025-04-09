@@ -231,7 +231,7 @@ export const refreshToken = (refresh_token) => new Promise(async (resolve, rejec
         mes: 'No refresh token provided',
       });
     }
-    const response = await db.Patient.findOne({
+    const response = await db.User.findOne({
       where: { refresh_token },
       raw: true
     })
