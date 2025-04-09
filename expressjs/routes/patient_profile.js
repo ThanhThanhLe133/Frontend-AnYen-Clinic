@@ -1,8 +1,11 @@
 import express from "express";
 import * as controllers from "../controllers/patient_profile.js";
 import verifyToken from '../middlewares/verify_token'
+import multer from 'multer';
 
 const router = express.Router();
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 router.use(verifyToken);
 
 router.patch("/edit-profile", controllers.editProfile);

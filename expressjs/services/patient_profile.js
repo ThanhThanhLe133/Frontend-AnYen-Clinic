@@ -1,6 +1,7 @@
 import { where } from 'sequelize';
 import db from '../models'
 import jwt from 'jsonwebtoken'
+import { supabase } from '../config/supabaseClient';
 
 export const editProfile = ({ userId, fullName, dateOfBirth, gender, medicalHistory, allergies, avatar }) => new Promise(async (resolve, reject) => {
     try {
