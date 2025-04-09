@@ -16,7 +16,9 @@ module.exports = {
                 onUpdate: 'CASCADE'
 
             },
-
+            avatar_url: {
+                type: Sequelize.TEXT,
+            },
             name: {
                 type: Sequelize.STRING,
             },

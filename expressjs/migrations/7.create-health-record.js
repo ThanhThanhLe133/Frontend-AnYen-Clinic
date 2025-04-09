@@ -3,29 +3,34 @@
 module.exports = {
     async up(queryInterface, Sequelize) {
 
-        await queryInterface.createTable('Users', {
+        await queryInterface.createTable('Health_records', {
             id: {
                 allowNull: false,
                 type: Sequelize.UUID,
                 defaultValue: Sequelize.literal('gen_random_uuid()'),
                 primaryKey: true,
             },
-            phone_number: {
-                type: Sequelize.STRING,
+            patient_id: {
                 allowNull: false,
-                unique: true,
+                type: Sequelize.UUID,
+                references: {
+                    model: 'Users',
+                    key: 'id'
+                },
+                onDelete: 'CASCADE',
+                onUpdate: 'CASCADE'
             },
-            is_active: {
-                type: Sequelize.BOOLEAN,
+            record_date: {
                 allowNull: false,
-                defaultValue: true,
+                type: Sequelize.DATEONLY
             },
-            password: {
-                type: Sequelize.STRING,
+            height: {
                 allowNull: false,
+                type: Sequelize.FLOAT
             },
-            refresh_token: {
-                type: Sequelize.STRING
+            weight: {
+                allowNull: false,
+                type: Sequelize.FLOAT
             },
             createdAt: {
                 allowNull: false,
@@ -40,6 +45,6 @@ module.exports = {
         });
     },
     async down(queryInterface, Sequelize) {
-        await queryInterface.dropTable('Users');
+        await queryInterface.dropTable('Health_records');
     }
 };

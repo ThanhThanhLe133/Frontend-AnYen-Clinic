@@ -52,7 +52,9 @@ module.exports = {
                 allowNull: false,
                 defaultValue: 0,
             },
-
+            avatar_url: {
+                type: Sequelize.TEXT,
+            },
         });
     },
     async down(queryInterface, Sequelize) {

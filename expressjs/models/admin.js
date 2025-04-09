@@ -21,6 +21,9 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.UUID,
             primaryKey: true,
         },
+        avatar_url: {
+            type: DataTypes.STRING,
+        },
         name: {
             type: DataTypes.STRING,
         },

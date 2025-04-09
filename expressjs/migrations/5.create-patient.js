@@ -36,7 +36,9 @@ module.exports = {
             allergies: {
                 type: Sequelize.TEXT,
             },
-
+            avatar_url: {
+                type: Sequelize.TEXT,
+            },
         });
     },
     async down(queryInterface, Sequelize) {

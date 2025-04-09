@@ -37,9 +37,6 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: false,
         },
-        avatar_url: {
-            type: DataTypes.STRING,
-        },
         refresh_token: {
             type: DataTypes.STRING,
         },

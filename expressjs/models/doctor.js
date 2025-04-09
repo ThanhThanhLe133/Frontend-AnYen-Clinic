@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
             Doctor.belongsTo(models.User, {
                 foreignKey: 'doctor_id',
                 targetKey: 'id',
-                as: 'admin'
+                as: 'doctor'
             });
         }
     }
@@ -21,7 +21,9 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.UUID,
             primaryKey: true,
         },
-
+        avatar_url: {
+            type: DataTypes.STRING,
+        },
         name: {
             type: DataTypes.STRING,
         },
