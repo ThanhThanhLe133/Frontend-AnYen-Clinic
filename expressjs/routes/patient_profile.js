@@ -11,7 +11,7 @@ router.use(verifyToken);
 router.patch("/edit-profile", controllers.editProfile);
 router.patch("/edit-anonymousName", controllers.editAnonymousName);
 router.get("/get-profile", controllers.getProfile);
-router.post('/upload/avatar', upload.single('avatar'), controllers.uploadAvatar);
+router.post('/upload/avatar', upload.single('avatar'), controllers.editAvatar);
 
 router.get("/health-records", controllers.getHealthRecords);
 router.post("/health-records", controllers.addHealthRecord);

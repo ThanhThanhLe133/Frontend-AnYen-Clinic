@@ -2,8 +2,9 @@ import { where } from 'sequelize';
 import db from '../models'
 import jwt from 'jsonwebtoken'
 import { supabase } from '../config/supabaseClient';
+import { phone_number } from '../helpers/joi_schema';
 
-export const editProfile = ({ userId, fullName, dateOfBirth, gender, medicalHistory, allergies, avatar }) => new Promise(async (resolve, reject) => {
+export const editProfile = ({ userId, fullName, dateOfBirth, gender, medicalHistory, allergies }) => new Promise(async (resolve, reject) => {
     try {
         const patient = await db.Patient.findOne({ where: { patient_id: userId } });
 
@@ -21,7 +22,6 @@ export const editProfile = ({ userId, fullName, dateOfBirth, gender, medicalHist
                 gender: gender,
                 medical_history: medicalHistory,
                 allergies: allergies,
-                avatar_url: avatar
             },
             {
                 where: { patient_id: userId }
@@ -71,6 +71,13 @@ export const getProfile = ({ userId }) => new Promise(async (resolve, reject) =>
     try {
         const patient = await db.Patient.findOne({
             where: { patient_id: userId },
+            include: [
+                {
+                    model: db.User,
+                    as: 'user',
+                    attributes: ['phone_number']
+                }
+            ]
         });
 
         if (!patient) {
@@ -90,7 +97,8 @@ export const getProfile = ({ userId }) => new Promise(async (resolve, reject) =>
                 medical_history: patient.medical_history ?? '',
                 allergies: patient.allergies ?? '',
                 anonymous_name: patient.anonymous_name ?? '',
-                avatar_url: patient.avatar_url ?? ''
+                avatar_url: patient.avatar_url ?? '',
+                phone_number: patient.user.phone_number
             }
         });
     } catch (error) {
@@ -98,7 +106,7 @@ export const getProfile = ({ userId }) => new Promise(async (resolve, reject) =>
     }
 });
 
-export const uploadAvatar = ({ userId, fileBuffer, originalName, mimetype }) =>
+export const editAvatar = ({ userId, fileBuffer, originalName, mimetype }) =>
     new Promise(async (resolve, reject) => {
         try {
             if (!userId || !fileBuffer || !originalName || !mimetype) {
@@ -107,7 +115,6 @@ export const uploadAvatar = ({ userId, fileBuffer, originalName, mimetype }) =>
                     mes: 'Missing required fields',
                 })
             }
-
             const ext = originalName.split('.').pop()
             const filePath = `avatars/${userId}_${uuidv4()}.${ext}`
 
@@ -125,11 +132,30 @@ export const uploadAvatar = ({ userId, fileBuffer, originalName, mimetype }) =>
                 })
             }
 
-            const { data } = supabase.storage.from('image-mobile-app').getPublicUrl(filePath)
-
+            const { data, error: urlError } = supabase.storage.from('image-mobile-app').getPublicUrl(filePath);
+            if (urlError) {
+                return resolve({
+                    err: 1,
+                    mes: urlError.message,
+                });
+            }
+            await db.User.update(
+                {
+                    avatar_url: data.publicUrl
+                },
+                {
+                    where: { id: userId }
+                }
+            );
+            if (updateResult[0] === 0) {
+                return resolve({
+                    err: 1,
+                    mes: 'Failed to update avatar in the database.',
+                });
+            }
             resolve({
                 err: 0,
-                mes: 'Upload successful',
+                mes: 'Upload and update avatar successful',
                 url: data.publicUrl,
             })
         } catch (error) {

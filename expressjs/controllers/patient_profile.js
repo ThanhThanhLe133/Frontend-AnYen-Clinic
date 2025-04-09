@@ -69,7 +69,7 @@ export const getProfile = async (req, res) => {
         return internalServerError(res);
     }
 }
-export const uploadAvatar = async (req, res) => {
+export const editAvatar = async (req, res) => {
     try {
         const userId = req.user?.id
         const file = req.file

@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
             Admin.belongsTo(models.User, {
                 foreignKey: 'admin_id',
                 targetKey: 'id',
-                as: 'admin'
+                as: 'user'
             });
         }
     }

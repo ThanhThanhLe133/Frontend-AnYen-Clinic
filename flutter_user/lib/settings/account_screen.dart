@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:anyen_clinic/dialog/SuccessDialog.dart';
 import 'package:anyen_clinic/dialog/option_dialog.dart';
 import 'package:anyen_clinic/login/login_screen.dart';
@@ -14,6 +17,8 @@ import 'package:anyen_clinic/widget/sectionTitle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 final patientDataProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
   await Future.delayed(Duration(seconds: 1));
@@ -32,6 +37,7 @@ class AccountScreen extends ConsumerStatefulWidget {
 class _AccountScreenState extends ConsumerState<AccountScreen> {
   final TextEditingController controller = TextEditingController();
   final FocusNode focusNode = FocusNode();
+  Map<String, dynamic>? patientProfile;
 
   void onEditingComplete() {
     ref.read(savedTextProvider.notifier).state = controller.text;
@@ -39,9 +45,69 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
     focusNode.unfocus();
   }
 
-  void onCancelEdit() {
-    controller.text = ref.read(savedTextProvider) ?? '';
+  void onSave() {
+    final anonymousName = controller.text;
+    showOptionDialog(context, "Lưu tên ẩn danh",
+        "Bạn có chắc chắn muốn lưu tên ẩn danh này?", "HUỶ", "Đồng ý", () {
+      saveAnonymousName(anonymousName);
+    });
+
     ref.read(isEditingProvider.notifier).state = false;
+  }
+
+  Future<void> _pickAndUploadImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      File imageFile = File(pickedFile.path);
+      await _uploadImage(imageFile);
+    } else {
+      print('No image selected');
+    }
+  }
+
+  Future<void> _uploadImage(File imageFile) async {
+    final response = await makeRequest(
+      url: '$apiUrl/patient/upload/avatar',
+      method: 'POST',
+      file: imageFile,
+      fileFieldName: 'avatar',
+    );
+    if (response.statusCode == 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Lưu thành công!")),
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => AccountScreen()),
+      );
+    } else {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Lỗi thay đổi avatar!")),
+      );
+    }
+  }
+
+  Future<void> saveAnonymousName(String anonymousName) async {
+    final response = await makeRequest(
+        url: '$apiUrl/patient/edit-anonymousName',
+        method: 'PATCH',
+        body: {
+          "anonymousName": anonymousName,
+        });
+    final responseData = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      ref.read(savedTextProvider.notifier).state = anonymousName;
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Lưu thành công!")),
+      );
+    } else {
+      throw Exception(responseData["message"] ?? "Lỗi đổi mật khẩu");
+    }
   }
 
   Future<void> callLogoutAPI() async {
@@ -53,13 +119,43 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
     if (response.statusCode == 200) {
       await deleteAccessToken();
       await deleteRefreshToken();
+      if (!mounted) return;
       showSuccessDialog(
           context, LoginScreen(), "Đăng xuất thành công", "Đăng nhập");
     } else {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Đăng xuất thất bại")),
       );
     }
+  }
+
+  Future<void> fetchProfile() async {
+    final response = await makeRequest(
+      url: '$apiUrl/patient/get-profile',
+      method: 'GET',
+    );
+
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Lỗi tải dữ liệu.")),
+      );
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        patientProfile = data;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchProfile();
+    });
   }
 
   @override
@@ -131,10 +227,24 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                               children: [
                                 CircleAvatar(
                                   radius: screenWidth * 0.1,
-                                  backgroundColor: Colors.blue,
-                                  child: Icon(Icons.person,
-                                      color: Colors.white,
-                                      size: screenWidth * 0.1),
+                                  backgroundColor: Colors.blue[300],
+                                  backgroundImage:
+                                      (patientProfile!['avatar_url'] != null &&
+                                              patientProfile!['avatar_url']
+                                                  .toString()
+                                                  .isNotEmpty)
+                                          ? NetworkImage(
+                                              patientProfile!['avatar_url'])
+                                          : null,
+                                  child:
+                                      (patientProfile!['avatar_url'] == null ||
+                                              patientProfile!['avatar_url']
+                                                  .toString()
+                                                  .isEmpty)
+                                          ? Icon(Icons.person,
+                                              color: Colors.white,
+                                              size: screenWidth * 0.1)
+                                          : null,
                                 ),
                                 Positioned(
                                   bottom: -10,
@@ -151,8 +261,35 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                                       icon: Icon(Icons.add,
                                           color: Colors.white,
                                           size: screenWidth * 0.05),
-                                      onPressed: () {
-                                        // Xử lý khi nhấn nút Add
+                                      onPressed: () async {
+                                        PermissionStatus statusCamera =
+                                            await Permission.camera.request();
+                                        if (statusCamera.isGranted) {
+                                          await _pickAndUploadImage();
+                                        } else if (statusCamera
+                                            .isPermanentlyDenied) {
+                                          showOptionDialog(
+                                            context,
+                                            "Cần quyền truy cập Camera",
+                                            "Vui lòng cấp quyền camera trong cài đặt để sử dụng tính năng này.",
+                                            "HỦY",
+                                            "CÀI ĐẶT",
+                                            () {
+                                              openAppSettings();
+                                            },
+                                          );
+                                        } else {
+                                          showOptionDialog(
+                                            context,
+                                            "An yên muốn truy cập camera",
+                                            "Cho phép truy cập camera để chụp hình toa thuốc",
+                                            "TỪ CHỐI",
+                                            "OK",
+                                            () async {
+                                              await _pickAndUploadImage();
+                                            },
+                                          );
+                                        }
                                       },
                                       padding: EdgeInsets.zero,
                                       constraints: BoxConstraints(),
@@ -166,7 +303,8 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  patient?['full_name'] ?? 'Không có tên',
+                                  patientProfile!['full_name'] ??
+                                      'Không có tên',
                                   softWrap: true,
                                   maxLines: null,
                                   overflow: TextOverflow.visible,
@@ -175,7 +313,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                                       fontWeight: FontWeight.bold),
                                 ),
                                 Text(
-                                  patient?['phone_number'] ?? '0123456789',
+                                  patientProfile!['phone_number'] ?? '',
                                   style: TextStyle(
                                       fontSize: screenWidth * 0.045,
                                       color: Colors.grey[700]),
@@ -225,7 +363,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                               borderSide:
                                   BorderSide(color: Colors.blue, width: 1),
                             ),
-                            hintText: patientData.value?['anonymous_name'] ??
+                            hintText: patientProfile!['anonymous_name'] ??
                                 "Nhập tên ẩn danh của bạn",
                             hintStyle: TextStyle(fontSize: screenWidth * 0.04),
                             contentPadding: EdgeInsets.symmetric(
@@ -233,10 +371,10 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                                 horizontal: screenWidth * 0.02),
                             suffixIcon: isEditing
                                 ? IconButton(
-                                    icon: Icon(Icons.cancel,
+                                    icon: Icon(Icons.save,
                                         size: screenWidth * 0.05,
-                                        color: Colors.red),
-                                    onPressed: onCancelEdit,
+                                        color: Colors.green),
+                                    onPressed: onSave,
                                   )
                                 : Icon(Icons.arrow_forward_ios,
                                     size: screenWidth * 0.05),

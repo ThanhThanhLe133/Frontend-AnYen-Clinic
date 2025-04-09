@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
             Patient.belongsTo(models.User, {
                 foreignKey: 'patient_id',
                 targetKey: 'id',
-                as: 'patient'
+                as: 'user'
             });
         }
     }
