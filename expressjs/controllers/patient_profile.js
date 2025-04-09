@@ -109,6 +109,20 @@ export const addHealthRecord = async (req, res) => {
         return internalServerError(res)
     }
 }
+export const getHealthRecords = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+
+        if (!userId) return badRequest('Missing user id', res);
+
+        const response = await services.getHealthRecords({ userId });
+
+        return res.status(200).json(response);
+    } catch (error) {
+        console.log(error);
+        return internalServerError(res);
+    }
+}
 export const editHealthRecord = async (req, res) => {
     try {
         const userId = req.user?.id;

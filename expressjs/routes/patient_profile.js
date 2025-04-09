@@ -12,6 +12,8 @@ router.patch("/edit-profile", controllers.editProfile);
 router.patch("/edit-anonymousName", controllers.editAnonymousName);
 router.get("/get-profile", controllers.getProfile);
 router.post('/upload/avatar', upload.single('avatar'), controllers.uploadAvatar);
+
+router.get("/health-records", controllers.getHealthRecords);
 router.post("/health-records", controllers.addHealthRecord);
 router.patch("/health-records/:id", controllers.editHealthRecord);
 router.delete("/health-records/:id", controllers.deleteHealthRecord);

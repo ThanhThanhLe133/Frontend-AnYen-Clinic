@@ -38,6 +38,7 @@ module.exports = {
             },
             avatar_url: {
                 type: Sequelize.TEXT,
+                defaultValue: 'https://jqbpguplezywjemitmna.supabase.co/storage/v1/object/public/image-mobile-app//user.png'
             },
         });
     },

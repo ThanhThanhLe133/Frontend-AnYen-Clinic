@@ -157,6 +157,37 @@ export const addHealthRecord = ({ userId, recordDate, height, weight }) => new P
         reject(error);
     }
 });
+export const getHealthRecords = ({ userId }) => new Promise(async (resolve, reject) => {
+    try {
+        const patient = await db.Patient.findOne({ where: { patient_id: userId } });
+
+        if (!patient) {
+            return resolve({
+                err: 1,
+                mes: 'Patient is not exist.'
+            });
+        }
+        const healthRecords = await db.Health_record.findAll({
+            where: { patient_id: userId },
+            order: [['record_date', 'DESC']]
+        });
+
+        if (!healthRecords || healthRecords.length === 0) {
+            return resolve({
+                err: 1,
+                mes: 'No health records found.'
+            });
+        }
+
+        resolve({
+            err: 0,
+            mes: 'Get health record successfully',
+            data: healthRecords
+        });
+    } catch (error) {
+        reject(error);
+    }
+});
 export const editHealthRecord = ({ userId, id, recordDate, height, weight }) => new Promise(async (resolve, reject) => {
     try {
         const patient = await db.Patient.findOne({ where: { patient_id: userId } });
