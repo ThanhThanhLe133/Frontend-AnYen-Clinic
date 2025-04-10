@@ -19,11 +19,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-final patientDataProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
-  await Future.delayed(Duration(seconds: 1));
-  return {'anonymous_name': null};
-});
-
 final savedTextProvider = StateProvider<String?>((ref) => null);
 final isEditingProvider = StateProvider<bool>((ref) => false);
 
@@ -170,7 +165,6 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.width;
 
-    final patientData = ref.watch(patientDataProvider);
     final savedText = ref.watch(savedTextProvider);
     final isEditing = ref.watch(isEditingProvider);
     return Scaffold(
@@ -203,355 +197,342 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
         },
         child: SingleChildScrollView(
           scrollDirection: Axis.vertical,
-          child: patientData.when(
-            data: (patient) {
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    height: screenHeight * 0.05,
-                  ),
-                  Container(
-                    width: screenWidth * 0.9,
-                    padding: EdgeInsets.all(screenWidth * 0.05),
-                    constraints: BoxConstraints(
-                        minHeight: screenHeight * 0.3,
-                        minWidth: screenWidth * 0.9),
-                    decoration: BoxDecoration(
-                      color: Color(0xFFECF8FF),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Stack(
-                              children: [
-                                CircleAvatar(
-                                  radius: screenWidth * 0.1,
-                                  backgroundColor: Colors.blue[300],
-                                  backgroundImage:
-                                      (patientProfile['avatar_url'] != null &&
-                                              patientProfile['avatar_url']
-                                                  .toString()
-                                                  .isNotEmpty)
-                                          ? NetworkImage(
-                                              patientProfile['avatar_url'])
-                                          : null,
-                                  child:
-                                      (patientProfile['avatar_url'] == null ||
-                                              patientProfile['avatar_url']
-                                                  .toString()
-                                                  .isEmpty)
-                                          ? Icon(Icons.person,
-                                              color: Colors.white,
-                                              size: screenWidth * 0.1)
-                                          : null,
-                                ),
-                                Positioned(
-                                  bottom: -10,
-                                  right: 2,
-                                  child: Container(
-                                    width: screenWidth * 0.06,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.blue,
-                                      border: Border.all(
-                                          color: Colors.white, width: 2),
-                                    ),
-                                    child: IconButton(
-                                      icon: Icon(Icons.add,
-                                          color: Colors.white,
-                                          size: screenWidth * 0.05),
-                                      onPressed: () async {
-                                        PermissionStatus statusCamera =
-                                            await Permission.camera.request();
-                                        if (statusCamera.isGranted) {
-                                          await _pickAndUploadImage();
-                                        } else if (statusCamera
-                                            .isPermanentlyDenied) {
-                                          showOptionDialog(
-                                            context,
-                                            "Cần quyền truy cập Camera",
-                                            "Vui lòng cấp quyền camera trong cài đặt để sử dụng tính năng này.",
-                                            "HỦY",
-                                            "CÀI ĐẶT",
-                                            () {
-                                              openAppSettings();
-                                            },
-                                          );
-                                        } else {
-                                          showOptionDialog(
-                                            context,
-                                            "An yên muốn truy cập camera",
-                                            "Cho phép truy cập camera để chụp hình toa thuốc",
-                                            "TỪ CHỐI",
-                                            "OK",
-                                            () async {
-                                              await _pickAndUploadImage();
-                                            },
-                                          );
-                                        }
-                                      },
-                                      padding: EdgeInsets.zero,
-                                      constraints: BoxConstraints(),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(width: screenWidth * 0.05),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  (patientProfile['full_name'] != null &&
-                                          patientProfile['full_name']
-                                              .toString()
-                                              .trim()
-                                              .isNotEmpty)
-                                      ? patientProfile['full_name']
-                                      : 'Không có tên',
-                                  softWrap: true,
-                                  maxLines: null,
-                                  overflow: TextOverflow.visible,
-                                  style: TextStyle(
-                                      fontSize: screenWidth * 0.055,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                Text(
-                                  (patientProfile['phone_number'] != null)
-                                      ? patientProfile['phone_number']
-                                      : '',
-                                  style: TextStyle(
-                                      fontSize: screenWidth * 0.045,
-                                      color: Colors.grey[700]),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: screenHeight * 0.03),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              "Tên ẩn danh",
-                              style: TextStyle(
-                                  fontSize: screenWidth * 0.045,
-                                  fontWeight: FontWeight.w500),
-                            ),
-                            SizedBox(width: screenHeight * 0.03),
-                            IconButton(
-                              icon: Icon(
-                                Icons.info,
-                                color: Colors.blue,
-                                size: screenWidth * 0.06,
-                              ),
-                              onPressed: () {
-                                _showInfoDialog(context);
-                              },
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: screenHeight * 0.02),
-                        TextField(
-                          controller: controller,
-                          focusNode: focusNode,
-                          style: TextStyle(fontSize: screenWidth * 0.04),
-                          decoration: InputDecoration(
-                            isDense: true,
-                            filled: true,
-                            fillColor: Colors.white,
-                            enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(5),
-                                borderSide:
-                                    BorderSide(color: Colors.white, width: 1)),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(5),
-                              borderSide:
-                                  BorderSide(color: Colors.blue, width: 1),
-                            ),
-                            hintText:
-                                (patientProfile['anonymous_name'] == null ||
-                                        patientProfile['anonymous_name']
-                                            .toString()
-                                            .isEmpty)
-                                    ? 'Nhập tên ẩn danh của bạn'
-                                    : null,
-                            hintStyle: TextStyle(fontSize: screenWidth * 0.04),
-                            contentPadding: EdgeInsets.symmetric(
-                                vertical: screenWidth * 0.03,
-                                horizontal: screenWidth * 0.02),
-                            suffixIcon: isEditing
-                                ? IconButton(
-                                    icon: Icon(Icons.save,
-                                        size: screenWidth * 0.05,
-                                        color: Colors.green),
-                                    onPressed: onSave,
-                                  )
-                                : Icon(Icons.arrow_forward_ios,
-                                    size: screenWidth * 0.05),
-                          ),
-                          onTap: () {
-                            if (!isEditing) {
-                              ref.read(isEditingProvider.notifier).state = true;
-
-                              final newText = patientProfile['anonymous_name']
-                                      ?.toString() ??
-                                  '';
-                              ref.read(savedTextProvider.notifier).state =
-                                  newText;
-                              controller.text = newText;
-                            }
-
-                            focusNode.requestFocus();
-                          },
-                          onEditingComplete: onEditingComplete,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(screenWidth * 0.05),
-                    child: sectionTitle(
-                        title: 'Tài khoản của bạn',
-                        screenHeight: screenHeight,
-                        screenWidth: screenWidth),
-                  ),
-                  Container(
-                    width: screenWidth * 0.9,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: Color(0xFFD9D9D9),
-                        width: 1,
-                      ),
-                    ),
-                    child: Column(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: screenHeight * 0.05,
+              ),
+              Container(
+                width: screenWidth * 0.9,
+                padding: EdgeInsets.all(screenWidth * 0.05),
+                constraints: BoxConstraints(
+                    minHeight: screenHeight * 0.3, minWidth: screenWidth * 0.9),
+                decoration: BoxDecoration(
+                  color: Color(0xFFECF8FF),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        SettingsMenu(
-                          label: "Hồ sơ y tế",
-                          icon: Icons.article,
-                          iconColor: Colors.blue,
-                          action: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      MedicalRecordsScreen())),
-                        ),
-                        SettingsMenu(
-                          label: "Đổi mật khẩu",
-                          icon: Icons.lock,
-                          iconColor: Colors.blueAccent,
-                          action: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => ChangePassScreen())),
-                        ),
-                        SettingsMenu(
-                          label: "Cài đặt thông báo",
-                          icon: Icons.notifications,
-                          iconColor: Colors.amber,
-                          action: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => NotificationScreen())),
-                        ),
-                        SettingsMenu(
-                          label: "Về chúng tôi",
-                          icon: Icons.groups,
-                          iconColor: Colors.green,
-                          action: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => AboutUsScreen())),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(
-                    width: screenWidth * 0.9,
-                    height: screenHeight * 0.3,
-                    child: Image.asset(
-                      "assets/images/logo.png",
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                  SizedBox(
-                    height: screenHeight * 0.02,
-                  ),
-                  Text(
-                    'An Yên',
-                    style: TextStyle(
-                      fontSize: screenWidth * 0.08,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Inter-Medium',
-                      color: Color(0xFF1CB6E5),
-                    ),
-                  ),
-                  Text(
-                    'Nơi cảm xúc được lắng nghe',
-                    style: TextStyle(
-                      fontSize: screenWidth * 0.045,
-                      color: Color(0xFFDE8C88),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: screenHeight * 0.3),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: SizedBox(
-                      width: screenWidth * 0.5,
-                      height: screenWidth * 0.12,
-                      child: TextButton(
-                        onPressed: () => showOptionDialog(
-                          context,
-                          "Đăng xuất",
-                          "Bạn có chắc chắn muốn đăng xuất",
-                          "HUỶ",
-                          "Đồng ý",
-                          () {
-                            callLogoutAPI();
-                          },
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
+                        Stack(
                           children: [
-                            Icon(
-                              Icons.logout,
-                              color: Color(0xFFF6616A),
-                              size: screenWidth * 0.07,
+                            CircleAvatar(
+                              radius: screenWidth * 0.1,
+                              backgroundColor: Colors.blue[300],
+                              backgroundImage: (patientProfile['avatar_url'] !=
+                                          null &&
+                                      patientProfile['avatar_url']
+                                          .toString()
+                                          .isNotEmpty)
+                                  ? NetworkImage(patientProfile['avatar_url'])
+                                  : null,
+                              child: (patientProfile['avatar_url'] == null ||
+                                      patientProfile['avatar_url']
+                                          .toString()
+                                          .isEmpty)
+                                  ? Icon(Icons.person,
+                                      color: Colors.white,
+                                      size: screenWidth * 0.1)
+                                  : null,
                             ),
-                            SizedBox(width: screenWidth * 0.02),
-                            Text(
-                              'ĐĂNG XUẤT',
-                              style: TextStyle(
-                                color: Color(0xFFF6616A),
-                                fontSize: screenWidth * 0.05,
-                                fontWeight: FontWeight.bold,
+                            Positioned(
+                              bottom: -10,
+                              right: 2,
+                              child: Container(
+                                width: screenWidth * 0.06,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.blue,
+                                  border:
+                                      Border.all(color: Colors.white, width: 2),
+                                ),
+                                child: IconButton(
+                                  icon: Icon(Icons.add,
+                                      color: Colors.white,
+                                      size: screenWidth * 0.05),
+                                  onPressed: () async {
+                                    PermissionStatus statusCamera =
+                                        await Permission.camera.request();
+                                    if (statusCamera.isGranted) {
+                                      await _pickAndUploadImage();
+                                    } else if (statusCamera
+                                        .isPermanentlyDenied) {
+                                      showOptionDialog(
+                                        context,
+                                        "Cần quyền truy cập Camera",
+                                        "Vui lòng cấp quyền camera trong cài đặt để sử dụng tính năng này.",
+                                        "HỦY",
+                                        "CÀI ĐẶT",
+                                        () {
+                                          openAppSettings();
+                                        },
+                                      );
+                                    } else {
+                                      showOptionDialog(
+                                        context,
+                                        "An yên muốn truy cập camera",
+                                        "Cho phép truy cập camera để chụp hình toa thuốc",
+                                        "TỪ CHỐI",
+                                        "OK",
+                                        () async {
+                                          await _pickAndUploadImage();
+                                        },
+                                      );
+                                    }
+                                  },
+                                  padding: EdgeInsets.zero,
+                                  constraints: BoxConstraints(),
+                                ),
                               ),
                             ),
                           ],
                         ),
+                        SizedBox(width: screenWidth * 0.05),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              (patientProfile['full_name'] != null &&
+                                      patientProfile['full_name']
+                                          .toString()
+                                          .trim()
+                                          .isNotEmpty)
+                                  ? patientProfile['full_name']
+                                  : 'Không có tên',
+                              softWrap: true,
+                              maxLines: null,
+                              overflow: TextOverflow.visible,
+                              style: TextStyle(
+                                  fontSize: screenWidth * 0.055,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              (patientProfile['phone_number'] != null)
+                                  ? patientProfile['phone_number']
+                                  : '',
+                              style: TextStyle(
+                                  fontSize: screenWidth * 0.045,
+                                  color: Colors.grey[700]),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: screenHeight * 0.03),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Tên ẩn danh",
+                          style: TextStyle(
+                              fontSize: screenWidth * 0.045,
+                              fontWeight: FontWeight.w500),
+                        ),
+                        SizedBox(width: screenHeight * 0.03),
+                        IconButton(
+                          icon: Icon(
+                            Icons.info,
+                            color: Colors.blue,
+                            size: screenWidth * 0.06,
+                          ),
+                          onPressed: () {
+                            _showInfoDialog(context);
+                          },
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: screenHeight * 0.02),
+                    TextField(
+                      controller: controller,
+                      focusNode: focusNode,
+                      style: TextStyle(fontSize: screenWidth * 0.04),
+                      decoration: InputDecoration(
+                        isDense: true,
+                        filled: true,
+                        fillColor: Colors.white,
+                        enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(5),
+                            borderSide:
+                                BorderSide(color: Colors.white, width: 1)),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(5),
+                          borderSide: BorderSide(color: Colors.blue, width: 1),
+                        ),
+                        hintText: (patientProfile['anonymous_name'] == null ||
+                                patientProfile['anonymous_name']
+                                    .toString()
+                                    .isEmpty)
+                            ? 'Nhập tên ẩn danh của bạn'
+                            : null,
+                        hintStyle: TextStyle(fontSize: screenWidth * 0.04),
+                        contentPadding: EdgeInsets.symmetric(
+                            vertical: screenWidth * 0.03,
+                            horizontal: screenWidth * 0.02),
+                        suffixIcon: isEditing
+                            ? IconButton(
+                                icon: Icon(Icons.save,
+                                    size: screenWidth * 0.05,
+                                    color: Colors.green),
+                                onPressed: onSave,
+                              )
+                            : Icon(Icons.arrow_forward_ios,
+                                size: screenWidth * 0.05),
                       ),
+                      onTap: () {
+                        if (!isEditing) {
+                          ref.read(isEditingProvider.notifier).state = true;
+
+                          final newText =
+                              patientProfile['anonymous_name']?.toString() ??
+                                  '';
+                          ref.read(savedTextProvider.notifier).state = newText;
+                          controller.text = newText;
+                        }
+
+                        focusNode.requestFocus();
+                      },
+                      onEditingComplete: onEditingComplete,
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(screenWidth * 0.05),
+                child: sectionTitle(
+                    title: 'Tài khoản của bạn',
+                    screenHeight: screenHeight,
+                    screenWidth: screenWidth),
+              ),
+              Container(
+                width: screenWidth * 0.9,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: Color(0xFFD9D9D9),
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    SettingsMenu(
+                      label: "Hồ sơ y tế",
+                      icon: Icons.article,
+                      iconColor: Colors.blue,
+                      action: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => MedicalRecordsScreen())),
+                    ),
+                    SettingsMenu(
+                      label: "Đổi mật khẩu",
+                      icon: Icons.lock,
+                      iconColor: Colors.blueAccent,
+                      action: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ChangePassScreen())),
+                    ),
+                    SettingsMenu(
+                      label: "Cài đặt thông báo",
+                      icon: Icons.notifications,
+                      iconColor: Colors.amber,
+                      action: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => NotificationScreen())),
+                    ),
+                    SettingsMenu(
+                      label: "Về chúng tôi",
+                      icon: Icons.groups,
+                      iconColor: Colors.green,
+                      action: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => AboutUsScreen())),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: screenWidth * 0.9,
+                height: screenHeight * 0.3,
+                child: Image.asset(
+                  "assets/images/logo.png",
+                  fit: BoxFit.contain,
+                ),
+              ),
+              SizedBox(
+                height: screenHeight * 0.02,
+              ),
+              Text(
+                'An Yên',
+                style: TextStyle(
+                  fontSize: screenWidth * 0.08,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Inter-Medium',
+                  color: Color(0xFF1CB6E5),
+                ),
+              ),
+              Text(
+                'Nơi cảm xúc được lắng nghe',
+                style: TextStyle(
+                  fontSize: screenWidth * 0.045,
+                  color: Color(0xFFDE8C88),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: screenHeight * 0.3),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: SizedBox(
+                  width: screenWidth * 0.5,
+                  height: screenWidth * 0.12,
+                  child: TextButton(
+                    onPressed: () => showOptionDialog(
+                      context,
+                      "Đăng xuất",
+                      "Bạn có chắc chắn muốn đăng xuất",
+                      "HUỶ",
+                      "Đồng ý",
+                      () {
+                        callLogoutAPI();
+                      },
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.logout,
+                          color: Color(0xFFF6616A),
+                          size: screenWidth * 0.07,
+                        ),
+                        SizedBox(width: screenWidth * 0.02),
+                        Text(
+                          'ĐĂNG XUẤT',
+                          style: TextStyle(
+                            color: Color(0xFFF6616A),
+                            fontSize: screenWidth * 0.05,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              );
-            },
-            loading: () => Center(child: CircularProgressIndicator()),
-            error: (err, stack) => Center(child: Text("Lỗi: $err")),
+                ),
+              ),
+            ],
           ),
         ),
       ),

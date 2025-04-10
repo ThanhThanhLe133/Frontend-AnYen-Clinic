@@ -1,5 +1,6 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:intl/intl.dart';
 
 String apiUrl = dotenv.env['API_URL'] ?? 'https://default-api.com';
 final storage = FlutterSecureStorage();
@@ -27,4 +28,14 @@ Future<void> deleteAccessToken() async {
 
 Future<void> deleteRefreshToken() async {
   await storage.delete(key: 'refresh_token');
+}
+
+String formatDate(String? dateString) {
+  if (dateString == null || dateString.isEmpty) return 'Unknown';
+  try {
+    DateTime parsedDate = DateTime.parse(dateString);
+    return DateFormat('MM/dd/yyyy').format(parsedDate);
+  } catch (e) {
+    return '';
+  }
 }
