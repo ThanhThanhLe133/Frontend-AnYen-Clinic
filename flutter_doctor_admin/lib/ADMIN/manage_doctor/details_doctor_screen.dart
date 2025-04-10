@@ -7,8 +7,6 @@
 import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/doctor_profile_edit_screen.dart';
 import 'package:flutter/material.dart';
 
-import 'package:ayclinic_doctor_admin/widget/DoctorCardInList.dart';
-import 'doctor_list_screen.dart';
 import 'listReview_doctor_screen.dart';
 import 'package:ayclinic_doctor_admin/widget/reviewCard_widget.dart';
 import 'package:ayclinic_doctor_admin/widget/consultationBottomBar.dart';

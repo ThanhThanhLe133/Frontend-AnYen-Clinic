@@ -1,8 +1,10 @@
 import { where } from 'sequelize';
 import db from '../models'
 import jwt from 'jsonwebtoken'
-import { supabase } from '../config/supabaseClient';
+import supabase from '../config/supabaseClient';
 import { phone_number } from '../helpers/joi_schema';
+import { v4 as uuidv4 } from 'uuid';
+
 
 export const editProfile = ({ userId, fullName, dateOfBirth, gender, medicalHistory, allergies }) => new Promise(async (resolve, reject) => {
     try {
@@ -115,8 +117,9 @@ export const editAvatar = ({ userId, fileBuffer, originalName, mimetype }) =>
                     mes: 'Missing required fields',
                 })
             }
+
             const ext = originalName.split('.').pop()
-            const filePath = `avatars/${userId}_${uuidv4()}.${ext}`
+            const filePath = `${userId}_${uuidv4()}.${ext}`
 
             const { error: uploadError } = await supabase.storage
                 .from('image-mobile-app')
@@ -124,8 +127,15 @@ export const editAvatar = ({ userId, fileBuffer, originalName, mimetype }) =>
                     contentType: mimetype,
                     upsert: true,
                 })
+            const {
+                data: { user },
+                error,
+            } = await supabase.auth.getUser();
+
+            console.log('🧑‍💻 Logged-in user:', user?.id);
 
             if (uploadError) {
+                console.log('❌ Upload error:', uploadError);
                 return resolve({
                     err: 1,
                     mes: uploadError.message,
@@ -139,12 +149,12 @@ export const editAvatar = ({ userId, fileBuffer, originalName, mimetype }) =>
                     mes: urlError.message,
                 });
             }
-            await db.User.update(
+            const updateResult = await db.Patient.update(
                 {
                     avatar_url: data.publicUrl
                 },
                 {
-                    where: { id: userId }
+                    where: { patient_id: userId }
                 }
             );
             if (updateResult[0] === 0) {

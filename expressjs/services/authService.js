@@ -242,7 +242,7 @@ export const refreshToken = (refresh_token) => new Promise(async (resolve, rejec
       });
     }
     else {
-      jwt.verify(refresh_token, process.env.JWT_SECRET_REFRESH_TOKEN, (err, decoded) => {
+      jwt.verify(refresh_token, process.env.JWT_SECRET_REFRESH_TOKEN, async (err, decoded) => {
         if (err) {
           return resolve({
             err: 1,
@@ -252,6 +252,17 @@ export const refreshToken = (refresh_token) => new Promise(async (resolve, rejec
         else {
           const access_token = jwt.sign({ id: response.id, phone_number: response.phone_number }, process.env.JWT_SECRET, { expiresIn: '1h' })
 
+          const refresh_token = jwt.sign(
+            { id: response.id },
+            process.env.JWT_SECRET_REFRESH_TOKEN,
+            { expiresIn: '7d' }
+          );
+
+          // ✅ Lưu refresh token mới vào DB
+          await db.User.update(
+            { refresh_token: refresh_token },
+            { where: { id: response.id } }
+          );
           resolve({
             err: access_token ? 0 : 1,
             mes: access_token ? 'OK' : 'Fail to generate new access token. Try later',

@@ -16,7 +16,6 @@ import 'package:anyen_clinic/widget/menu.dart';
 import 'package:anyen_clinic/widget/sectionTitle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -37,7 +36,7 @@ class AccountScreen extends ConsumerStatefulWidget {
 class _AccountScreenState extends ConsumerState<AccountScreen> {
   final TextEditingController controller = TextEditingController();
   final FocusNode focusNode = FocusNode();
-  Map<String, dynamic>? patientProfile;
+  Map<String, dynamic> patientProfile = {};
 
   void onEditingComplete() {
     ref.read(savedTextProvider.notifier).state = controller.text;
@@ -105,6 +104,10 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Lưu thành công!")),
       );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => AccountScreen()),
+      );
     } else {
       throw Exception(responseData["message"] ?? "Lỗi đổi mật khẩu");
     }
@@ -135,7 +138,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
       url: '$apiUrl/patient/get-profile',
       method: 'GET',
     );
-
+    debugPrint("⚠️ Response Body: ${response.body}}");
     if (response.statusCode != 200) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -145,7 +148,11 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
     } else {
       final data = jsonDecode(response.body);
       setState(() {
-        patientProfile = data;
+        patientProfile = data['data'];
+        final anonymousName = patientProfile['anonymous_name'];
+        if (anonymousName != null && anonymousName.toString().isNotEmpty) {
+          controller.text = anonymousName;
+        }
       });
     }
   }
@@ -229,16 +236,16 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                                   radius: screenWidth * 0.1,
                                   backgroundColor: Colors.blue[300],
                                   backgroundImage:
-                                      (patientProfile!['avatar_url'] != null &&
-                                              patientProfile!['avatar_url']
+                                      (patientProfile['avatar_url'] != null &&
+                                              patientProfile['avatar_url']
                                                   .toString()
                                                   .isNotEmpty)
                                           ? NetworkImage(
-                                              patientProfile!['avatar_url'])
+                                              patientProfile['avatar_url'])
                                           : null,
                                   child:
-                                      (patientProfile!['avatar_url'] == null ||
-                                              patientProfile!['avatar_url']
+                                      (patientProfile['avatar_url'] == null ||
+                                              patientProfile['avatar_url']
                                                   .toString()
                                                   .isEmpty)
                                           ? Icon(Icons.person,
@@ -303,8 +310,13 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  patientProfile!['full_name'] ??
-                                      'Không có tên',
+                                  (patientProfile['full_name'] != null &&
+                                          patientProfile['full_name']
+                                              .toString()
+                                              .trim()
+                                              .isNotEmpty)
+                                      ? patientProfile['full_name']
+                                      : 'Không có tên',
                                   softWrap: true,
                                   maxLines: null,
                                   overflow: TextOverflow.visible,
@@ -313,7 +325,9 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                                       fontWeight: FontWeight.bold),
                                 ),
                                 Text(
-                                  patientProfile!['phone_number'] ?? '',
+                                  (patientProfile['phone_number'] != null)
+                                      ? patientProfile['phone_number']
+                                      : '',
                                   style: TextStyle(
                                       fontSize: screenWidth * 0.045,
                                       color: Colors.grey[700]),
@@ -363,8 +377,13 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                               borderSide:
                                   BorderSide(color: Colors.blue, width: 1),
                             ),
-                            hintText: patientProfile!['anonymous_name'] ??
-                                "Nhập tên ẩn danh của bạn",
+                            hintText:
+                                (patientProfile['anonymous_name'] == null ||
+                                        patientProfile['anonymous_name']
+                                            .toString()
+                                            .isEmpty)
+                                    ? 'Nhập tên ẩn danh của bạn'
+                                    : null,
                             hintStyle: TextStyle(fontSize: screenWidth * 0.04),
                             contentPadding: EdgeInsets.symmetric(
                                 vertical: screenWidth * 0.03,
@@ -382,14 +401,15 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                           onTap: () {
                             if (!isEditing) {
                               ref.read(isEditingProvider.notifier).state = true;
-                              if (savedText == null || savedText.isEmpty) {
-                                final newText =
-                                    patient?['anonymous_name'] as String? ?? '';
-                                ref.read(savedTextProvider.notifier).state =
-                                    newText;
-                                controller.text = newText;
-                              }
+
+                              final newText = patientProfile['anonymous_name']
+                                      ?.toString() ??
+                                  '';
+                              ref.read(savedTextProvider.notifier).state =
+                                  newText;
+                              controller.text = newText;
                             }
+
                             focusNode.requestFocus();
                           },
                           onEditingComplete: onEditingComplete,

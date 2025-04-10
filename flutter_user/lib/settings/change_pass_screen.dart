@@ -3,14 +3,12 @@ import 'dart:convert';
 import 'package:anyen_clinic/dialog/SuccessDialog.dart';
 import 'package:anyen_clinic/login/login_screen.dart';
 import 'package:anyen_clinic/makeRequest.dart';
-import 'package:anyen_clinic/provider/patient_provider.dart';
 import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/CustomBackButton.dart';
 import 'package:anyen_clinic/widget/buildPasswordField.dart';
 import 'package:anyen_clinic/widget/normalButton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
 
 class ChangePassScreen extends ConsumerStatefulWidget {
   const ChangePassScreen({super.key});

@@ -57,7 +57,6 @@ export const editAnonymousName = async (req, res) => {
 export const getProfile = async (req, res) => {
     try {
         const userId = req.user?.id;
-        console.log(userId);
 
         if (!userId) return badRequest('Missing user id', res);
 
@@ -76,7 +75,7 @@ export const editAvatar = async (req, res) => {
 
         if (!file) return res.status(400).json({ err: 1, mes: 'No file uploaded' })
 
-        const result = await uploadAvatar({
+        const result = await services.editAvatar({
             userId,
             fileBuffer: file.buffer,
             originalName: file.originalname,

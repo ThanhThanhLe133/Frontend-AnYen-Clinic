@@ -1,4 +1,3 @@
-import 'package:anyen_clinic/widget/normalButton.dart';
 import 'package:flutter/material.dart';
 
 void showSuccessDialog(
@@ -6,6 +5,17 @@ void showSuccessDialog(
   double screenWidth = MediaQuery.of(context).size.width;
   double screenHeight = MediaQuery.of(context).size.height;
 
+  Future.delayed(Duration(seconds: 2), () {
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop(); // Đóng dialog
+      if (nextScreen != null && context.mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => nextScreen),
+        );
+      }
+    }
+  });
   showDialog(
     context: context,
     barrierDismissible: false,
@@ -32,7 +42,6 @@ void showSuccessDialog(
               SizedBox(height: 30),
               ElevatedButton(
                 onPressed: () async {
-                  await Future.delayed(Duration(seconds: 3));
                   if (nextScreen != null) {
                     Navigator.push(
                       context,

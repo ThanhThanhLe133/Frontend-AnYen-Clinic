@@ -1,16 +1,5 @@
-import 'package:anyen_clinic/OTP_verification/otp_verification_screen.dart';
-import 'package:anyen_clinic/appointment/appointment_screen.dart';
-import 'package:anyen_clinic/chat/CallScreen.dart';
-import 'package:anyen_clinic/chat/chat_screen.dart';
-import 'package:anyen_clinic/dashboard/dashboard.dart';
-import 'package:anyen_clinic/doctor/details_doctor_screen.dart';
-import 'package:anyen_clinic/forgotPass/create_new_pass_screen.dart';
-import 'package:anyen_clinic/forgotPass/forgot_pass_screen.dart';
 import 'package:anyen_clinic/login/login_screen.dart';
-import 'package:anyen_clinic/message/message_screen.dart';
-import 'package:anyen_clinic/payment/payment_screen.dart';
 import 'package:anyen_clinic/settings/account_screen.dart';
-import 'package:anyen_clinic/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';

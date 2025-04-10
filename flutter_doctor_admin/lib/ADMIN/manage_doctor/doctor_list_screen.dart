@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:ayclinic_doctor_admin/widget/DoctorCardInList.dart';
-import 'package:ayclinic_doctor_admin/ADMIN/widget/menu_admin.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/add_doctor_screen.dart';
 import 'details_doctor_screen.dart';
 

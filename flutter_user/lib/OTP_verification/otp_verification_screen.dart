@@ -15,9 +15,7 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class OTPVerificationScreen extends ConsumerStatefulWidget {
   const OTPVerificationScreen({super.key, required this.source});
@@ -137,9 +135,11 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
       if (response.statusCode == 200) {
         await saveAccessToken(responseData['access_token']);
         await saveRefreshToken(responseData['refresh_token']);
+        final accessToken = await getAccessToken();
 
-        List<String> roles = responseData['roles'];
+        List<String> roles = List<String>.from(responseData['roles']);
         if (roles.contains('patient')) {
+          debugPrint("⚠️ Access Token: $accessToken");
           showSuccessDialog(
               context, Dashboard(), "Xác nhận thành công", "Tới trang chủ");
           ResetProvider();
@@ -198,7 +198,6 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
         }),
       );
       final responseData = jsonDecode(response.body);
-
       if (response.statusCode == 200) {
         if (widget.source == "register") {
           await callRegisterAPI(phoneNumber, password);
