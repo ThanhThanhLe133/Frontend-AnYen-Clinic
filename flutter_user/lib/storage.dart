@@ -14,8 +14,17 @@ Future<void> saveRefreshToken(String token) async {
   await storage.write(key: 'refresh_token', value: token);
 }
 
+Future<void> saveLogin() async {
+  await storage.write(key: 'isLoggedIn', value: 'true');
+}
+
 Future<String?> getAccessToken() async {
   return await storage.read(key: 'access_token');
+}
+
+Future<bool> getLogin() async {
+  final result = await storage.read(key: 'isLoggedIn');
+  return result == 'true';
 }
 
 Future<String?> getRefreshToken() async {
@@ -28,6 +37,10 @@ Future<void> deleteAccessToken() async {
 
 Future<void> deleteRefreshToken() async {
   await storage.delete(key: 'refresh_token');
+}
+
+Future<void> deleteLogin() async {
+  await storage.delete(key: 'isLoggedIn');
 }
 
 String formatDate(String? dateString) {

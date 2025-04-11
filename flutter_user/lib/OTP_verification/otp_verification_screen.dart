@@ -119,6 +119,12 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
         context, ForgotPassScreen(), "Xác nhận thành công", "Tạo mật khẩu mới");
   }
 
+  Future<void> saveAfterLogin(Map<String, dynamic> responseData) async {
+    await saveAccessToken(responseData['access_token']);
+    await saveRefreshToken(responseData['refresh_token']);
+    await saveLogin();
+  }
+
   Future<void> callLoginAPI(String phoneNumber, String password) async {
     try {
       final response = await http.post(
@@ -133,13 +139,10 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
       final responseData = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        await saveAccessToken(responseData['access_token']);
-        await saveRefreshToken(responseData['refresh_token']);
-        final accessToken = await getAccessToken();
+        await saveAfterLogin(responseData);
 
         List<String> roles = List<String>.from(responseData['roles']);
         if (roles.contains('patient')) {
-          debugPrint("⚠️ Access Token: $accessToken");
           showSuccessDialog(
               context, Dashboard(), "Xác nhận thành công", "Tới trang chủ");
           ResetProvider();

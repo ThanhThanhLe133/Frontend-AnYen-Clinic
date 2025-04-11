@@ -117,6 +117,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
     if (response.statusCode == 200) {
       await deleteAccessToken();
       await deleteRefreshToken();
+      await deleteLogin();
       if (!mounted) return;
       showSuccessDialog(
           context, LoginScreen(), "Đăng xuất thành công", "Đăng nhập");
