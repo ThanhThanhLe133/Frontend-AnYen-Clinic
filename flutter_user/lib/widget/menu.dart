@@ -7,7 +7,7 @@ import 'package:anyen_clinic/doctor/list_doctor_screen.dart';
 import 'package:anyen_clinic/message/message_screen.dart';
 import 'package:anyen_clinic/settings/account_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:fab_circular_menu/fab_circular_menu.dart';
+import 'package:fab_circular_menu_plus/fab_circular_menu_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final menuOpenProvider = StateProvider<bool>((ref) => false);
@@ -20,7 +20,7 @@ class Menu extends ConsumerStatefulWidget {
 }
 
 class _MenuState extends ConsumerState<Menu> {
-  final GlobalKey<FabCircularMenuState> _fabKey = GlobalKey();
+  final GlobalKey<FabCircularMenuPlusState> _fabKey = GlobalKey();
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -46,7 +46,7 @@ class _MenuState extends ConsumerState<Menu> {
       );
     }
 
-    return FabCircularMenu(
+    return FabCircularMenuPlus(
       key: _fabKey,
       ringColor: Colors.blue.withOpacity(0.5),
       ringDiameter: max(screenWidth, screenHeight) * 0.65,
