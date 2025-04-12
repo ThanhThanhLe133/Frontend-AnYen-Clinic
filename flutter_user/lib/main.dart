@@ -30,12 +30,8 @@ class MainApp extends StatelessWidget {
           bodyMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
           bodySmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
         ),
-<<<<<<< HEAD
-        home: PsychologicalTestHomeScreen());
-=======
       ),
-      home: isLoggedIn ? Dashboard() : SplashScreen(),
+      home: PsychologicalTestHomeScreen(),
     );
->>>>>>> bd4e47fbf8e3c3de60fca69fed55aea51e0b6a03
   }
 }
