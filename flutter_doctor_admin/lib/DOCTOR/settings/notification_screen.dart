@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:ayclinic_doctor_admin/widget/BuildToggleOption.dart';
-import 'package:ayclinic_doctor_admin/widget/sectionTitle.dart';
 import 'package:flutter/material.dart';
 
 class NotificationScreen extends StatefulWidget {

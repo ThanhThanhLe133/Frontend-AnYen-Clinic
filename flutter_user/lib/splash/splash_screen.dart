@@ -1,6 +1,5 @@
 import 'dart:async' show Timer;
 
-import 'package:anyen_clinic/login/login_screen.dart' show LoginScreen;
 import 'package:anyen_clinic/splash/splash_screen_intro.dart';
 import 'package:flutter/material.dart';
 // import 'package:an_yen_clinic/gen/assets.gen.dart';

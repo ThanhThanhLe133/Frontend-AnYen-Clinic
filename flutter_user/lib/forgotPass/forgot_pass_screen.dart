@@ -1,12 +1,12 @@
 import 'dart:convert';
 
 import 'package:anyen_clinic/OTP_verification/otp_verification_screen.dart';
-import 'package:anyen_clinic/patient_provider.dart';
+import 'package:anyen_clinic/provider/patient_provider.dart';
+import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/inputPhoneNumber.dart';
 import 'package:anyen_clinic/widget/normalButton.dart';
 import 'package:anyen_clinic/widget/phoneCode_drop_down/country_code_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
@@ -19,7 +19,6 @@ class ForgotPassScreen extends ConsumerStatefulWidget {
 
 class _ForgotPassScreenState extends ConsumerState<ForgotPassScreen> {
   final phoneController = TextEditingController();
-  String apiUrl = dotenv.env['API_URL'] ?? 'https://default-api.com';
   Future<void> sendOTP() async {
     final selectedCountryCode = ref.read(countryCodeProvider);
 
@@ -56,7 +55,6 @@ class _ForgotPassScreenState extends ConsumerState<ForgotPassScreen> {
         throw Exception(responseData["message"] ?? "Lỗi xác thực");
       }
     } catch (e) {
-      debugPrint("🔍$e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Lỗi xác thực: ${e.toString()}")),
       );

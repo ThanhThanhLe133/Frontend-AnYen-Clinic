@@ -9,7 +9,6 @@ class MedicalRecord extends StatelessWidget {
     required this.age,
     required this.height,
     required this.weight,
-    required this.bmi,
   });
 
   final double screenWidth;
@@ -18,9 +17,13 @@ class MedicalRecord extends StatelessWidget {
   final int age;
   final double height;
   final double weight;
-  final double bmi;
+
   @override
   Widget build(BuildContext context) {
+    double bmi = 0;
+    if (height > 0) {
+      bmi = weight / ((height / 100) * (height / 100));
+    }
     return Container(
       width: screenWidth * 0.9,
       padding: EdgeInsets.all(screenWidth * 0.02),

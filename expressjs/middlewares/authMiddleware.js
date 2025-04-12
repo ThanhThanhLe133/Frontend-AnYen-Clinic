@@ -55,3 +55,12 @@ export const authenticate = async (req, res, next) => {
     });
   }
 };
+// export const checkRole = (roleRequired) => {
+//   return (req, res, next) => {
+//     const user = req.user;
+//     if (user.role !== roleRequired) {
+//       return res.status(403).json({ err: 1, mes: 'Forbidden: You do not have permission' });
+//     }
+//     next();
+//   };
+// };

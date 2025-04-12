@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:anyen_clinic/FilterOption.dart';
+import 'package:anyen_clinic/provider/FilterOptionProvider.dart';
 import 'package:anyen_clinic/appointment/widget/appointmentConnectedCard.dart';
 import 'package:anyen_clinic/dialog/option_dialog.dart';
 import 'package:anyen_clinic/widget/BottomFilterBar_appointment.dart';

@@ -1,6 +1,5 @@
 import 'package:anyen_clinic/appointment/connected_appointment_screen%20copy.dart';
 import 'package:anyen_clinic/appointment/connecting_appointment_screen.dart';
-import 'package:anyen_clinic/widget/BottomFilterBar_appointment.dart';
 import 'package:anyen_clinic/widget/CustomBackButton.dart';
 import 'package:anyen_clinic/widget/menu.dart';
 import 'package:anyen_clinic/widget/statusWidget.dart';

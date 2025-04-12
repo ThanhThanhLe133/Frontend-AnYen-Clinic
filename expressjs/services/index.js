@@ -1,3 +1,4 @@
 export * from './otp'
 export * from './authService'
-export * from './patient'
+export * from './user'
+export * from './patient_profile'

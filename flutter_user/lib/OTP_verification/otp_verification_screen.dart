@@ -1,17 +1,21 @@
 import 'dart:convert';
 
-import 'package:anyen_clinic/OTP_verification/otp_provider.dart';
+import 'package:anyen_clinic/forgotPass/forgot_pass_screen.dart';
+import 'package:anyen_clinic/login/login_screen.dart';
+import 'package:anyen_clinic/provider/otp_provider.dart';
 import 'package:anyen_clinic/dashboard/dashboard.dart';
-import 'package:anyen_clinic/dialog/SuccessScreen.dart';
-import 'package:anyen_clinic/patient_provider.dart';
+import 'package:anyen_clinic/dialog/SuccessDialog.dart';
+import 'package:anyen_clinic/provider/patient_provider.dart';
+import 'package:anyen_clinic/register/register_screen.dart';
+import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/normalButton.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class OTPVerificationScreen extends ConsumerStatefulWidget {
   const OTPVerificationScreen({super.key, required this.source});
@@ -21,8 +25,6 @@ class OTPVerificationScreen extends ConsumerStatefulWidget {
 }
 
 class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
-  String apiUrl = dotenv.env['API_URL']!;
-
   List<TextEditingController> otpControllers =
       List.generate(6, (index) => TextEditingController());
   List<FocusNode> otpFocusNodes = List.generate(6, (index) => FocusNode());
@@ -77,129 +79,181 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
     super.dispose();
   }
 
+  void ResetProvider() {
+    ref.read(phoneNumberProvider.notifier).state = '';
+    ref.read(passwordProvider.notifier).state = '';
+    ref.read(otpProvider.notifier).resetOTP();
+  }
+
+  Future<void> callRegisterAPI(String phoneNumber, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$apiUrl/auth/register'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "phone_number": phoneNumber,
+          "password": password,
+        }),
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        showSuccessDialog(
+            context, LoginScreen(), "Xác nhận thành công", "Đăng nhập");
+        ResetProvider();
+      } else {
+        throw Exception(responseData["message"] ?? "Lỗi đăng ký");
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Lỗi đăng ký: ${e.toString()}")),
+      );
+
+      Navigator.pop(context);
+    }
+  }
+
+  Future<void> navigateToForgotPass() async {
+    showSuccessDialog(
+        context, ForgotPassScreen(), "Xác nhận thành công", "Tạo mật khẩu mới");
+  }
+
+  Future<void> saveAfterLogin(Map<String, dynamic> responseData) async {
+    await saveAccessToken(responseData['access_token']);
+    await saveRefreshToken(responseData['refresh_token']);
+    await saveLogin();
+  }
+
+  Future<void> callLoginAPI(String phoneNumber, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$apiUrl/auth/login'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "phone_number": phoneNumber,
+          "password": password,
+        }),
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        await saveAfterLogin(responseData);
+
+        List<String> roles = List<String>.from(responseData['roles']);
+        if (roles.contains('patient')) {
+          showSuccessDialog(
+              context, Dashboard(), "Xác nhận thành công", "Tới trang chủ");
+          ResetProvider();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: RichText(
+                text: TextSpan(
+                  text: 'Chưa có tài khoản. ',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.black,
+                  ),
+                  children: [
+                    TextSpan(
+                      text: 'Đăng ký',
+                      style: TextStyle(
+                        color: Color(0xFF119CF0),
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => RegisterScreen(),
+                            ),
+                          );
+                        },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+      } else {
+        throw Exception(responseData["message"] ?? "Lỗi đăng nhập");
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Lỗi đăng nhập: ${e.toString()}")),
+      );
+      Navigator.pop(context);
+    }
+  }
+
+  Future<void> verifyOTP(String phoneNumber, String password) async {
+    String otpCode = ref.read(otpProvider);
+    try {
+      final response = await http.post(
+        Uri.parse('$apiUrl/otp/verify-otp'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "phone_number": phoneNumber,
+          "otp": otpCode,
+        }),
+      );
+      final responseData = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        if (widget.source == "register") {
+          await callRegisterAPI(phoneNumber, password);
+        } else if (widget.source == "forgot") {
+          await navigateToForgotPass();
+        } else {
+          await callLoginAPI(phoneNumber, password);
+        }
+      } else {
+        throw Exception(responseData["message"] ?? "Xác nhận OTP thất bại");
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Lỗi OTP: ${e.toString()}")),
+      );
+    }
+  }
+
+  Future<void> resendOtp(String phoneNumber) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$apiUrl/otp/send-otp'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"phone_number": phoneNumber}),
+      );
+      final responseData = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        startCountdown();
+        ref.read(otpProvider.notifier).resetOTP();
+        for (var controller in otpControllers) {
+          controller.clear();
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Mã OTP đã được gửi lại!")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Lỗi: ${responseData['message']}")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Lỗi gửi lại OTP: ${e.toString()}")),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     String phoneNumber = ref.watch(phoneNumberProvider);
     String password = ref.watch(passwordProvider);
-
-    Future<void> callRegisterAPI() async {
-      try {
-        final response = await http.post(
-          Uri.parse('$apiUrl/auth/register'),
-          headers: {"Content-Type": "application/json"},
-          body: jsonEncode({
-            "phone_number": phoneNumber,
-            "password": password,
-          }),
-        );
-
-        final responseData = jsonDecode(response.body);
-
-        if (response.statusCode == 200) {
-          showSuccessScreen(context, Dashboard());
-        } else {
-          throw Exception(responseData["message"] ?? "Lỗi đăng ký");
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Lỗi đăng ký: ${e.toString()}")),
-        );
-
-        Navigator.pop(context);
-      }
-    }
-
-    Future<void> callLoginAPI() async {
-      try {
-        final response = await http.post(
-          Uri.parse('$apiUrl/auth/login'),
-          headers: {"Content-Type": "application/json"},
-          body: jsonEncode({
-            "phone_number": phoneNumber,
-            "password": password,
-          }),
-        );
-
-        final responseData = jsonDecode(response.body);
-
-        if (response.statusCode == 200) {
-          // Nếu đăng nhập thành công, chuyển đến màn hình Dashboard
-          showSuccessScreen(context, Dashboard());
-        } else {
-          // Nếu có lỗi, ném ngoại lệ và quay lại LoginScreen
-          throw Exception(responseData["message"] ?? "Lỗi đăng nhập");
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Lỗi đăng nhập: ${e.toString()}")),
-        );
-
-        Navigator.pop(context);
-      }
-    }
-
-    Future<void> verifyOTP() async {
-      String otpCode = ref.read(otpProvider);
-      try {
-        final response = await http.post(
-          Uri.parse('$apiUrl/otp/verify-otp'),
-          headers: {"Content-Type": "application/json"},
-          body: jsonEncode({
-            "phone_number": phoneNumber,
-            "otp": otpCode,
-          }),
-        );
-        debugPrint("🔍 API Response: ${response.body}");
-        final responseData = jsonDecode(response.body);
-
-        if (response.statusCode == 200) {
-          if (widget.source == "register") {
-            await callRegisterAPI();
-          } else if (widget.source == "forgot") {
-          } else {
-            await callLoginAPI();
-          }
-        } else {
-          throw Exception(responseData["message"] ?? "Xác thực OTP thất bại");
-        }
-      } catch (e) {
-        debugPrint("🔍$e");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Lỗi OTP: ${e.toString()}")),
-        );
-      }
-    }
-
-    Future<void> resendOtp() async {
-      try {
-        final response = await http.post(
-          Uri.parse('$apiUrl/otp/send-otp'),
-          headers: {"Content-Type": "application/json"},
-          body: jsonEncode({"phone_number": phoneNumber}),
-        );
-        final responseData = jsonDecode(response.body);
-        if (response.statusCode == 200) {
-          startCountdown();
-          ref.read(otpProvider.notifier).resetOTP();
-          for (var controller in otpControllers) {
-            controller.clear();
-          }
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Mã OTP đã được gửi lại!")),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Lỗi: ${responseData['message']}")),
-          );
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Lỗi gửi lại OTP: ${e.toString()}")),
-        );
-      }
-    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -324,7 +378,7 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
                         ),
                       )
                     : GestureDetector(
-                        onTap: resendOtp,
+                        onTap: () => resendOtp(phoneNumber),
                         child: Text(
                           "Gửi lại mã",
                           style: TextStyle(
@@ -339,7 +393,7 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
                 screenWidth: screenWidth,
                 screenHeight: screenHeight,
                 label: "Xác nhận",
-                action: verifyOTP,
+                action: () => verifyOTP(phoneNumber, password),
               )
             ],
           ),

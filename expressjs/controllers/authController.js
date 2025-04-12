@@ -1,14 +1,3 @@
-import jwt from "jsonwebtoken";
-import { validationResult } from "express-validator";
-import {
-  generateTokens,
-  verifyRefreshToken,
-  saveRefreshToken,
-  revokeRefreshToken,
-  blacklistAccessToken,
-} from "../utils/tokenUtils.js";
-import { AppError } from "../middlewares/errorMiddleware.js";
-
 import * as services from '../services'
 import { internalServerError, badRequest } from '../middlewares/handle_errors.js'
 import { phone_number, password, refresh_token, otp } from '../helpers/joi_schema'
@@ -29,6 +18,7 @@ export const register = async (req, res) => {
     return internalServerError(res)
   }
 }
+
 export const login = async (req, res) => {
   try {
     const { error } = joi.object({ phone_number, password }).validate(req.body)
@@ -42,6 +32,7 @@ export const login = async (req, res) => {
     return internalServerError(res)
   }
 }
+
 export const refreshTokenController = async (req, res) => {
   try {
     const { error } = joi.object({ refresh_token }).validate(req.body)
@@ -57,34 +48,64 @@ export const refreshTokenController = async (req, res) => {
     return internalServerError(res)
   }
 }
-// // Logout user
-// export const logout = async (req, res, next) => {
-//   try {
-//     // Get refresh token from cookie
-//     const refreshToken = req.cookies.refreshToken;
 
-//     if (refreshToken) {
-//       // Revoke refresh token
-//       await revokeRefreshToken(refreshToken);
-//     }
+export const forgotPassword = async (req, res) => {
+  try {
+    const { error } = joi.object({ phone_number, password }).validate(req.body)
+    if (error)
+      return badRequest(error.details[0]?.message, res)
 
-//     // If user is authenticated, blacklist access token
-//     if (req.user && req.jti) {
-//       const decoded = jwt.decode(req.headers.authorization.split(" ")[1]);
-//       await blacklistAccessToken(req.jti, decoded.exp);
-//     }
+    const response = await services.forgotPassword(req.body)
 
-//     // Clear refresh token cookie
-//     res.clearCookie("refreshToken");
+    return res.status(200).json(response)
+  } catch (error) {
+    console.log(error);
+    return internalServerError(res)
+  }
+}
 
-//     res.status(200).json({
-//       success: true,
-//       message: "Logout successful",
-//     });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
+export const resetPassword = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) return badRequest('Missing user id', res);
+    const { oldPassword, newPassword } = req.body;
+    const { error } = joi.object({
+      newPassword: password
+    }).validate({ newPassword });
+    if (error)
+      return badRequest(error.details[0]?.message, res)
+
+    const response = await services.resetPassword({
+      userId,
+      oldPassword,
+      newPassword
+    });
+
+
+    return res.status(200).json(response)
+  } catch (error) {
+    console.log(error);
+    return internalServerError(res)
+  }
+}
+
+export const logout = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) return badRequest('Missing user id', res);
+
+    const response = await services.logout({ userId });
+
+    return res.status(200).json(response);
+  } catch (error) {
+    console.log(error);
+    return internalServerError(res);
+  }
+};
+
+
 
 // // Get current user profile
 // export const me = async (req, res, next) => {

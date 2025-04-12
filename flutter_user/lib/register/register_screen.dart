@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:anyen_clinic/OTP_verification/otp_verification_screen.dart';
 import 'package:anyen_clinic/login/login_screen.dart';
-import 'package:anyen_clinic/patient_provider.dart';
+import 'package:anyen_clinic/provider/patient_provider.dart';
 import 'package:anyen_clinic/widget/buildPasswordField.dart';
 import 'package:anyen_clinic/widget/normalButton.dart';
 import 'package:anyen_clinic/widget/phoneCode_drop_down/country_code_provider.dart';
@@ -60,7 +60,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     try {
       final response = await http.post(
         Uri.parse('$apiUrl/otp/send-otp'),
-        //thay = địa chỉ ipv4 ở đây nếu run = điện thoại
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "phone_number": phoneNumber,

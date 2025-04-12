@@ -50,8 +50,8 @@ class _MenuAdminState extends ConsumerState<MenuAdmin> {
 
     return FabCircularMenuPlus(
       key: _fabKey,
-      ringColor: Colors.blue.withOpacity(0.5),
-      ringDiameter: max(screenWidth, screenHeight) * 0.65,
+      ringColor: Colors.blue.withOpacity(0.3),
+      ringDiameter: max(screenWidth, screenHeight) * 0.5,
       fabColor: Color(0xFF119CF0).withOpacity(0.8),
       fabSize: screenWidth * 0.1,
       ringWidth: screenWidth * 0.13,

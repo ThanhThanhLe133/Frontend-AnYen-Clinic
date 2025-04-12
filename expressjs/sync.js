@@ -8,7 +8,7 @@ export const syncDatabase = () => {
     .authenticate()
     .then(() => {
       console.log("Database connection established successfully.");
-      return sequelize.sync({ alter: false }); // force: true will drop the table if it already exists (use cautiously)
+      return sequelize.sync({ alter: true }); // force: true will drop the table if it already exists (use cautiously)
     })
     .then(() => {
       console.log("Database & tables initialized successfully.");

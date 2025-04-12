@@ -5,13 +5,7 @@
 // import 'package:anyen_clinic/widget/sectionTitle.dart' show sectionTitle;
 import 'package:flutter/material.dart';
 
-import 'package:ayclinic_doctor_admin/widget/DoctorCardInList.dart';
-import 'package:ayclinic_doctor_admin/ADMIN/widget/menu_admin.dart';
-import 'listReview_doctor_screen.dart';
-import 'package:ayclinic_doctor_admin/widget/reviewCard_widget.dart';
-import 'package:ayclinic_doctor_admin/widget/consultationBottomBar.dart';
 import 'package:ayclinic_doctor_admin/widget/sectionTitle.dart';
-import 'package:ayclinic_doctor_admin/widget/buttonReview_widget.dart';
 import 'package:ayclinic_doctor_admin/widget/buttonReview_widget.dart';
 import 'package:ayclinic_doctor_admin/widget/infoTitle_widget.dart';
 import 'package:ayclinic_doctor_admin/dialog/option_dialog.dart';
@@ -457,16 +451,17 @@ class ReviewCardDetail extends StatelessWidget {
                 ),
                 SizedBox(width: screenWidth * 0.05),
                 ButtonReviewDetail(
-                  label: "Báo cáo",
+                  label: "Xóa",
                   action:
                       (context) => showOptionDialog(
                         context,
-                        "Báo cáo",
-                        "Nội dung không phù hợp",
+                        "Xoá đánh giá",
+                        "Bạn chắc chắn muốn xóa đánh giá này?",
                         "HUỶ",
                         "XÁC NHẬN",
                         null,
                       ),
+
                   screenWidth: screenWidth,
                   screenHeight: screenHeight,
                 ),

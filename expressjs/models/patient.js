@@ -8,30 +8,20 @@ module.exports = (sequelize, DataTypes) => {
          * The `models/index` file will call this method automatically.
          */
         static associate(models) {
-            // define association here
-            //   User.belongsTo(models.Role, { foreignKey: 'role_code', targetKey: 'code', as: 'roleData' })
+            Patient.belongsTo(models.User, {
+                foreignKey: 'patient_id',
+                targetKey: 'id',
+                as: 'user'
+            });
         }
     }
     Patient.init({
-        id: {
+        patient_id: {
             allowNull: false,
             type: DataTypes.UUID,
-            defaultValue: DataTypes.UUIDV4,
             primaryKey: true,
         },
-        phone_number: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            unique: true,
-        },
-        password: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-        avatar_url: {
-            type: DataTypes.STRING,
-        },
-        refresh_token: {
+        fullname: {
             type: DataTypes.STRING,
         },
         date_of_birth: {
@@ -42,10 +32,13 @@ module.exports = (sequelize, DataTypes) => {
         },
         anonymous_name: {
             type: DataTypes.STRING,
-            unique: true,
+            allowNull: false,
         },
         medical_history: {
             type: DataTypes.TEXT,
+        },
+        avatar_url: {
+            type: DataTypes.STRING,
         },
         allergies: {
             type: DataTypes.TEXT,
@@ -53,6 +46,8 @@ module.exports = (sequelize, DataTypes) => {
     }, {
         sequelize,
         modelName: 'Patient',
+        tableName: 'Patients',
+        timestamps: false
     });
     return Patient;
 };
