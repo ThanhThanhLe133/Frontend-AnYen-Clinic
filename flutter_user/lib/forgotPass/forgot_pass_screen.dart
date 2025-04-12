@@ -21,15 +21,19 @@ class _ForgotPassScreenState extends ConsumerState<ForgotPassScreen> {
   final phoneController = TextEditingController();
   Future<void> sendOTP() async {
     final selectedCountryCode = ref.read(countryCodeProvider);
-
+    String code = selectedCountryCode.replaceAll("+", "");
     String phoneNumber = phoneController.text.trim();
     if (phoneNumber.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Vui lòng nhập số điện thoại")),
       );
       return;
-    } else if (!phoneNumber.startsWith(selectedCountryCode)) {
-      phoneNumber = "$selectedCountryCode$phoneNumber";
+    } else if (phoneNumber.startsWith(code)) {
+      //nếu đã nhập mã vùng -> thêm +
+      phoneNumber = "+$phoneNumber";
+    } else {
+      //nếu chưa nhập mã vùng -> thêm mã vùng
+      phoneNumber = "+$code$phoneNumber";
     }
 
     ref.read(phoneNumberProvider.notifier).state = phoneNumber;

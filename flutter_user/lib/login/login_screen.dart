@@ -27,15 +27,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final passController = TextEditingController();
   Future<void> sendOTP() async {
     final selectedCountryCode = ref.read(countryCodeProvider);
-
+    String code = selectedCountryCode.replaceAll("+", "");
     String phoneNumber = phoneController.text.trim();
     if (phoneNumber.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Vui lòng nhập số điện thoại")),
       );
       return;
-    } else if (!phoneNumber.startsWith(selectedCountryCode)) {
-      phoneNumber = "$selectedCountryCode$phoneNumber";
+    } else if (phoneNumber.startsWith(code)) {
+      //nếu đã nhập mã vùng -> thêm +
+      phoneNumber = "+$phoneNumber";
+    } else {
+      //nếu chưa nhập mã vùng -> thêm mã vùng
+      phoneNumber = "+$code$phoneNumber";
     }
 
     String password = passController.text.trim();
