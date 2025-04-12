@@ -30,7 +30,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final passController = TextEditingController();
   Future<void> sendOTP() async {
     final selectedCountryCode = ref.read(countryCodeProvider);
-
+    String code = selectedCountryCode.replaceAll("+", "");
     if (!isChecked) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Bạn phải đồng ý với điều khoản")),
@@ -44,8 +44,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         SnackBar(content: Text("Vui lòng nhập số điện thoại")),
       );
       return;
-    } else if (!phoneNumber.startsWith(selectedCountryCode)) {
-      phoneNumber = "$selectedCountryCode$phoneNumber";
+    } else if (phoneNumber.startsWith(code)) {
+      //nếu đã nhập mã vùng -> thêm +
+      phoneNumber = "+$phoneNumber";
+    } else {
+      //nếu chưa nhập mã vùng -> thêm mã vùng
+      phoneNumber = "+$code$phoneNumber";
     }
 
     String password = passController.text.trim();
