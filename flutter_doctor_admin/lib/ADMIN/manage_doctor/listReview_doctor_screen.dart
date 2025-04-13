@@ -1,8 +1,3 @@
-// import 'package:anyen_clinic/doctor/widget/buttonReview_widget.dart';
-// import 'package:anyen_clinic/doctor/widget/infoTitle_widget.dart';
-// import 'package:anyen_clinic/dialog/option_dialog.dart';
-
-// import 'package:anyen_clinic/widget/sectionTitle.dart' show sectionTitle;
 import 'package:flutter/material.dart';
 
 import 'package:ayclinic_doctor_admin/widget/sectionTitle.dart';
@@ -242,7 +237,11 @@ class ListReviewDoctorScreen extends StatelessWidget {
                 ),
               ],
             ),
-            ReviewList(screenHeight: screenHeight, screenWidth: screenWidth),
+            ReviewList(
+              screenHeight: screenHeight,
+              screenWidth: screenWidth,
+              reviews: reviews,
+            ),
           ],
         ),
       ),
@@ -306,49 +305,61 @@ class ratingWidget extends StatelessWidget {
   }
 }
 
+final List<Map<String, dynamic>> reviews = [
+  {
+    "username": "User3",
+    "date": "05/07/2024",
+    "reviewText": "Bác sĩ rất tận tình và nhiệt huyết với bệnh nhân.",
+    "emoji": "👍",
+    "satisfactionText": "Tốt",
+  },
+  {
+    "username": "User3",
+    "date": "05/07/2024",
+    "reviewText": "Bác sĩ rất tận tình và nhiệt huyết với bệnh nhân.",
+    "emoji": "😊",
+    "satisfactionText": "Tốt",
+  },
+  {
+    "username": "User3",
+    "date": "05/07/2024",
+    "reviewText": "Bác sĩ rất tận tình và nhiệt huyết với bệnh nhân.",
+    "emoji": "😍",
+    "satisfactionText": "Tốt",
+  },
+];
+
 class ReviewList extends StatelessWidget {
   final double screenHeight;
   final double screenWidth;
+  final List<Map<String, dynamic>> reviews;
+
   const ReviewList({
     super.key,
     required this.screenHeight,
     required this.screenWidth,
+    required this.reviews, // truyền từ cha xuống
   });
 
   @override
   Widget build(BuildContext context) {
-    ScrollController scrollController = ScrollController();
-    return Column(
-      children: [
-        ReviewCardDetail(
-          username: "User1",
-          date: "07/07/2024",
-          reviewText:
-              "Bs tư vấn thân thiện, dễ hiểu và rất có tâm Bs tư vấn thân thiện, dễ hiểu và rất có tâmBs tư vấn thân thiện, dễ hiểu và rất có tâmBs tư vấn thân thiện, dễ hiểu và rất có tâm....",
-          emoji: "😍",
-          satisfactionText: "Rất hài lòng",
-          screenHeight: screenHeight,
-          screenWidth: screenWidth,
-        ),
-        ReviewCardDetail(
-          username: "User2",
-          date: "06/07/2024",
-          reviewText: "Bác sĩ giải thích chi tiết, giúp tôi an tâm hơn.",
-          emoji: "😊",
-          satisfactionText: "Hài lòng",
-          screenHeight: screenHeight,
-          screenWidth: screenWidth,
-        ),
-        ReviewCardDetail(
-          username: "User3",
-          date: "05/07/2024",
-          reviewText: "Bác sĩ rất tận tình và nhiệt huyết với bệnh nhân.",
-          emoji: "👍",
-          satisfactionText: "Tốt",
-          screenHeight: screenHeight,
-          screenWidth: screenWidth,
-        ),
-      ],
+    return SizedBox(
+      height: screenHeight * 0.6,
+      child: ListView.builder(
+        itemCount: reviews.length,
+        itemBuilder: (context, index) {
+          final review = reviews[index];
+          return ReviewCardDetail(
+            username: review['username'],
+            date: review['date'],
+            reviewText: review['reviewText'],
+            emoji: review['emoji'],
+            satisfactionText: review['satisfactionText'],
+            screenHeight: screenHeight,
+            screenWidth: screenWidth,
+          );
+        },
+      ),
     );
   }
 }
@@ -377,7 +388,10 @@ class ReviewCardDetail extends StatelessWidget {
     return Container(
       width: screenWidth * 0.9,
       padding: EdgeInsets.all(screenWidth * 0.05),
-      margin: EdgeInsets.all(screenWidth * 0.02),
+      margin: EdgeInsets.symmetric(
+        horizontal: screenWidth * 0.01,
+        vertical: screenWidth * 0.03,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
@@ -442,102 +456,47 @@ class ReviewCardDetail extends StatelessWidget {
           Padding(
             padding: EdgeInsets.only(top: screenHeight * 0.02),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                ButtonReviewDetail(
-                  icon: Icon(Icons.thumb_up_off_alt),
-                  label: "Hữu ích",
-                  screenWidth: screenWidth,
-                  screenHeight: screenHeight,
-                ),
-                SizedBox(width: screenWidth * 0.05),
-                ButtonReviewDetail(
-                  label: "Xóa",
-                  action:
-                      (context) => showOptionDialog(
-                        context,
-                        "Xoá đánh giá",
-                        "Bạn chắc chắn muốn xóa đánh giá này?",
-                        "HUỶ",
-                        "XÁC NHẬN",
-                        null,
-                      ),
+                OutlinedButton(
+                  onPressed: () {
+                    showOptionDialog(
+                      context,
+                      "Ẩn đánh giá",
+                      "Bạn chắc chắn muốn ẩn đánh giá này?",
+                      "HUỶ",
+                      "XÁC NHẬN",
+                      () async {
+                        // gọi API xoá
 
-                  screenWidth: screenWidth,
-                  screenHeight: screenHeight,
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF40494F),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: screenWidth * 0.04,
+                      vertical: screenWidth * 0.03,
+                    ),
+                    side: BorderSide(color: const Color(0xFFD9D9D9), width: 1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    textStyle: TextStyle(
+                      fontSize: screenWidth * 0.035,
+                      fontFamily: 'Inter-Medium',
+                      color: const Color(0xFFD9D9D9),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [Text("Ẩn")],
+                  ),
                 ),
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class ButtonReviewDetail extends StatefulWidget {
-  final String label;
-  final double screenWidth;
-  final double screenHeight;
-  final Icon? icon;
-  final void Function(BuildContext)? action;
-  const ButtonReviewDetail({
-    super.key,
-    required this.label,
-    required this.screenWidth,
-    required this.screenHeight,
-    this.icon,
-    this.action,
-  });
-
-  @override
-  _ButtonReviewDetailState createState() => _ButtonReviewDetailState();
-}
-
-class _ButtonReviewDetailState extends State<ButtonReviewDetail> {
-  bool isPressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return OutlinedButton(
-      onPressed: () {
-        if (widget.action != null) {
-          widget.action!(context); // Truyền context vào action
-        }
-        setState(() {
-          isPressed = !isPressed;
-        });
-      },
-      style: OutlinedButton.styleFrom(
-        foregroundColor:
-            isPressed ? Color(0xFF119CF0) : const Color(0xFF40494F),
-        padding: EdgeInsets.symmetric(
-          horizontal: widget.screenWidth * 0.04,
-          vertical: widget.screenWidth * 0.03,
-        ),
-        side: BorderSide(
-          color: isPressed ? Color(0xFF119CF0) : const Color(0xFFD9D9D9),
-          width: 1,
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-        textStyle: TextStyle(
-          fontSize: widget.screenWidth * 0.035,
-          fontFamily: 'Inter-Medium',
-          color: isPressed ? Colors.red : const Color(0xFFD9D9D9),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (widget.icon != null) ...[
-            Container(
-              child: Icon(
-                widget.icon!.icon,
-                color: isPressed ? Color(0xFF119CF0) : Colors.grey,
-              ),
-            ),
-            SizedBox(width: widget.screenWidth * 0.02),
-          ],
-          Text(widget.label),
         ],
       ),
     );

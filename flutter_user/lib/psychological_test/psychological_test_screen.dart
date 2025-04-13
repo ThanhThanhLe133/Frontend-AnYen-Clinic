@@ -115,8 +115,15 @@ class _PsychologicalTestScreenState extends State<PsychologicalTestScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Hoàn thành bài kiểm tra"),
-          content: Text("Bạn đã hoàn thành bài kiểm tra tâm lý."),
+          title: Text("Hoàn thành bài kiểm tra",
+              textAlign: TextAlign.center,
+              style:
+                  TextStyle(fontWeight: FontWeight.w500, color: Colors.blue)),
+          backgroundColor: Colors.white,
+          content: Text(
+            "Bạn đã hoàn thành bài kiểm tra tâm lý.",
+            textAlign: TextAlign.center,
+          ),
           actions: [
             TextButton(
               onPressed: () {

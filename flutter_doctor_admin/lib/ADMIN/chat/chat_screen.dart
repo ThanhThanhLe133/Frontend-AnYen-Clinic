@@ -328,6 +328,20 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ),
         actions: [
+          if (isJoined)
+            IconButton(
+              icon: Icon(Icons.call, size: 18, color: Colors.blue),
+              onPressed: () {
+                // TODO: xử lý gọi điện
+              },
+            ),
+          if (isJoined)
+            IconButton(
+              icon: Icon(Icons.videocam, size: 18, color: Colors.blue),
+              onPressed: () {
+                // TODO: xử lý video call
+              },
+            ),
           PopupMenuButton<String>(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),

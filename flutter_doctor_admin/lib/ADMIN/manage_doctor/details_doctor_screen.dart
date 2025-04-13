@@ -1,9 +1,3 @@
-//import 'package:anyen_clinic/doctor/listReview_doctor_screen.dart';
-// import 'package:anyen_clinic/doctor/widget/reviewCard_widget.dart';
-//import 'package:anyen_clinic/payment/payment_screen.dart';
-// import 'package:anyen_clinic/widget/consultationBottomBar.dart';
-// import 'package:anyen_clinic/widget/sectionTitle.dart' show sectionTitle;
-
 import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/doctor_profile_edit_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -13,8 +7,15 @@ import 'package:ayclinic_doctor_admin/widget/consultationBottomBar.dart';
 import 'package:ayclinic_doctor_admin/widget/sectionTitle.dart'
     show sectionTitle;
 
-class DetailsDoctorScreen extends StatelessWidget {
+class DetailsDoctorScreen extends StatefulWidget {
   const DetailsDoctorScreen({super.key});
+
+  @override
+  State<DetailsDoctorScreen> createState() => _DetailsDoctorScreenState();
+}
+
+class _DetailsDoctorScreenState extends State<DetailsDoctorScreen> {
+  bool isOnline = true;
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +56,28 @@ class DetailsDoctorScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Container(
+                  width: screenWidth * 0.04,
+                  height: screenWidth * 0.04,
+                  margin: EdgeInsets.only(right: 5),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isOnline ? Colors.green : Colors.grey,
+                  ),
+                ),
+                Text(
+                  isOnline ? 'Đang online' : 'Đang offline',
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.04,
+                    color: isOnline ? Colors.green : Colors.grey,
+                  ),
+                ),
+              ],
+            ),
             CircleAvatar(
               radius: screenWidth * 0.18,
               backgroundImage: NetworkImage('https://i.imgur.com/Y6W5JhB.png'),

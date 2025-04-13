@@ -1,32 +1,33 @@
+import 'package:anyen_clinic/psychological_test/psychological_test_screen.dart';
 import 'package:flutter/material.dart';
 
 class QuestionCardInList extends StatelessWidget {
   final double screenWidth;
   final double screenHeight;
   final String title;
-  final String status;
+  final bool isComplete;
   final String buttonText;
   final String questionCount;
   final String description;
-  final VoidCallback onTap;
+  final VoidCallback onPressed;
 
   const QuestionCardInList({
     super.key,
     required this.screenWidth,
     required this.screenHeight,
     required this.title,
-    required this.status,
+    required this.isComplete,
     required this.buttonText,
     required this.questionCount,
     required this.description,
-    required this.onTap,
+    required this.onPressed,
   });
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-        onTap: onTap,
+        onTap: onPressed,
         child: Container(
-          margin: EdgeInsets.only(bottom: screenHeight * 0.02),
+          margin: EdgeInsets.only(bottom: screenHeight * 0.04),
           padding: EdgeInsets.all(screenWidth * 0.04),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -43,6 +44,7 @@ class QuestionCardInList extends StatelessWidget {
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // Tiêu đề và trạng thái
               Row(
@@ -51,22 +53,34 @@ class QuestionCardInList extends StatelessWidget {
                   Text(
                     title,
                     style: TextStyle(
-                      fontSize: screenWidth * 0.045,
-                      fontWeight: FontWeight.bold,
-                    ),
+                        fontSize: screenWidth * 0.045,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF119CF0)),
                   ),
-                  Text(
-                    status,
-                    style: TextStyle(
-                      fontSize: screenWidth * 0.035,
-                      color:
-                          status == "Đã hoàn thành" ? Colors.green : Colors.red,
-                      fontWeight: FontWeight.w600,
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: screenWidth * 0.02,
+                      vertical: screenWidth * 0.012,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isComplete
+                          ? const Color(0xFF00C853) // xanh lá
+                          : const Color(0xFFE0E0E0), // xám nhạt
+                      borderRadius: BorderRadius.circular(screenWidth * 0.03),
+                    ),
+                    child: Text(
+                      isComplete ? "Đã hoàn thành" : "Chưa làm",
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.03,
+                        color:
+                            isComplete ? Colors.white : const Color(0xFF616161),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: screenHeight * 0.01),
+              SizedBox(height: screenHeight * 0.02),
 
               // Số câu hỏi + nút hành động
               Row(
@@ -76,22 +90,46 @@ class QuestionCardInList extends StatelessWidget {
                     questionCount,
                     style: TextStyle(
                       fontSize: screenWidth * 0.035,
-                      color: Colors.grey[700],
+                      color: Color(0xFF9BA5AC),
                     ),
                   ),
-                  TextButton(
-                    onPressed: () {
-                      // TODO: Xử lý khi bấm nút "LÀM" / "LÀM LẠI"
-                    },
-                    child: Text(
-                      buttonText.toUpperCase(),
-                      style: TextStyle(
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold,
-                        fontSize: screenWidth * 0.035,
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isComplete
+                            ? const Color(0xFF949FA6)
+                            : const Color(0xFF119CF0),
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth * 0.015,
+                          vertical: screenWidth * 0.015,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => PsychologicalTestScreen(
+                                      title: title ?? '',
+                                    )));
+                      },
+                      icon: Icon(
+                        isComplete ? Icons.refresh : Icons.play_arrow,
+                        size: screenWidth * 0.03,
+                      ),
+                      label: Text(
+                        isComplete ? 'LÀM LẠI' : 'BẮT ĐẦU',
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.025,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
               SizedBox(height: screenHeight * 0.01),
@@ -101,7 +139,7 @@ class QuestionCardInList extends StatelessWidget {
                 description,
                 style: TextStyle(
                   fontSize: screenWidth * 0.035,
-                  color: Colors.grey[800],
+                  color: Color(0xFF40494F),
                 ),
               ),
             ],
