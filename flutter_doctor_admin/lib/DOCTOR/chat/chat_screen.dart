@@ -282,6 +282,7 @@ class _ChatScreenState extends State<ChatScreen> {
           offset: Offset(-10, 0),
           child: Row(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               CircleAvatar(
                 backgroundImage: AssetImage('assets/images/user.png'),
@@ -328,6 +329,20 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ),
         actions: [
+          if (isJoined)
+            IconButton(
+              icon: Icon(Icons.call, size: 18, color: Colors.blue),
+              onPressed: () {
+                // TODO: xử lý gọi điện
+              },
+            ),
+          if (isJoined)
+            IconButton(
+              icon: Icon(Icons.videocam, size: 18, color: Colors.blue),
+              onPressed: () {
+                // TODO: xử lý video call
+              },
+            ),
           PopupMenuButton<String>(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),

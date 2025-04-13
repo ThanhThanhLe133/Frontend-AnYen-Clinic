@@ -141,6 +141,8 @@ class AppointmentConnectingCard extends ConsumerWidget {
                       "Thông tin bác sĩ",
                       "Huỷ lịch hẹn",
                       "Sửa lịch hẹn",
+                      "Thay đổi hình thức",
+                      "Xem lịch sử thanh toán",
                     ],
                     onSelected: (value) {
                       switch (value) {

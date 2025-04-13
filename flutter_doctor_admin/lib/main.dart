@@ -1,3 +1,5 @@
+import 'package:ayclinic_doctor_admin/ADMIN/appointment/appointment_screen.dart';
+import 'package:ayclinic_doctor_admin/DOCTOR/chat/chat_screen.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/doctor_profile_edit_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -24,7 +26,7 @@ class MainApp extends StatelessWidget {
           bodySmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
         ),
       ),
-      home: DoctorProfileEditScreen(),
+      home: AppointmentScreen(),
     );
   }
 }
