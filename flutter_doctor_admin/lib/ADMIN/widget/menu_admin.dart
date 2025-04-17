@@ -58,7 +58,7 @@ class _MenuAdminState extends ConsumerState<MenuAdmin> {
       fabOpenIcon: const Icon(Icons.menu, color: Colors.white),
       fabCloseIcon: const Icon(Icons.close, color: Colors.white),
       children: [
-        buildMenuItem(Icons.home, "Trang chủ", Dashboard()),
+        buildMenuItem(Icons.home, "Trang chủ", DashboardAdmin()),
         buildMenuItem(Icons.add, "Thêm bác sĩ", AddDoctorScreen()),
         buildMenuItem(Icons.list, "Danh sách bác sĩ", DoctorListScreen()),
         buildMenuItem(Icons.event, "Lịch hẹn", AppointmentScreen()),

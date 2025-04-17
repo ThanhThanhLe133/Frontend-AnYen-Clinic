@@ -1,3 +1,0 @@
-{
-  "presets": ["@babel/preset-env"] //viet dc cu phap cu + moi cua es6
-}

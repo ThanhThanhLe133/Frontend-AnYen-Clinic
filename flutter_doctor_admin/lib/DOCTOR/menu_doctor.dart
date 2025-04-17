@@ -57,7 +57,7 @@ class _MenuDoctorState extends ConsumerState<MenuDoctor> {
       fabOpenIcon: const Icon(Icons.menu, color: Colors.white),
       fabCloseIcon: const Icon(Icons.close, color: Colors.white),
       children: [
-        buildMenuItem(Icons.home, "Trang chủ", Dashboard()),
+        buildMenuItem(Icons.home, "Trang chủ", DashboardDoctor()),
         buildMenuItem(Icons.history, "Lịch sử tư vấn", HistoryConsulting()),
         buildMenuItem(Icons.event, "Lịch hẹn", AppointmentScreen()),
         buildMenuItem(Icons.message, "Tin nhắn", MessageScreen()),

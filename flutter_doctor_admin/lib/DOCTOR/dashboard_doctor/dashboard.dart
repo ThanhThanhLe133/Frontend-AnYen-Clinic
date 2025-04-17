@@ -6,14 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class Dashboard extends ConsumerStatefulWidget {
-  const Dashboard({super.key});
+class DashboardDoctor extends ConsumerStatefulWidget {
+  const DashboardDoctor({super.key});
 
   @override
   _DashboardState createState() => _DashboardState();
 }
 
-class _DashboardState extends ConsumerState<Dashboard> {
+class _DashboardState extends ConsumerState<DashboardDoctor> {
   bool isOnline = true;
   @override
   Widget build(BuildContext context) {

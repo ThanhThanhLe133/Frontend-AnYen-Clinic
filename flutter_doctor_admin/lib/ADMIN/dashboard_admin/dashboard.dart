@@ -5,14 +5,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/widget/menu_admin.dart';
 
-class Dashboard extends ConsumerStatefulWidget {
-  const Dashboard({super.key});
+class DashboardAdmin extends ConsumerStatefulWidget {
+  const DashboardAdmin({super.key});
 
   @override
   _DashboardState createState() => _DashboardState();
 }
 
-class _DashboardState extends ConsumerState<Dashboard> {
+class _DashboardState extends ConsumerState<DashboardAdmin> {
   bool isOnline = true;
   @override
   Widget build(BuildContext context) {

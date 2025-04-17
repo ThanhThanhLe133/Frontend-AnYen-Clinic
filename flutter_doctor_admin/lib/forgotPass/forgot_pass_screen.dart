@@ -1,7 +1,8 @@
 import 'dart:convert';
 
 import 'package:ayclinic_doctor_admin/OTP_verification/otp_verification_screen.dart';
-import 'package:ayclinic_doctor_admin/user.dart';
+import 'package:ayclinic_doctor_admin/storage.dart';
+import 'package:ayclinic_doctor_admin/Provider/UserProvider.dart';
 import 'package:ayclinic_doctor_admin/widget/inputPhoneNumber.dart';
 import 'package:ayclinic_doctor_admin/widget/normalButton.dart';
 import 'package:ayclinic_doctor_admin/widget/phoneCode_drop_down/country_code_provider.dart';
@@ -19,18 +20,22 @@ class ForgotPassScreen extends ConsumerStatefulWidget {
 
 class _ForgotPassScreenState extends ConsumerState<ForgotPassScreen> {
   final phoneController = TextEditingController();
-  String apiUrl = dotenv.env['API_URL'] ?? 'https://default-api.com';
+
   Future<void> sendOTP() async {
     final selectedCountryCode = ref.read(countryCodeProvider);
-
+    String code = selectedCountryCode.replaceAll("+", "");
     String phoneNumber = phoneController.text.trim();
     if (phoneNumber.isEmpty) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Vui lòng nhập số điện thoại")));
       return;
-    } else if (!phoneNumber.startsWith(selectedCountryCode)) {
-      phoneNumber = "$selectedCountryCode$phoneNumber";
+    } else if (phoneNumber.startsWith(code)) {
+      //nếu đã nhập mã vùng -> thêm +
+      phoneNumber = "+$phoneNumber";
+    } else {
+      //nếu chưa nhập mã vùng -> thêm mã vùng
+      phoneNumber = "+$code$phoneNumber";
     }
 
     ref.read(phoneNumberProvider.notifier).state = phoneNumber;
@@ -54,7 +59,6 @@ class _ForgotPassScreenState extends ConsumerState<ForgotPassScreen> {
         throw Exception(responseData["message"] ?? "Lỗi xác thực");
       }
     } catch (e) {
-      debugPrint("🔍$e");
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Lỗi xác thực: ${e.toString()}")));

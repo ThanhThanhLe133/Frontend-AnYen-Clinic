@@ -30,6 +30,21 @@ class _EditAccountScreenSate extends ConsumerState<EditAccountScreen> {
   final TextEditingController controllerAllergies = TextEditingController();
 
   Future<void> onSave() async {
+    final controllers = [
+      controllerName,
+      controllerDob,
+      controllerGender,
+      controllerMedicalHistory,
+      controllerAllergies,
+    ];
+
+    bool hasEmpty = controllers.any((c) => c.text.trim().isEmpty);
+    if (hasEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Vui lòng nhập đầy đủ thông tin")),
+      );
+      return;
+    }
     DateTime? selectedDate;
     try {
       selectedDate = DateFormat('dd/MM/yyyy').parse(controllerDob.text);

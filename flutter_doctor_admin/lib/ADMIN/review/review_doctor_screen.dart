@@ -167,7 +167,7 @@ class ReviewDoctorScreen extends StatelessWidget {
                 screenWidth: screenWidth,
                 screenHeight: screenHeight,
                 label: "Gửi đánh giá",
-                nextScreen: Dashboard(),
+                nextScreen: DashboardAdmin(),
               ),
             ],
           ),

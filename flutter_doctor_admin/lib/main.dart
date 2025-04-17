@@ -5,22 +5,25 @@ import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/listReview_doctor_scre
 import 'package:ayclinic_doctor_admin/DOCTOR/chat/chat_screen.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/doctor_profile_edit_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: "assets/config/.env");
-
-  runApp(ProviderScope(child: const MainApp()));
+  final bool isLoggedIn = await getLogin();
+  runApp(ProviderScope(child: MainApp(isLoggedIn: isLoggedIn)));
 }
 
 class MainApp extends StatelessWidget {
-  const MainApp({super.key});
-
+  const MainApp({super.key, required this.isLoggedIn});
+  final bool isLoggedIn;
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'My App',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         fontFamily: 'Inter-Medium',
         textTheme: const TextTheme(

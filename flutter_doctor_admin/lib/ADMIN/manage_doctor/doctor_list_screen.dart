@@ -197,14 +197,13 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          print("Floating Action Button Pressed");
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => AddDoctorScreen()),
           );
         },
         backgroundColor: Colors.blue,
-        shape: const CircleBorder(), // Đảm bảo hình tròn rõ ràng
+        shape: const CircleBorder(),
         child: const Icon(
           Icons.add,
           size: 30,

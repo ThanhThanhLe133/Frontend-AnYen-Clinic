@@ -14,8 +14,8 @@ void showUpdateInfoDialog(BuildContext context) {
 }
 
 class UpdateInfoDialog extends StatelessWidget {
-  const UpdateInfoDialog({super.key});
-
+  UpdateInfoDialog({super.key});
+  final TextEditingController controllerGender = TextEditingController();
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -84,7 +84,7 @@ class UpdateInfoDialog extends StatelessWidget {
                       children: [
                         _buildLabel("Giới tính"),
                         SizedBox(height: screenWidth * 0.03),
-                        GenderDropdown(),
+                        GenderDropdown(controller: controllerGender),
                       ],
                     ),
                   ),

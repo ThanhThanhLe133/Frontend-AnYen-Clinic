@@ -2,7 +2,8 @@ import 'dart:convert';
 
 import 'package:ayclinic_doctor_admin/OTP_verification/otp_verification_screen.dart';
 import 'package:ayclinic_doctor_admin/forgotPass/forgot_pass_screen.dart';
-import 'package:ayclinic_doctor_admin/user.dart';
+import 'package:ayclinic_doctor_admin/storage.dart';
+import 'package:ayclinic_doctor_admin/Provider/UserProvider.dart';
 import 'package:ayclinic_doctor_admin/widget/buildPasswordField.dart';
 import 'package:ayclinic_doctor_admin/widget/inputPhoneNumber.dart';
 import 'package:ayclinic_doctor_admin/widget/normalButton.dart';
@@ -21,21 +22,23 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  String apiUrl = dotenv.env['API_URL'] ?? 'https://default-api.com';
-  bool obscurePassword = true;
   final phoneController = TextEditingController();
   final passController = TextEditingController();
   Future<void> sendOTP() async {
     final selectedCountryCode = ref.read(countryCodeProvider);
-
+    String code = selectedCountryCode.replaceAll("+", "");
     String phoneNumber = phoneController.text.trim();
     if (phoneNumber.isEmpty) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Vui lòng nhập số điện thoại")));
       return;
-    } else if (!phoneNumber.startsWith(selectedCountryCode)) {
-      phoneNumber = "$selectedCountryCode$phoneNumber";
+    } else if (phoneNumber.startsWith(code)) {
+      //nếu đã nhập mã vùng -> thêm +
+      phoneNumber = "+$phoneNumber";
+    } else {
+      //nếu chưa nhập mã vùng -> thêm mã vùng
+      phoneNumber = "+$code$phoneNumber";
     }
 
     String password = passController.text.trim();
@@ -64,10 +67,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         );
       } else {
+        debugPrint("⚠️ Error message from API: ${responseData['message']}");
         throw Exception(responseData["message"] ?? "Lỗi đăng nhập");
       }
     } catch (e) {
-      debugPrint("🔍$e");
+      debugPrint("❌ Exception caught: ${e.toString()}");
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Lỗi đăng nhập: ${e.toString()}")));
@@ -158,7 +162,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               screenWidth: screenWidth,
               screenHeight: screenHeight,
               label: "Đăng nhập",
-              action: sendOTP,
+              action: () {
+                sendOTP();
+              },
             ),
           ],
         ),
