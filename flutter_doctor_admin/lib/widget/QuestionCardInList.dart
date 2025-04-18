@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ayclinic_doctor_admin/ADMIN/psychological_test/psychological_test_screen.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/psychological_test/psychological_review_screen.dart';
 
 class QuestionCardInList extends StatelessWidget {
   final double screenWidth;

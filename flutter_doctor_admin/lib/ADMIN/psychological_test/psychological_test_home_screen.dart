@@ -1,6 +1,7 @@
 import 'package:ayclinic_doctor_admin/widget/QuestionCardInList.dart';
 import 'package:flutter/material.dart';
-import 'psychological_test_screen.dart';
+import 'psychological_review_screen.dart';
+import 'psychological_add_test_screen.dart';
 
 const List<Map<String, dynamic>> questions = [
   {
@@ -37,14 +38,16 @@ class PsychologicalTestHomeScreen extends StatefulWidget {
 
   @override
   State<PsychologicalTestHomeScreen> createState() =>
-      _QuestionListScreenState();
+      _PsychologicalTestHomeScreenState();
 }
 
-class _QuestionListScreenState extends State<PsychologicalTestHomeScreen> {
+class _PsychologicalTestHomeScreenState
+    extends State<PsychologicalTestHomeScreen> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -101,6 +104,25 @@ class _QuestionListScreenState extends State<PsychologicalTestHomeScreen> {
           },
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          print("Floating Action Button Pressed");
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PsychologicalAddTestScreen(),
+            ),
+          );
+        },
+        backgroundColor: Colors.blue,
+        shape: const CircleBorder(), // Đảm bảo hình tròn rõ ràng
+        child: const Icon(
+          Icons.add,
+          size: 30,
+          color: Colors.white, // Dấu + màu trắng
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
