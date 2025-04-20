@@ -61,8 +61,11 @@ class DoctorCardInList extends StatelessWidget {
                 ),
                 Row(
                   children: [
-                    Icon(Icons.thumb_up,
-                        color: Colors.blue, size: screenWidth * 0.05),
+                    Icon(
+                      Icons.thumb_up,
+                      color: Colors.blue,
+                      size: screenWidth * 0.05,
+                    ),
                     SizedBox(width: screenWidth * 0.02),
                     Text(
                       "100% hài lòng",
