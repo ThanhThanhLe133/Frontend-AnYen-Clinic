@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'psychological_test_home_screen.dart';
 
 class PsychologicalTestScreen extends StatefulWidget {
   final String title;
@@ -162,7 +161,34 @@ class _PsychologicalTestScreenState extends State<PsychologicalTestScreen> {
                   ),
                 ),
                 OutlinedButton(
-                  onPressed: nextQuestion,
+                  onPressed: () {
+                    if (isLastQuestion) {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('Hoàn thành'),
+                            content: Text(
+                              'Bạn đã review xong bài trắc nghiệm tâm lý này.',
+                            ),
+                            actions: [
+                              TextButton(
+                                child: Text('OK'),
+                                onPressed: () {
+                                  Navigator.of(context).pop(); // Đóng dialog
+                                  Navigator.of(
+                                    context,
+                                  ).pop(); // Quay lại màn hình trước (nếu muốn)
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    } else {
+                      nextQuestion();
+                    }
+                  },
                   style: OutlinedButton.styleFrom(
                     foregroundColor:
                         isLastQuestion ? Colors.green : Colors.black54,
@@ -200,6 +226,34 @@ class _PsychologicalTestScreenState extends State<PsychologicalTestScreen> {
               ),
             ),
             SizedBox(height: 30),
+            // Danh sách các đáp án
+            Column(
+              children: List.generate(
+                questions[currentQuestionIndex]['answers'].length,
+                (index) {
+                  return Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 15,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      border: Border.all(color: Colors.grey.shade400),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      questions[currentQuestionIndex]['answers'][index],
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.043,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
 
             // Không hiển thị các câu trả lời nữa
           ],
