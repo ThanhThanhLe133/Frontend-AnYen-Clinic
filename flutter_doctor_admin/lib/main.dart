@@ -1,4 +1,5 @@
 import 'package:ayclinic_doctor_admin/ADMIN/appointment/appointment_screen.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/dashboard_admin/dashboard.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/add_doctor_screen.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/details_doctor_screen.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/listReview_doctor_screen.dart';
@@ -32,7 +33,7 @@ class MainApp extends StatelessWidget {
           bodySmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
         ),
       ),
-      home: AddDoctorScreen(),
+      home: Dashboard(),
     );
   }
 }
