@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:ayclinic_doctor_admin/makeRequest.dart';
+import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:ayclinic_doctor_admin/widget/DoctorCardInList.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/add_doctor_screen.dart';
@@ -6,79 +10,41 @@ import 'details_doctor_screen.dart';
 class DoctorListScreen extends StatefulWidget {
   const DoctorListScreen({super.key});
 
-  static const List<Map<String, String>> doctors = [
-    {
-      'name': 'BS.CKI Macus Horizon',
-      'specialty': 'Tâm lý - Nội tổng quát',
-      'workplace': 'Bệnh viện ĐH Y Dược',
-      'image':
-          'https://cdn.pixabay.com/photo/2020/09/13/20/24/doctor-5569298_1280.png',
-    },
-    {
-      'name': 'BS.CKI Macus Horizon',
-      'specialty': 'Tâm lý - Nội tổng quát',
-      'workplace': 'Bệnh viện ĐH Y Dược',
-      'image':
-          'https://cdn.pixabay.com/photo/2020/09/13/20/24/doctor-5569298_1280.png',
-    },
-    {
-      'name': 'BS.CKI Macus Horizon',
-      'specialty': 'Tâm lý - Nội tổng quát',
-      'workplace': 'Bệnh viện ĐH Y Dược',
-      'image': 'https://i.imgur.com/Y6W5JhB.png',
-    },
-    {
-      'name': 'BS.CKI Macus Horizon',
-      'specialty': 'Tâm lý - Nội tổng quát',
-      'workplace': 'Bệnh viện ĐH Y Dược',
-      'image': 'https://i.imgur.com/Y6W5JhB.png',
-    },
-    {
-      'name': 'BS.CKI Macus Horizon',
-      'specialty': 'Tâm lý - Nội tổng quát',
-      'workplace': 'Bệnh viện ĐH Y Dược',
-      'image': 'https://i.imgur.com/Y6W5JhB.png',
-    },
-    {
-      'name': 'BS.CKI Macus Horizon',
-      'specialty': 'Tâm lý - Nội tổng quát',
-      'workplace': 'Bệnh viện ĐH Y Dược',
-      'image': 'https://i.imgur.com/Y6W5JhB.png',
-    },
-    {
-      'name': 'BS.CKI Macus Horizon',
-      'specialty': 'Tâm lý - Nội tổng quát',
-      'workplace': 'Bệnh viện ĐH Y Dược',
-      'image': 'https://i.imgur.com/Y6W5JhB.png',
-    },
-    {
-      'name': 'BS.CKI Macus Horizon',
-      'specialty': 'Tâm lý - Nội tổng quát',
-      'workplace': 'Bệnh viện ĐH Y Dược',
-      'image': 'https://i.imgur.com/Y6W5JhB.png',
-    },
-    {
-      'name': 'BS.CKI Macus Horizon',
-      'specialty': 'Tâm lý - Nội tổng quát',
-      'workplace': 'Bệnh viện ĐH Y Dược',
-      'image': 'https://i.imgur.com/Y6W5JhB.png',
-    },
-  ];
-
   @override
   State<DoctorListScreen> createState() => _DoctorListScreenState();
 }
 
 class _DoctorListScreenState extends State<DoctorListScreen> {
   late ScrollController _scrollController;
-  final List<Map<String, String>> _displayedDoctors = [];
+  final List<Map<String, dynamic>> _displayedDoctors = [];
   int _currentPage = 1;
   final int _itemsPerPage = 5;
   bool _isLoading = false;
+  List<Map<String, dynamic>> doctors = [];
+
+  Future<void> fetchDoctors() async {
+    final response = await makeRequest(
+      url: '$apiUrl/get/get-all-doctors',
+      method: 'GET',
+    );
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        doctors = data['data'];
+      });
+    }
+  }
 
   @override
   void initState() {
     super.initState();
+    fetchDoctors();
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
     _loadMoreDoctors(); // Load dữ liệu ban đầu
@@ -99,8 +65,7 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
   }
 
   void _loadMoreDoctors() {
-    if (_isLoading ||
-        _displayedDoctors.length >= DoctorListScreen.doctors.length) {
+    if (_isLoading || _displayedDoctors.length >= doctors.length) {
       return; // Không tải thêm nếu đang loading hoặc đã hết dữ liệu
     }
 
@@ -110,11 +75,11 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
 
     int startIndex = (_currentPage - 1) * _itemsPerPage;
     int endIndex = startIndex + _itemsPerPage;
-    if (endIndex > DoctorListScreen.doctors.length) {
-      endIndex = DoctorListScreen.doctors.length;
+    if (endIndex > doctors.length) {
+      endIndex = doctors.length;
     }
 
-    List<Map<String, String>> newDoctors = DoctorListScreen.doctors.sublist(
+    List<Map<String, dynamic>> newDoctors = doctors.sublist(
       startIndex,
       endIndex,
     );
@@ -178,7 +143,7 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
                   MaterialPageRoute(
                     builder:
                         (context) => DetailsDoctorScreen(
-                          // doctor: _displayedDoctors[index], // Truyền dữ liệu bác sĩ
+                          doctorId: _displayedDoctors[index]['doctorId']!,
                         ),
                   ),
                 );
@@ -187,9 +152,10 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
                 screenWidth: screenWidth,
                 screenHeight: screenHeight,
                 name: _displayedDoctors[index]['name']!,
-                specialty: _displayedDoctors[index]['specialty']!,
+                specialty: _displayedDoctors[index]['specialization']!,
+                percentage: 100,
                 workplace: _displayedDoctors[index]['workplace']!,
-                imageUrl: _displayedDoctors[index]['image']!,
+                imageUrl: _displayedDoctors[index]['avatar_url']!,
               ),
             );
           },

@@ -1,9 +1,11 @@
+import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/details_doctor_screen.dart';
 import 'package:flutter/material.dart';
 
 class DoctorCardInList extends StatelessWidget {
   final double screenWidth;
   final double screenHeight;
   final String name;
+  final int percentage;
   final String specialty;
   final String workplace;
   final String imageUrl;
@@ -12,6 +14,7 @@ class DoctorCardInList extends StatelessWidget {
     super.key,
     required this.screenWidth,
     required this.screenHeight,
+    required this.percentage,
     required this.name,
     required this.specialty,
     required this.workplace,
@@ -68,7 +71,7 @@ class DoctorCardInList extends StatelessWidget {
                     ),
                     SizedBox(width: screenWidth * 0.02),
                     Text(
-                      "100% hài lòng",
+                      '$percentage% hài lòng',
                       style: TextStyle(
                         fontSize: screenWidth * 0.04,
                         color: Colors.blue,

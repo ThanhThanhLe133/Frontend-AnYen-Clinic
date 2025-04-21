@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:ayclinic_doctor_admin/ADMIN/patient/patient_detail_screen.dart';
 import 'package:ayclinic_doctor_admin/makeRequest.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +15,7 @@ class PatientListScreen extends StatefulWidget {
 }
 
 class _PatientListScreenState extends State<PatientListScreen> {
-  Map<String, dynamic> patients = {};
+  List<Map<String, dynamic>> patients = [];
   Future<void> fetchProfile() async {
     final response = await makeRequest(
       url: '$apiUrl/admin/get-all-patients',
@@ -70,19 +71,23 @@ class _PatientListScreenState extends State<PatientListScreen> {
         itemCount: patients.length,
         itemBuilder: (context, index) {
           final patient = patients[index];
-          return PatientCardInList(
-            screenWidth: MediaQuery.of(context).size.width,
-            screenHeight: MediaQuery.of(context).size.height,
-            patientId: patient['patient_id']!,
-            name: patient['full_name']!,
-            gender: patient['gender']!,
-            age:
-                (DateTime.now().year -
-                        DateTime.parse(patient['date_of_birth']).year)
-                    .toString(),
-            imageUrl: patient['avatar_url']!,
-            reviewCount: "0", // Truyền số lượt đánh giá
-            visitCount: patient['appointment_count']!, // Truyền số lượt khám
+          return GestureDetector(
+            onTap: () {
+              showPatientDetailScreen(context, patient['patient_id']!);
+            },
+            child: PatientCardInList(
+              screenWidth: MediaQuery.of(context).size.width,
+              screenHeight: MediaQuery.of(context).size.height,
+              name: patient['full_name']!,
+              gender: patient['gender']!,
+              age:
+                  (DateTime.now().year -
+                          DateTime.parse(patient['date_of_birth']).year)
+                      .toString(),
+              imageUrl: patient['avatar_url']!,
+              reviewCount: "0", // Truyền số lượt đánh giá
+              visitCount: patient['appointment_count']!, // Truyền số lượt khám
+            ),
           );
         },
       ),

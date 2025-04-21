@@ -1,4 +1,8 @@
-import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/doctor_profile_edit_screen.dart';
+import 'dart:convert';
+
+import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/add_doctor_screen.dart';
+import 'package:ayclinic_doctor_admin/makeRequest.dart';
+import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:flutter/material.dart';
 
 import 'listReview_doctor_screen.dart';
@@ -8,7 +12,8 @@ import 'package:ayclinic_doctor_admin/widget/sectionTitle.dart'
     show sectionTitle;
 
 class DetailsDoctorScreen extends StatefulWidget {
-  const DetailsDoctorScreen({super.key});
+  final String doctorId;
+  const DetailsDoctorScreen({super.key, required this.doctorId});
 
   @override
   State<DetailsDoctorScreen> createState() => _DetailsDoctorScreenState();
@@ -16,6 +21,27 @@ class DetailsDoctorScreen extends StatefulWidget {
 
 class _DetailsDoctorScreenState extends State<DetailsDoctorScreen> {
   bool isOnline = true;
+  Map<String, dynamic> doctorProfile = {};
+
+  Future<void> fetchDoctor() async {
+    String doctorId = widget.doctorId;
+    final response = await makeRequest(
+      url: '$apiUrl/get/get-doctor/?userId=$doctorId',
+      method: 'GET',
+    );
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        doctorProfile = data['data'];
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,11 +92,12 @@ class _DetailsDoctorScreenState extends State<DetailsDoctorScreen> {
                   margin: EdgeInsets.only(right: 5),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isOnline ? Colors.green : Colors.grey,
+                    color:
+                        doctorProfile['isActive'] ? Colors.green : Colors.grey,
                   ),
                 ),
                 Text(
-                  isOnline ? 'Đang online' : 'Đang offline',
+                  doctorProfile['isActive'] ? 'Đang online' : 'Đang offline',
                   style: TextStyle(
                     fontSize: screenWidth * 0.04,
                     color: isOnline ? Colors.green : Colors.grey,
@@ -80,7 +107,7 @@ class _DetailsDoctorScreenState extends State<DetailsDoctorScreen> {
             ),
             CircleAvatar(
               radius: screenWidth * 0.18,
-              backgroundImage: NetworkImage('https://i.imgur.com/Y6W5JhB.png'),
+              backgroundImage: doctorProfile['avatar_url'],
             ),
             SizedBox(height: screenHeight * 0.02),
             Column(
@@ -88,7 +115,7 @@ class _DetailsDoctorScreenState extends State<DetailsDoctorScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  'BS.CKI Macus Horizon',
+                  doctorProfile['name'],
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: screenWidth * 0.06,
@@ -96,7 +123,7 @@ class _DetailsDoctorScreenState extends State<DetailsDoctorScreen> {
                   ),
                 ),
                 Text(
-                  'Chuyên khoa: Tâm lý - Nội tổng quát',
+                  doctorProfile['specialization'],
                   textAlign: TextAlign.center,
                   softWrap: true,
                   maxLines: null,
@@ -106,7 +133,7 @@ class _DetailsDoctorScreenState extends State<DetailsDoctorScreen> {
                   ),
                 ),
                 Text(
-                  'Bệnh viện ĐH Y Dược HCM',
+                  doctorProfile['workplace'],
                   textAlign: TextAlign.center,
                   softWrap: true,
                   maxLines: null,
@@ -118,7 +145,7 @@ class _DetailsDoctorScreenState extends State<DetailsDoctorScreen> {
                 Text(
                   softWrap: true,
                   maxLines: null,
-                  '"Sẵn sàng lắng nghe, thấu hiểu và chia sẻ"',
+                  doctorProfile['infoStatus'],
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: screenWidth * 0.04,
@@ -152,7 +179,7 @@ class _DetailsDoctorScreenState extends State<DetailsDoctorScreen> {
                 children: [
                   _infoTile(
                     'Lượt tư vấn',
-                    '100+',
+                    doctorProfile['appointment_count'],
                     Icons.people,
                     screenHeight,
                     screenWidth,
@@ -164,7 +191,7 @@ class _DetailsDoctorScreenState extends State<DetailsDoctorScreen> {
                   ),
                   _infoTile(
                     'Kinh nghiệm',
-                    '9 Năm',
+                    doctorProfile['yearExperience'],
                     Icons.history,
                     screenHeight,
                     screenWidth,
@@ -227,23 +254,14 @@ class _DetailsDoctorScreenState extends State<DetailsDoctorScreen> {
               ],
             ),
             ReviewList(screenHeight: screenHeight, screenWidth: screenWidth),
-            sectionTitle(
-              title: 'Thông tin chi tiết',
-              screenHeight: screenHeight,
-              screenWidth: screenWidth,
-            ),
-            _descriptionText(
-              'Với nhiều năm kinh nghiệm khám và tư vấn các bệnh lý tâm thần, nội khoa, tôi luôn cố gắng lắng nghe, giúp đỡ bệnh nhân giải tỏa những lo lắng.',
-              screenHeight,
-              screenWidth,
-            ),
+
             sectionTitle(
               title: 'Quá trình công tác',
               screenHeight: screenHeight,
               screenWidth: screenWidth,
             ),
             _descriptionText(
-              '2015-2022: Phòng khám chuyên khoa tâm thần kinh, bác sĩ nội - tâm thần',
+              doctorProfile['workExperience'],
               screenHeight,
               screenWidth,
             ),
@@ -253,7 +271,7 @@ class _DetailsDoctorScreenState extends State<DetailsDoctorScreen> {
               screenWidth: screenWidth,
             ),
             _descriptionText(
-              '2009-2015: Y khoa ĐH Y Dược TPHCM\n2022-2024: CKI Tâm thần, ĐH Y Khoa Phạm Ngọc Thạch',
+              doctorProfile['educationHistory'],
               screenHeight,
               screenWidth,
             ),
@@ -263,7 +281,7 @@ class _DetailsDoctorScreenState extends State<DetailsDoctorScreen> {
               screenWidth: screenWidth,
             ),
             _descriptionText(
-              '001234 - Nội tổng quát - 17/8/2018, Sở Y tế TPHCM',
+              doctorProfile['medicalLicense'],
               screenHeight,
               screenWidth,
             ),
@@ -275,9 +293,9 @@ class _DetailsDoctorScreenState extends State<DetailsDoctorScreen> {
         screenHeight: screenHeight,
         screenWidth: screenWidth,
         content: "Chi phí tư vấn",
-        totalMoney: "99.000 đ",
+        totalMoney: doctorProfile['price'],
         nameButton: "SỬA THÔNG TIN",
-        nextScreen: DoctorProfileEditScreen(),
+        nextScreen: AddDoctorScreen(doctorId: widget.doctorId),
       ),
     );
   }

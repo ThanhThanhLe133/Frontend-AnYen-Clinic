@@ -4,7 +4,6 @@ import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/add_doctor_screen.dart
 import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/details_doctor_screen.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/listReview_doctor_screen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/chat/chat_screen.dart';
-import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/doctor_profile_edit_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';

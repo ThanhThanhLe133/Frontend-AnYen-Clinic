@@ -80,8 +80,9 @@ class _AddDoctorScreenState extends ConsumerState<AddDoctorScreen> {
       );
       return;
     }
-
+    var userId = widget.doctorId;
     final body = {
+      "userId": userId,
       "phone": phoneController.text.trim(),
       "fullName": nameController.text.trim(),
       "gender": genderController.text.trim(),
@@ -96,10 +97,10 @@ class _AddDoctorScreenState extends ConsumerState<AddDoctorScreen> {
     };
 
     final Response response;
-    var userId = widget.doctorId;
+
     if (userId != null) {
       response = await makeRequest(
-        url: '$apiUrl/admin/edit-doctor/?userId=$userId',
+        url: '$apiUrl/admin/edit-doctor',
         method: 'POST',
         body: body,
       );
@@ -138,9 +139,11 @@ class _AddDoctorScreenState extends ConsumerState<AddDoctorScreen> {
 
   Future<void> _uploadImage(File imageFile) async {
     final userId = widget.doctorId;
+    final body = {"userId": userId};
     final response = await makeRequest(
-      url: '$apiUrl/admin/upload-avatar-doctor/?userId=$userId',
+      url: '$apiUrl/admin/upload-avatar-doctor',
       method: 'POST',
+      body: body,
       file: imageFile,
       fileFieldName: 'avatar',
     );
@@ -164,7 +167,7 @@ class _AddDoctorScreenState extends ConsumerState<AddDoctorScreen> {
   Future<void> fetchDoctor(String id) async {
     try {
       final response = await makeRequest(
-        url: '$apiUrl/admin/get-doctor/?userId=$id',
+        url: '$apiUrl/get/get-doctor/?userId=$id',
         method: 'GET',
       );
 
