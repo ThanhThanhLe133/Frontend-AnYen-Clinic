@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:ayclinic_doctor_admin/login/login_screen.dart';
+import 'package:ayclinic_doctor_admin/makeRequest.dart';
+import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:ayclinic_doctor_admin/widget/radialBarChart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,6 +18,50 @@ class DashboardAdmin extends ConsumerStatefulWidget {
 
 class _DashboardState extends ConsumerState<DashboardAdmin> {
   bool isOnline = true;
+  Map<String, dynamic> admin = {};
+
+  Future<void> changeStatus(bool value) async {
+    final response = await makeRequest(
+      url: '$apiUrl/auth/change-active-status',
+      method: 'PATCH',
+    );
+    if (response.statusCode != 200) {
+      setState(() {
+        isOnline = value;
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Trạng thái đã được cập nhật!")));
+    } else {
+      throw Exception('Không thể thay đổi trạng thái');
+    }
+  }
+
+  Future<void> fetchProfile() async {
+    final response = await makeRequest(url: '$apiUrl/get/user', method: 'GET');
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        admin = data['data'];
+        isOnline = admin['is_active'];
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchProfile();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -50,7 +98,7 @@ class _DashboardState extends ConsumerState<DashboardAdmin> {
                   ),
                   SizedBox(width: screenWidth * 0.02),
                   Text(
-                    "Admin Thanh Thanh",
+                    admin['name'],
                     style: TextStyle(
                       color: Color(0xFF119CF0),
                       fontSize: screenWidth * 0.04,
@@ -85,7 +133,7 @@ class _DashboardState extends ConsumerState<DashboardAdmin> {
                         child: Switch(
                           value: isOnline,
                           onChanged: (value) {
-                            setState(() => isOnline = value);
+                            changeStatus(value);
                           },
                           activeColor: Colors.green,
                         ),

@@ -1,6 +1,10 @@
+import 'dart:convert';
+
 import 'package:ayclinic_doctor_admin/ADMIN/appointment/appointment_screen.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/message/message_screen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/menu_doctor.dart';
+import 'package:ayclinic_doctor_admin/makeRequest.dart';
+import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:ayclinic_doctor_admin/widget/radialBarChart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +19,50 @@ class DashboardDoctor extends ConsumerStatefulWidget {
 
 class _DashboardState extends ConsumerState<DashboardDoctor> {
   bool isOnline = true;
+  Map<String, dynamic> doctor = {};
+
+  Future<void> changeStatus(bool value) async {
+    final response = await makeRequest(
+      url: '$apiUrl/auth/change-active-status',
+      method: 'PATCH',
+    );
+    if (response.statusCode != 200) {
+      setState(() {
+        isOnline = value;
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Trạng thái đã được cập nhật!")));
+    } else {
+      throw Exception('Không thể thay đổi trạng thái');
+    }
+  }
+
+  Future<void> fetchProfile() async {
+    final response = await makeRequest(url: '$apiUrl/get/user', method: 'GET');
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        doctor = data['data'];
+        isOnline = doctor['is_active'];
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchProfile();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -86,7 +134,7 @@ class _DashboardState extends ConsumerState<DashboardDoctor> {
                         child: Switch(
                           value: isOnline,
                           onChanged: (value) {
-                            setState(() => isOnline = value);
+                            changeStatus(value);
                           },
                           activeColor: Colors.green,
                         ),
