@@ -5,59 +5,32 @@ class PatientCardInList extends StatelessWidget {
   final double screenWidth;
   final double screenHeight;
   final String name;
+  final String patientId;
   final String gender;
-  final String dob;
-  final String medicalHistory;
-  final String allergies;
-  final String healthDate;
   final String age;
-  final String height;
-  final String weight;
   final String imageUrl;
   final String reviewCount; // Số lượt đánh giá
   final String visitCount; // Số lượt khám
 
   const PatientCardInList({
-    Key? key,
+    super.key,
     required this.screenWidth,
     required this.screenHeight,
     required this.name,
     required this.gender,
-    required this.dob,
-    required this.medicalHistory,
-    required this.allergies,
-    required this.healthDate,
+    required this.patientId,
     required this.age,
-    required this.height,
-    required this.weight,
     required this.imageUrl,
     required this.reviewCount, // Nhận tham số số lượt đánh giá
     required this.visitCount, // Nhận tham số số lượt khám
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
         // Chuyển đến màn hình chi tiết bệnh nhân khi bấm vào thẻ
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder:
-                (context) => PatientDetailScreen(
-                  name: name,
-                  gender: gender,
-                  dob: dob,
-                  reviewCount: reviewCount, // Truyền số lượt đánh giá
-                  visitCount: visitCount, // Truyền số lượt khám
-                  medicalHistory: medicalHistory, // Truyền tiền sử bệnh
-                  allergies: allergies, // Truyền dị ứng
-                  age: age,
-                  height: height,
-                  weight: weight,
-                ),
-          ),
-        );
+        showPatientDetailScreen(context, patientId);
       },
       child: Container(
         margin: EdgeInsets.symmetric(

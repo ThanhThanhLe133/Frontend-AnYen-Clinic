@@ -1,26 +1,46 @@
+import 'dart:convert';
+
+import 'package:ayclinic_doctor_admin/makeRequest.dart';
+import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:ayclinic_doctor_admin/widget/PatientCardInList.dart';
 import 'package:flutter/material.dart';
 
-class PatientListScreen extends StatelessWidget {
-  static const List<Map<String, String>> patients = [
-    {
-      'name': 'User1',
-      'gender': 'Nữ',
-      'dob': '13/3/2005',
-      'medicalHistory': 'Không có',
-      'allergies': 'Paracetamol',
-      'healthDate': '04/02/25',
-      'age': '20t',
-      'height': '158',
-      'weight': '60',
-      'imageUrl':
-          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-ayGPkPFi0XIagaJYMqOLcG25FwFZTEn4KQ&s',
-      'reviewCount': '5', // Số lượt đánh giá
-      'visitCount': '10', // Số lượt khám
-    },
-    // Bạn có thể thêm các bệnh nhân khác ở đây
-  ];
+class PatientListScreen extends StatefulWidget {
+  const PatientListScreen({super.key});
+
+  @override
+  State<PatientListScreen> createState() => _PatientListScreenState();
+}
+
+class _PatientListScreenState extends State<PatientListScreen> {
+  Map<String, dynamic> patients = {};
+  Future<void> fetchProfile() async {
+    final response = await makeRequest(
+      url: '$apiUrl/admin/get-all-patients',
+      method: 'GET',
+    );
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        patients = data['data'];
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchProfile();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,18 +73,16 @@ class PatientListScreen extends StatelessWidget {
           return PatientCardInList(
             screenWidth: MediaQuery.of(context).size.width,
             screenHeight: MediaQuery.of(context).size.height,
-            name: patient['name']!,
+            patientId: patient['patient_id']!,
+            name: patient['full_name']!,
             gender: patient['gender']!,
-            dob: patient['dob']!,
-            medicalHistory: patient['medicalHistory']!,
-            allergies: patient['allergies']!,
-            healthDate: patient['healthDate']!,
-            age: patient['age']!,
-            height: patient['height']!,
-            weight: patient['weight']!,
-            imageUrl: patient['imageUrl']!,
-            reviewCount: patient['reviewCount']!, // Truyền số lượt đánh giá
-            visitCount: patient['visitCount']!, // Truyền số lượt khám
+            age:
+                (DateTime.now().year -
+                        DateTime.parse(patient['date_of_birth']).year)
+                    .toString(),
+            imageUrl: patient['avatar_url']!,
+            reviewCount: "0", // Truyền số lượt đánh giá
+            visitCount: patient['appointment_count']!, // Truyền số lượt khám
           );
         },
       ),

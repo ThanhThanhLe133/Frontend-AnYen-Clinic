@@ -1,192 +1,194 @@
+import 'dart:convert';
+
+import 'package:ayclinic_doctor_admin/makeRequest.dart';
+import 'package:ayclinic_doctor_admin/storage.dart';
+import 'package:ayclinic_doctor_admin/widget/LabelMedicalRecord.dart';
+import 'package:ayclinic_doctor_admin/widget/MedicalRecord.dart';
+import 'package:ayclinic_doctor_admin/widget/infoWidget.dart';
+import 'package:ayclinic_doctor_admin/widget/sectionTitle.dart';
 import 'package:flutter/material.dart';
 
-class PatientDetailScreen extends StatelessWidget {
-  final String name;
-  final String gender;
-  final String dob;
-  final String reviewCount;
-  final String visitCount;
-  final String medicalHistory; // Thêm tiền sử bệnh
-  final String allergies; // Thêm dị ứng
-  final String age;
-  final String height;
-  final String weight;
+void showPatientDetailScreen(BuildContext context, String patientId) {
+  showDialog(
+    context: context,
+    barrierDismissible: true,
+    builder: (BuildContext context) {
+      return PatientDetailScreen(patientId: patientId);
+    },
+  );
+}
 
-  const PatientDetailScreen({
-    Key? key,
-    required this.name,
-    required this.gender,
-    required this.dob,
-    required this.reviewCount,
-    required this.visitCount,
-    required this.medicalHistory, // Thêm tiền sử bệnh
-    required this.allergies, // Thêm dị ứng
-    required this.age,
-    required this.height,
-    required this.weight,
-  }) : super(key: key);
+class PatientDetailScreen extends StatefulWidget {
+  final String patientId;
+
+  const PatientDetailScreen({super.key, required this.patientId});
+
+  @override
+  State<PatientDetailScreen> createState() => _PatientDetailScreenState();
+}
+
+class _PatientDetailScreenState extends State<PatientDetailScreen> {
+  Map<String, dynamic> patientProfile = {};
+  Map<String, dynamic> healthRecords = {};
+
+  Future<void> fetchProfile() async {
+    String patientId = widget.patientId;
+    final response = await makeRequest(
+      url: '$apiUrl/get/get-patient-profile/?patientId=$patientId',
+      method: 'GET',
+    );
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        patientProfile = data['data'];
+      });
+    }
+  }
+
+  Future<void> fetchHealthRecord() async {
+    String patientId = widget.patientId;
+    final response = await makeRequest(
+      url: '$apiUrl/get/get-patient-health-records/?patientId=$patientId',
+      method: 'GET',
+    );
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        healthRecords = data['data'];
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchProfile();
+      fetchHealthRecord();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.width;
+
+    return Dialog(
       backgroundColor: Colors.white,
-
-      appBar: AppBar(
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.chevron_left, color: Color(0xFF9BA5AC)),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        title: Text(
-          "Chi tiết bệnh nhân",
-          style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        bottom: PreferredSize(
-          preferredSize: Size.fromHeight(1.0),
-          child: Container(color: Color(0xFF9BA5AC), height: 1.0),
-        ),
-      ),
-
-      body: Padding(
-        padding: EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Tên bệnh nhân in đậm
-              _buildSectionTitle('Tên bệnh nhân'),
-              _buildSectionContent(name, isBold: true),
-              SizedBox(height: 10),
-
-              // Chia thành 2 cột: Giới tính & Tuổi
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildColumn(title: 'Giới tính', content: gender),
-                  ),
-                  SizedBox(width: 20),
-                  Expanded(child: _buildColumn(title: 'Tuổi', content: age)),
-                ],
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Container(
+              width: screenWidth * 0.9,
+              padding: EdgeInsets.all(screenWidth * 0.02),
+              height: screenHeight * 0.5,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Color(0xFFD9D9D9), width: 1),
               ),
-              SizedBox(height: 10),
-
-              // Ngày sinh
-              _buildSectionTitle('Ngày sinh'),
-              _buildSectionContent(dob),
-              SizedBox(height: 10),
-
-              // Tiêu đề "Thông tin sức khỏe" căn giữa, nền màu xanh nhạt, chữ trắng
-              _buildSectionTitleWithStyle('Thông tin sức khỏe của bệnh nhân'),
-              // Chia thành 2 cột: Chiều cao & Cân nặng
-              Row(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Expanded(
-                    child: _buildColumn(
-                      title: 'Chiều cao',
-                      content: '$height cm',
-                    ),
+                  infoWidget(
+                    screenWidth: screenWidth,
+                    label: "Họ và tên",
+                    info: patientProfile['full_name'] ?? 'Không có tên',
                   ),
-                  SizedBox(width: 20),
-                  Expanded(
-                    child: _buildColumn(
-                      title: 'Cân nặng',
-                      content: '$weight kg',
-                    ),
+                  infoWidget(
+                    screenWidth: screenWidth,
+                    label: "Giới tính",
+                    info: patientProfile['gender'] ?? 'Unknown',
+                  ),
+                  infoWidget(
+                    screenWidth: screenWidth,
+                    label: "Ngày sinh",
+                    info: formatDate(patientProfile['date_of_birth']),
+                  ),
+                  infoWidget(
+                    screenWidth: screenWidth,
+                    label: "Tiền sử bệnh",
+                    info: patientProfile['medical_history'] ?? '',
+                  ),
+                  infoWidget(
+                    screenWidth: screenWidth,
+                    label: "Dị ứng",
+                    info: "ssssssssssssssssssssssssssss",
                   ),
                 ],
               ),
-              SizedBox(height: 20),
-
-              // Tiền sử bệnh và dị ứng
-              _buildSectionTitle('Tiền sử bệnh'),
-              _buildSectionContent(medicalHistory),
-              _buildSectionTitle('Dị ứng'),
-              _buildSectionContent(allergies),
-              SizedBox(height: 20),
-
-              // Tiêu đề "Hoạt động" căn giữa, nền màu xanh nhạt, chữ trắng
-              _buildSectionTitleWithStyle('Hoạt động của bệnh nhân'),
-              // Số lượt đánh giá và số lượt khám
-              Row(
+            ),
+            Padding(
+              padding: EdgeInsets.all(screenWidth * 0.05),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Expanded(
-                    child: _buildColumn(
-                      title: 'Số lượt đánh giá',
-                      content: reviewCount,
-                    ),
-                  ),
-                  SizedBox(width: 20),
-                  Expanded(
-                    child: _buildColumn(
-                      title: 'Số lượt khám',
-                      content: visitCount,
-                    ),
+                  sectionTitle(
+                    title: 'Chỉ số sức khoẻ',
+                    screenHeight: screenHeight,
+                    screenWidth: screenWidth,
                   ),
                 ],
               ),
-            ],
-          ),
+            ),
+            Container(
+              width: screenWidth * 0.9,
+              padding: EdgeInsets.all(screenWidth * 0.02),
+
+              decoration: BoxDecoration(color: Color(0xFFD9D9D9)),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  LabelMedicalRecord(
+                    screenWidth: screenWidth,
+                    label: "Ngày đo",
+                  ),
+                  LabelMedicalRecord(screenWidth: screenWidth, label: "Tuổi"),
+                  LabelMedicalRecord(
+                    screenWidth: screenWidth,
+                    label: "Chiều cao \n (cm)",
+                  ),
+                  LabelMedicalRecord(
+                    screenWidth: screenWidth,
+                    label: "Cân nặng \n (kg)",
+                  ),
+                  LabelMedicalRecord(screenWidth: screenWidth, label: "BMI"),
+                ],
+              ),
+            ),
+            ListView.builder(
+              itemCount: healthRecords.length,
+              itemBuilder: (context, index) {
+                final record = healthRecords[index];
+                final double height = record['height']?.toDouble() ?? 0;
+                final double weight = record['weight']?.toDouble() ?? 0;
+                final String recordId = record['id'].toString();
+                return null;
+              },
+            ),
+          ],
         ),
       ),
-    );
-  }
-
-  // Widget để tạo tiêu đề cho từng phần
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: Colors.blueAccent,
-        ),
-      ),
-    );
-  }
-
-  // Widget để tạo tiêu đề "Thông tin sức khỏe" và "Hoạt động" với style đặc biệt
-  Widget _buildSectionTitleWithStyle(String title) {
-    return Container(
-      width: double.infinity,
-      color: Colors.lightBlueAccent, // Màu nền xanh nhạt
-      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      child: Text(
-        title,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: Colors.white, // Màu chữ trắng
-        ),
-      ),
-    );
-  }
-
-  // Widget để tạo nội dung cho từng phần
-  Widget _buildSectionContent(String content, {bool isBold = false}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Text(
-        content,
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-        ),
-      ),
-    );
-  }
-
-  // Widget để tạo cột với tiêu đề và nội dung
-  Widget _buildColumn({required String title, required String content}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [_buildSectionTitle(title), _buildSectionContent(content)],
     );
   }
 }

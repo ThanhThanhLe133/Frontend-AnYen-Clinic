@@ -32,7 +32,7 @@ class _MedicalRecordsScreenState extends ConsumerState<MedicalRecordsScreen> {
 
   Future<void> fetchProfile() async {
     final response = await makeRequest(
-      url: '$apiUrl/patient/get-profile',
+      url: '$apiUrl/get/get-patient-profile/',
       method: 'GET',
     );
     if (response.statusCode != 200) {
@@ -51,7 +51,7 @@ class _MedicalRecordsScreenState extends ConsumerState<MedicalRecordsScreen> {
 
   Future<void> fetchHealthRecord() async {
     final response = await makeRequest(
-      url: '$apiUrl/patient/health-records',
+      url: '$apiUrl/get/get-patient-health-records/',
       method: 'GET',
     );
     if (response.statusCode != 200) {

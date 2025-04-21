@@ -134,7 +134,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
       url: '$apiUrl/patient/get-profile',
       method: 'GET',
     );
-    debugPrint("⚠️ Response Body: ${response.body}}");
+
     if (response.statusCode != 200) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
