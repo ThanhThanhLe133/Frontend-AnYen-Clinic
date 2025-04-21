@@ -1,4 +1,9 @@
+import 'dart:convert';
+
+import 'package:ayclinic_doctor_admin/dialog/SuccessDialog.dart';
 import 'package:ayclinic_doctor_admin/login/login_screen.dart';
+import 'package:ayclinic_doctor_admin/makeRequest.dart';
+import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:ayclinic_doctor_admin/widget/buildPasswordField.dart';
 import 'package:ayclinic_doctor_admin/widget/normalButton.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +16,56 @@ class ChangePassScreen extends StatefulWidget {
 }
 
 class _ChangePassScreenState extends State<ChangePassScreen> {
-  final passController = TextEditingController();
+  final oldPassController = TextEditingController();
+  final newPassController = TextEditingController();
+  final retypePassController = TextEditingController();
+  Future<void> createNewPass() async {
+    String oldPassword = oldPassController.text.trim();
+    if (oldPassword.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Vui lòng nhập mật khẩu cũ")));
+      return;
+    }
+    String newPassword = newPassController.text.trim();
+    if (newPassword.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Vui lòng nhập mật khẩu mới")));
+      return;
+    }
+    String retypePassword = retypePassController.text.trim();
+    if (retypePassword.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Vui lòng nhập mật khẩu xác nhận")),
+      );
+      return;
+    }
+    if (newPassword != retypePassword) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Mật khẩu xác nhận không khớp")));
+      return;
+    }
+    final response = await makeRequest(
+      url: '$apiUrl/auth/reset-pass',
+      method: 'POST',
+      body: {"oldPassword": oldPassword, "newPassword": newPassword},
+    );
+
+    final responseData = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      showSuccessDialog(
+        context,
+        LoginScreen(),
+        "Tạo mật khẩu mới thành công",
+        "Đăng nhập",
+      );
+    } else {
+      throw Exception(responseData["message"] ?? "Lỗi đổi mật khẩu");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -58,21 +112,21 @@ class _ChangePassScreenState extends State<ChangePassScreen> {
                 screenWidth: screenWidth,
                 screenHeight: screenHeight,
                 hintText: "Nhập mật khẩu cũ",
-                controller: passController,
+                controller: oldPassController,
               ),
               SizedBox(height: screenHeight * 0.05),
               PasswordField(
                 screenWidth: screenWidth,
                 screenHeight: screenHeight,
                 hintText: "Nhập mật khẩu",
-                controller: passController,
+                controller: newPassController,
               ),
               SizedBox(height: screenHeight * 0.05),
               PasswordField(
                 screenWidth: screenWidth,
                 screenHeight: screenHeight,
                 hintText: "Xác thực mật khẩu",
-                controller: passController,
+                controller: retypePassController,
               ),
               SizedBox(height: screenHeight * 0.2),
               normalButton(
@@ -80,7 +134,7 @@ class _ChangePassScreenState extends State<ChangePassScreen> {
                 screenHeight: screenHeight,
                 label: "Đổi mật khẩu",
                 nextScreen: LoginScreen(),
-                action: null,
+                action: () => createNewPass(),
               ),
             ],
           ),
