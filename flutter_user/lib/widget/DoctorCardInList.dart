@@ -7,6 +7,7 @@ class DoctorCardInList extends StatelessWidget {
   final String specialty;
   final String workplace;
   final String imageUrl;
+  final int percentage;
 
   const DoctorCardInList({
     super.key,
@@ -16,6 +17,7 @@ class DoctorCardInList extends StatelessWidget {
     required this.specialty,
     required this.workplace,
     required this.imageUrl,
+    required this.percentage,
   });
 
   @override
@@ -65,7 +67,7 @@ class DoctorCardInList extends StatelessWidget {
                         color: Colors.blue, size: screenWidth * 0.05),
                     SizedBox(width: screenWidth * 0.02),
                     Text(
-                      "100% hài lòng",
+                      '$percentage% hài lòng',
                       style: TextStyle(
                         fontSize: screenWidth * 0.04,
                         color: Colors.blue,

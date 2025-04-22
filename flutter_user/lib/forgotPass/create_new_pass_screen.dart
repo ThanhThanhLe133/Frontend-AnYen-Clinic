@@ -85,6 +85,8 @@ class _CreateNewPassScreenState extends ConsumerState<CreateNewPassScreen> {
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
+    passController.dispose();
+    retypePassController.dispose();
     super.dispose();
   }
 

@@ -1,24 +1,38 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:anyen_clinic/appointment/appointment_screen.dart';
+import 'package:anyen_clinic/dialog/SuccessDialog.dart';
+import 'package:anyen_clinic/makeRequest.dart';
 import 'package:anyen_clinic/payment/PaymentOptionWidget.dart';
 import 'package:anyen_clinic/settings/account_screen.dart';
+import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/CustomBackButton.dart';
 import 'package:anyen_clinic/widget/DoctorCard.dart';
 import 'package:anyen_clinic/widget/consultationBottomBar.dart';
 import 'package:flutter/material.dart';
+import 'package:uni_links/uni_links.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PaymentScreen extends StatefulWidget {
-  const PaymentScreen({
-    super.key,
-  });
+  final String doctorId;
+  const PaymentScreen({super.key, required this.doctorId});
 
   @override
   State<PaymentScreen> createState() => _PaymentScreenState();
 }
 
 class _PaymentScreenState extends State<PaymentScreen> {
+  Map<String, dynamic> doctorProfile = {};
+  final TextEditingController questionController = TextEditingController();
   late List<DateTime> dates;
   late int selectedDateIndex;
   late int selectedTimeIndex;
-  late String selectedHour = "9:00";
+  late DateTime selectedDate;
+  late String selectedHour;
+  double total_price = 0;
+
+  String selectedConsult = "Online";
   DateTime initialDate = DateTime.now();
   final List<String> times = [
     "9:00",
@@ -28,23 +42,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
     "15:00",
     "16:00"
   ];
-
+  StreamSubscription? _linkSub;
   late ScrollController _scrollController;
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController = ScrollController()..addListener(_loadMoreDates);
-    _generateInitialDates();
-    selectedDateIndex = 0;
-    selectedTimeIndex = times.indexOf(selectedHour);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
 
   void _generateInitialDates() {
     dates = List.generate(7, (index) => initialDate.add(Duration(days: index)));
@@ -60,6 +59,122 @@ class _PaymentScreenState extends State<PaymentScreen> {
         }
       });
     }
+  }
+
+  Future<void> createPayment() async {
+    final parts = selectedHour.split(':');
+    final combinedDateTime = DateTime(
+      selectedDate.year,
+      selectedDate.month,
+      selectedDate.day,
+      int.parse(parts[0]),
+      int.parse(parts[1]),
+    );
+    final appointmentTime = combinedDateTime.toIso8601String();
+    try {
+      final response = await makeRequest(
+          url: '$apiUrl/payment/create-payment-momo',
+          method: 'POST',
+          body: {
+            "doctor_id": widget.doctorId,
+            "appointment_time": appointmentTime,
+            "question": questionController.text.trim(),
+            "appointment_type": selectedConsult,
+            "total_price": total_price,
+          });
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && data['payUrl'] != null) {
+        final payUrl = data['payUrl'];
+        if (await canLaunchUrl(Uri.parse(payUrl))) {
+          await launchUrl(Uri.parse(payUrl),
+              mode: LaunchMode.externalApplication);
+        } else {
+          throw "Không thể mở đường dẫn thanh toán.";
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data['mes'] ?? "Lỗi tạo thanh toán")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Đã xảy ra lỗi: $e")),
+      );
+    }
+  }
+
+  Future<void> checkPayment(String orderId) async {
+    try {
+      final response = await makeRequest(
+          url: '$apiUrl/payment/check-payment-status',
+          method: 'POST',
+          body: {"orderId": orderId});
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && data['err'] == 0) {
+        showSuccessDialog(context, AppointmentScreen(), "Thanh toán thành công",
+            "Tới lịch hẹn");
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data['mes'] ?? "Không thành công")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Đã xảy ra lỗi: $e")),
+      );
+    }
+  }
+
+  Future<void> fetchDoctor() async {
+    String doctorId = widget.doctorId;
+    final response = await makeRequest(
+      url: '$apiUrl/get/get-doctor/?userId=$doctorId',
+      method: 'GET',
+    );
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        doctorProfile = data['data'];
+        total_price = doctorProfile['price'];
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchDoctor();
+    _scrollController = ScrollController()..addListener(_loadMoreDates);
+    _generateInitialDates();
+    selectedDateIndex = 0;
+    selectedTimeIndex = times.indexOf(selectedHour);
+
+    _linkSub = uriLinkStream.listen((Uri? uri) {
+      if (uri != null && uri.scheme == 'myapp') {
+        final orderId = uri.queryParameters['orderId'];
+        if (orderId != null) {
+          checkPayment(orderId); // Gọi check trạng thái từ backend
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    questionController.dispose();
+    _linkSub?.cancel();
+    super.dispose();
   }
 
   @override
@@ -115,9 +230,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
               ),
               SizedBox(height: 8),
               DoctorCard(
-                doctorName: "BS.CKI Macus Horizon",
-                specialty: "Tâm lý - Nội tổng quát",
-                imageUrl: "https://i.imgur.com/Y6W5JhB.png",
+                doctorName: doctorProfile['name'],
+                specialty: doctorProfile['specialization'],
+                imageUrl: doctorProfile['avatar_url'],
               ),
               SizedBox(
                 height: screenWidth * 0.03,
@@ -217,13 +332,19 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         SizedBox(
                           child: _buildOption(
                               Icons.chat_rounded, "Online", isSelected, () {
-                            setState(() => isSelected = true);
+                            setState(() {
+                              selectedConsult = "Online";
+                              isSelected = true;
+                            });
                           }, screenWidth),
                         ),
                         SizedBox(
                           child: _buildOption(Icons.people_alt_rounded,
                               "Trực tiếp", !isSelected, () {
-                            setState(() => isSelected = false);
+                            setState(() {
+                              isSelected = false;
+                              selectedConsult = "Offline";
+                            });
                           }, screenWidth),
                         ),
                       ],
@@ -279,6 +400,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                               onTap: () {
                                 setState(() {
                                   selectedDateIndex = index;
+                                  selectedDate = date;
                                 });
                               },
                               child: Container(
@@ -333,6 +455,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                             onTap: () {
                               setState(() {
                                 selectedTimeIndex = index;
+                                selectedHour = times[index];
                               });
                             },
                             child: Container(
@@ -361,7 +484,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   ],
                 ),
               ),
-              QuestionField(screenWidth: screenWidth),
+              QuestionField(
+                screenWidth: screenWidth,
+                controller: questionController,
+              ),
               Container(
                 width: screenWidth * 0.9,
                 padding: EdgeInsets.symmetric(
@@ -403,7 +529,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                               fontSize: screenWidth * 0.035,
                               color: Color(0xFFDB5B8B)),
                         ),
-                        Text("99.000 đ",
+                        Text('$total_price',
                             style: TextStyle(
                                 fontSize: screenWidth * 0.035,
                                 fontWeight: FontWeight.bold)),
@@ -423,21 +549,20 @@ class _PaymentScreenState extends State<PaymentScreen> {
         screenHeight: screenHeight,
         screenWidth: screenWidth,
         content: "Tổng tiền",
-        totalMoney: "99.000 đ",
+        totalMoney: total_price.toString(),
         nameButton: "THANH TOÁN",
-        nextScreen: AccountScreen(),
+        action: createPayment,
       ),
     );
   }
 }
 
 class QuestionField extends StatelessWidget {
-  const QuestionField({
-    super.key,
-    required this.screenWidth,
-  });
+  const QuestionField(
+      {super.key, required this.screenWidth, required this.controller});
 
   final double screenWidth;
+  final TextEditingController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -474,6 +599,7 @@ class QuestionField extends StatelessWidget {
           TextField(
             style: TextStyle(fontSize: screenWidth * 0.04),
             maxLines: null,
+            controller: controller,
             decoration: InputDecoration(
               isDense: true,
               filled: true,

@@ -44,6 +44,12 @@ class _DetailsDoctorScreenState extends State<DetailsDoctorScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    fetchDoctor();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
@@ -123,7 +129,7 @@ class _DetailsDoctorScreenState extends State<DetailsDoctorScreen> {
                   ),
                 ),
                 Text(
-                  doctorProfile['specialization'],
+                  'Chuyên khoa: ${doctorProfile["specialization"]}',
                   textAlign: TextAlign.center,
                   softWrap: true,
                   maxLines: null,
@@ -179,7 +185,7 @@ class _DetailsDoctorScreenState extends State<DetailsDoctorScreen> {
                 children: [
                   _infoTile(
                     'Lượt tư vấn',
-                    doctorProfile['appointment_count'],
+                    '${doctorProfile['appointment_count']}+',
                     Icons.people,
                     screenHeight,
                     screenWidth,
@@ -191,7 +197,7 @@ class _DetailsDoctorScreenState extends State<DetailsDoctorScreen> {
                   ),
                   _infoTile(
                     'Kinh nghiệm',
-                    doctorProfile['yearExperience'],
+                    '${doctorProfile['yearExperience']}năm',
                     Icons.history,
                     screenHeight,
                     screenWidth,
@@ -293,7 +299,7 @@ class _DetailsDoctorScreenState extends State<DetailsDoctorScreen> {
         screenHeight: screenHeight,
         screenWidth: screenWidth,
         content: "Chi phí tư vấn",
-        totalMoney: doctorProfile['price'],
+        totalMoney: '${doctorProfile['price']}đ',
         nameButton: "SỬA THÔNG TIN",
         nextScreen: AddDoctorScreen(doctorId: widget.doctorId),
       ),

@@ -9,7 +9,8 @@ class ConsultationBottomBar extends StatelessWidget {
   final String content;
   final String totalMoney;
   final String nameButton;
-  final Widget nextScreen;
+  final Function? action;
+  final Widget? nextScreen;
   const ConsultationBottomBar({
     super.key,
     required this.screenHeight,
@@ -17,7 +18,8 @@ class ConsultationBottomBar extends StatelessWidget {
     required this.content,
     required this.totalMoney,
     required this.nameButton,
-    required this.nextScreen,
+    this.nextScreen,
+    this.action,
   });
 
   @override
@@ -65,10 +67,11 @@ class ConsultationBottomBar extends StatelessWidget {
               height: screenHeight * 0.02,
             ),
             circleButton(
-              nextScreen: nextScreen,
               label: nameButton,
               screenWidth: screenWidth,
               screenHeight: screenHeight,
+              action: action,
+              nextScreen: nextScreen,
             ),
           ],
         ),

@@ -162,6 +162,13 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
   }
 
   @override
+  void dispose() {
+    controller.dispose();
+    focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.width;

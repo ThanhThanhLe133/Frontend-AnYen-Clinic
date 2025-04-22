@@ -29,7 +29,9 @@ class MedicalRecordsScreen extends ConsumerStatefulWidget {
 class _MedicalRecordsScreenState extends ConsumerState<MedicalRecordsScreen> {
   Map<String, dynamic> patientProfile = {};
   Map<String, dynamic> healthRecords = {};
-
+  final TextEditingController controllerDateTime = TextEditingController();
+  final TextEditingController controllerHeight = TextEditingController();
+  final TextEditingController controllerWeight = TextEditingController();
   Future<void> fetchProfile() async {
     final response = await makeRequest(
       url: '$apiUrl/get/get-patient-profile/',
@@ -80,6 +82,14 @@ class _MedicalRecordsScreenState extends ConsumerState<MedicalRecordsScreen> {
         SnackBar(content: Text("Lưu thất bại: ${response.body}")),
       );
     }
+  }
+
+  @override
+  void dispose() {
+    controllerDateTime.dispose();
+    controllerHeight.dispose();
+    controllerWeight.dispose();
+    super.dispose();
   }
 
   @override
@@ -212,7 +222,11 @@ class _MedicalRecordsScreenState extends ConsumerState<MedicalRecordsScreen> {
                     padding: EdgeInsets.only(
                         top: screenHeight * 0.02, bottom: screenHeight * 0.01),
                     child: GestureDetector(
-                      onTap: () => _showHealthDialog(context),
+                      onTap: () => _showHealthDialog(
+                          context,
+                          controllerDateTime,
+                          controllerHeight,
+                          controllerWeight),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -325,13 +339,13 @@ class _MedicalRecordsScreenState extends ConsumerState<MedicalRecordsScreen> {
   }
 }
 
-void _showHealthDialog(BuildContext context) {
+void _showHealthDialog(
+    BuildContext context,
+    TextEditingController controllerDateTime,
+    TextEditingController controllerHeight,
+    TextEditingController controllerWeight) {
   double screenWidth = MediaQuery.of(context).size.width;
   double screenHeight = MediaQuery.of(context).size.height;
-
-  final TextEditingController controllerDateTime = TextEditingController();
-  final TextEditingController controllerHeight = TextEditingController();
-  final TextEditingController controllerWeight = TextEditingController();
 
   Future<void> saveHealthRecord() async {
     final height = double.tryParse(controllerHeight.text);

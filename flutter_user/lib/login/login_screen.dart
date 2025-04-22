@@ -98,6 +98,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
+    phoneController.dispose();
+    passController.dispose();
     super.dispose();
   }
 

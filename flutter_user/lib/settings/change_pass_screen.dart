@@ -65,6 +65,14 @@ class _ChangePassScreenState extends ConsumerState<ChangePassScreen> {
   }
 
   @override
+  void dispose() {
+    oldPassController.dispose();
+    newPassController.dispose();
+    retypePassController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.width;

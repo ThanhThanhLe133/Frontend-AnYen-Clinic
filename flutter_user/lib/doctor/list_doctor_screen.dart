@@ -1,3 +1,8 @@
+import 'dart:convert';
+
+import 'package:anyen_clinic/doctor/details_doctor_screen.dart';
+import 'package:anyen_clinic/makeRequest.dart';
+import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/DoctorCardInList.dart';
 import 'package:anyen_clinic/widget/menu.dart';
 import 'package:flutter/material.dart';
@@ -5,77 +10,41 @@ import 'package:flutter/material.dart';
 class DoctorListScreen extends StatefulWidget {
   const DoctorListScreen({super.key});
 
-  static const List<Map<String, String>> doctors = [
-    {
-      'name': 'BS.CKI Macus Horizon',
-      'specialty': 'Tâm lý - Nội tổng quát',
-      'workplace': 'Bệnh viện ĐH Y Dược',
-      'image': 'https://i.imgur.com/Y6W5JhB.png'
-    },
-    {
-      'name': 'BS.CKI Macus Horizon',
-      'specialty': 'Tâm lý - Nội tổng quát',
-      'workplace': 'Bệnh viện ĐH Y Dược',
-      'image': 'https://i.imgur.com/Y6W5JhB.png'
-    },
-    {
-      'name': 'BS.CKI Macus Horizon',
-      'specialty': 'Tâm lý - Nội tổng quát',
-      'workplace': 'Bệnh viện ĐH Y Dược',
-      'image': 'https://i.imgur.com/Y6W5JhB.png'
-    },
-    {
-      'name': 'BS.CKI Macus Horizon',
-      'specialty': 'Tâm lý - Nội tổng quát',
-      'workplace': 'Bệnh viện ĐH Y Dược',
-      'image': 'https://i.imgur.com/Y6W5JhB.png'
-    },
-    {
-      'name': 'BS.CKI Macus Horizon',
-      'specialty': 'Tâm lý - Nội tổng quát',
-      'workplace': 'Bệnh viện ĐH Y Dược',
-      'image': 'https://i.imgur.com/Y6W5JhB.png'
-    },
-    {
-      'name': 'BS.CKI Macus Horizon',
-      'specialty': 'Tâm lý - Nội tổng quát',
-      'workplace': 'Bệnh viện ĐH Y Dược',
-      'image': 'https://i.imgur.com/Y6W5JhB.png'
-    },
-    {
-      'name': 'BS.CKI Macus Horizon',
-      'specialty': 'Tâm lý - Nội tổng quát',
-      'workplace': 'Bệnh viện ĐH Y Dược',
-      'image': 'https://i.imgur.com/Y6W5JhB.png'
-    },
-    {
-      'name': 'BS.CKI Macus Horizon',
-      'specialty': 'Tâm lý - Nội tổng quát',
-      'workplace': 'Bệnh viện ĐH Y Dược',
-      'image': 'https://i.imgur.com/Y6W5JhB.png'
-    },
-    {
-      'name': 'BS.CKI Macus Horizon',
-      'specialty': 'Tâm lý - Nội tổng quát',
-      'workplace': 'Bệnh viện ĐH Y Dược',
-      'image': 'https://i.imgur.com/Y6W5JhB.png'
-    },
-  ];
-
   @override
   State<DoctorListScreen> createState() => _DoctorListScreenState();
 }
 
 class _DoctorListScreenState extends State<DoctorListScreen> {
   late ScrollController _scrollController;
-  final List<Map<String, String>> _displayedDoctors = [];
+  final List<Map<String, dynamic>> _displayedDoctors = [];
   int _currentPage = 1;
   final int _itemsPerPage = 5;
   bool _isLoading = false;
+  List<Map<String, dynamic>> doctors = [];
+
+  Future<void> fetchDoctors() async {
+    final response = await makeRequest(
+      url: '$apiUrl/get/get-all-doctors',
+      method: 'GET',
+    );
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        doctors = data['data'];
+      });
+    }
+  }
 
   @override
   void initState() {
     super.initState();
+    fetchDoctors();
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
     _loadMoreDoctors(); // Load dữ liệu ban đầu
@@ -96,8 +65,7 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
   }
 
   void _loadMoreDoctors() {
-    if (_isLoading ||
-        _displayedDoctors.length >= DoctorListScreen.doctors.length) {
+    if (_isLoading || _displayedDoctors.length >= doctors.length) {
       return; // Không tải thêm nếu đang loading hoặc đã hết dữ liệu
     }
 
@@ -107,12 +75,14 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
 
     int startIndex = (_currentPage - 1) * _itemsPerPage;
     int endIndex = startIndex + _itemsPerPage;
-    if (endIndex > DoctorListScreen.doctors.length) {
-      endIndex = DoctorListScreen.doctors.length;
+    if (endIndex > doctors.length) {
+      endIndex = doctors.length;
     }
 
-    List<Map<String, String>> newDoctors =
-        DoctorListScreen.doctors.sublist(startIndex, endIndex);
+    List<Map<String, dynamic>> newDoctors = doctors.sublist(
+      startIndex,
+      endIndex,
+    );
 
     Future.delayed(Duration(seconds: 1), () {
       setState(() {
@@ -150,16 +120,15 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
         backgroundColor: Colors.white,
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(1.0),
-          child: Container(
-            color: Color(0xFF9BA5AC),
-            height: 1.0,
-          ),
+          child: Container(color: Color(0xFF9BA5AC), height: 1.0),
         ),
       ),
-      floatingActionButton: Menu(),
+      // floatingActionButton: MenuAdmin(),
       body: Padding(
         padding: EdgeInsets.symmetric(
-            horizontal: screenWidth * 0.05, vertical: screenWidth * 0.05),
+          horizontal: screenWidth * 0.05,
+          vertical: screenWidth * 0.05,
+        ),
         child: ListView.builder(
           controller: _scrollController, // Gán controller cho ListView
           itemCount: _displayedDoctors.length + (_isLoading ? 1 : 0),
@@ -167,13 +136,26 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
             if (index == _displayedDoctors.length) {
               return Center(child: CircularProgressIndicator());
             }
-            return DoctorCardInList(
-              screenWidth: screenWidth,
-              screenHeight: screenHeight,
-              name: _displayedDoctors[index]['name']!,
-              specialty: _displayedDoctors[index]['specialty']!,
-              workplace: _displayedDoctors[index]['workplace']!,
-              imageUrl: _displayedDoctors[index]['image']!,
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DoctorDetailScreen(
+                      doctorId: _displayedDoctors[index]['doctorId']!,
+                    ),
+                  ),
+                );
+              },
+              child: DoctorCardInList(
+                screenWidth: screenWidth,
+                screenHeight: screenHeight,
+                name: _displayedDoctors[index]['name']!,
+                specialty: _displayedDoctors[index]['specialization']!,
+                percentage: 100,
+                workplace: _displayedDoctors[index]['workplace']!,
+                imageUrl: _displayedDoctors[index]['avatar_url']!,
+              ),
             );
           },
         ),

@@ -1,12 +1,50 @@
+import 'dart:convert';
+
 import 'package:anyen_clinic/doctor/listReview_doctor_screen.dart';
 import 'package:anyen_clinic/doctor/widget/reviewCard_widget.dart';
+import 'package:anyen_clinic/makeRequest.dart';
 import 'package:anyen_clinic/payment/payment_screen.dart';
+import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/consultationBottomBar.dart';
 import 'package:anyen_clinic/widget/sectionTitle.dart' show sectionTitle;
 import 'package:flutter/material.dart';
 
-class DoctorDetailScreen extends StatelessWidget {
-  const DoctorDetailScreen({super.key});
+class DoctorDetailScreen extends StatefulWidget {
+  final String doctorId;
+  const DoctorDetailScreen({super.key, required this.doctorId});
+
+  @override
+  State<DoctorDetailScreen> createState() => _DoctorDetailScreenState();
+}
+
+class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
+  Map<String, dynamic> doctorProfile = {};
+
+  Future<void> fetchDoctor() async {
+    String doctorId = widget.doctorId;
+    final response = await makeRequest(
+      url: '$apiUrl/get/get-doctor/?userId=$doctorId',
+      method: 'GET',
+    );
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        doctorProfile = data['data'];
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchDoctor();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +88,7 @@ class DoctorDetailScreen extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: screenWidth * 0.18,
-              backgroundImage: NetworkImage('https://i.imgur.com/Y6W5JhB.png'),
+              backgroundImage: doctorProfile['avatar_url'],
             ),
             SizedBox(height: screenHeight * 0.02),
             Column(
@@ -65,7 +103,7 @@ class DoctorDetailScreen extends StatelessWidget {
                       fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  'Chuyên khoa: Tâm lý - Nội tổng quát',
+                  'Chuyên khoa: ${doctorProfile["specialization"]}',
                   textAlign: TextAlign.center,
                   softWrap: true,
                   maxLines: null,
@@ -73,7 +111,7 @@ class DoctorDetailScreen extends StatelessWidget {
                       fontSize: screenWidth * 0.04, color: Colors.grey),
                 ),
                 Text(
-                  'Bệnh viện ĐH Y Dược HCM',
+                  doctorProfile['workplace'],
                   textAlign: TextAlign.center,
                   softWrap: true,
                   maxLines: null,
@@ -83,7 +121,7 @@ class DoctorDetailScreen extends StatelessWidget {
                 Text(
                   softWrap: true,
                   maxLines: null,
-                  '"Sẵn sàng lắng nghe, thấu hiểu và chia sẻ"',
+                  doctorProfile['infoStatus'],
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       fontSize: screenWidth * 0.04,
@@ -113,14 +151,22 @@ class DoctorDetailScreen extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _infoTile('Lượt tư vấn', '100+', Icons.people, screenHeight,
+                  _infoTile(
+                      'Lượt tư vấn',
+                      '${doctorProfile['appointment_count']}+',
+                      Icons.people,
+                      screenHeight,
                       screenWidth),
                   Container(
                     width: 1,
                     height: screenHeight * 0.06,
                     color: Colors.black.withOpacity(0.25),
                   ),
-                  _infoTile('Kinh nghiệm', '9 Năm', Icons.history, screenHeight,
+                  _infoTile(
+                      'Kinh nghiệm',
+                      '${doctorProfile['yearExperience']}năm',
+                      Icons.history,
+                      screenHeight,
                       screenWidth),
                   Container(
                     width: 1,
@@ -175,37 +221,35 @@ class DoctorDetailScreen extends StatelessWidget {
               screenWidth: screenWidth,
             ),
             sectionTitle(
-                title: 'Thông tin chi tiết',
-                screenHeight: screenHeight,
-                screenWidth: screenWidth),
+              title: 'Quá trình công tác',
+              screenHeight: screenHeight,
+              screenWidth: screenWidth,
+            ),
             _descriptionText(
-                'Với nhiều năm kinh nghiệm khám và tư vấn các bệnh lý tâm thần, nội khoa, tôi luôn cố gắng lắng nghe, giúp đỡ bệnh nhân giải tỏa những lo lắng.',
-                screenHeight,
-                screenWidth),
+              doctorProfile['workExperience'],
+              screenHeight,
+              screenWidth,
+            ),
             sectionTitle(
-                title: 'Quá trình công tác',
-                screenHeight: screenHeight,
-                screenWidth: screenWidth),
+              title: 'Quá trình học tập',
+              screenHeight: screenHeight,
+              screenWidth: screenWidth,
+            ),
             _descriptionText(
-                '2015-2022: Phòng khám chuyên khoa tâm thần kinh, bác sĩ nội - tâm thần',
-                screenHeight,
-                screenWidth),
+              doctorProfile['educationHistory'],
+              screenHeight,
+              screenWidth,
+            ),
             sectionTitle(
-                title: 'Quá trình học tập',
-                screenHeight: screenHeight,
-                screenWidth: screenWidth),
+              title: 'Chứng chỉ hành nghề',
+              screenHeight: screenHeight,
+              screenWidth: screenWidth,
+            ),
             _descriptionText(
-                '2009-2015: Y khoa ĐH Y Dược TPHCM\n2022-2024: CKI Tâm thần, ĐH Y Khoa Phạm Ngọc Thạch',
-                screenHeight,
-                screenWidth),
-            sectionTitle(
-                title: 'Chứng chỉ hành nghề',
-                screenHeight: screenHeight,
-                screenWidth: screenWidth),
-            _descriptionText(
-                '001234 - Nội tổng quát - 17/8/2018, Sở Y tế TPHCM',
-                screenHeight,
-                screenWidth),
+              doctorProfile['medicalLicense'],
+              screenHeight,
+              screenWidth,
+            ),
             SizedBox(height: screenHeight * 0.03),
           ],
         ),
@@ -214,9 +258,11 @@ class DoctorDetailScreen extends StatelessWidget {
         screenHeight: screenHeight,
         screenWidth: screenWidth,
         content: "Chi phí tư vấn",
-        totalMoney: "99.000 đ",
+        totalMoney: '${doctorProfile['price']}đ',
         nameButton: "ĐẶT TƯ VẤN",
-        nextScreen: PaymentScreen(),
+        nextScreen: PaymentScreen(
+          doctorId: widget.doctorId,
+        ),
       ),
     );
   }

@@ -110,6 +110,16 @@ class _EditAccountScreenSate extends ConsumerState<EditAccountScreen> {
   }
 
   @override
+  void dispose() {
+    controllerName.dispose();
+    controllerDob.dispose();
+    controllerGender.dispose();
+    controllerMedicalHistory.dispose();
+    controllerAllergies.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.width;

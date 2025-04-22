@@ -76,6 +76,13 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
+    for (var controller in otpControllers) {
+      controller.dispose();
+    }
+    for (var focusNode in otpFocusNodes) {
+      focusNode.dispose();
+    }
+    otpFocusNode.dispose();
     super.dispose();
   }
 

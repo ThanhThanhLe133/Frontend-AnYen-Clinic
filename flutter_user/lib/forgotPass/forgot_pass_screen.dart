@@ -66,6 +66,12 @@ class _ForgotPassScreenState extends ConsumerState<ForgotPassScreen> {
   }
 
   @override
+  void dispose() {
+    phoneController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.width;
