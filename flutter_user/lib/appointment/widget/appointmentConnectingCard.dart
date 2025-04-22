@@ -1,25 +1,69 @@
+import 'dart:convert';
 import 'dart:math';
 
+import 'package:anyen_clinic/appointment/details_doctor.dart';
 import 'package:anyen_clinic/appointment/widget/DialogToChangeDoctor.dart';
 import 'package:anyen_clinic/dialog/ChangeConsultationDialog.dart';
 import 'package:anyen_clinic/dialog/EditDateAppointmentDialog.dart';
 import 'package:anyen_clinic/dialog/PaymentHistory.dart';
+import 'package:anyen_clinic/makeRequest.dart';
+import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/buildMoreOption.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AppointmentConnectingCard extends ConsumerWidget {
+class AppointmentConnectingCard extends ConsumerStatefulWidget {
   const AppointmentConnectingCard(
       {super.key,
+      required this.question,
+      required this.doctor_id,
+      required this.appointment_id,
       required this.isOnline,
       required this.date,
       required this.time});
   final bool isOnline;
   final String date;
   final String time;
+  final String doctor_id;
+  final String appointment_id;
+  final String question;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AppointmentConnectingCard> createState() =>
+      AppointmentConnectingCardState();
+}
+
+class AppointmentConnectingCardState
+    extends ConsumerState<AppointmentConnectingCard> {
+  Map<String, dynamic> doctorProfile = {};
+  Future<void> fetchDoctor() async {
+    String doctorId = widget.doctor_id;
+    final response = await makeRequest(
+      url: '$apiUrl/get/get-doctor/?userId=$doctorId',
+      method: 'GET',
+    );
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        doctorProfile = data['data'];
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchDoctor();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     return Container(
@@ -44,7 +88,7 @@ class AppointmentConnectingCard extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "BS.CKI Macus Horizon",
+                  doctorProfile['name'],
                   style: TextStyle(
                     fontSize: screenWidth * 0.045,
                     fontWeight: FontWeight.bold,
@@ -53,7 +97,7 @@ class AppointmentConnectingCard extends ConsumerWidget {
                 ),
                 SizedBox(height: screenWidth * 0.02),
                 Text(
-                  "Tâm lý - Nội tổng quát",
+                  doctorProfile["specialization"],
                   style: TextStyle(
                     fontSize: screenWidth * 0.04,
                     color: Colors.grey[400],
@@ -69,7 +113,7 @@ class AppointmentConnectingCard extends ConsumerWidget {
                             color: Colors.black, size: screenWidth * 0.05),
                         const SizedBox(width: 6),
                         Text(
-                          date,
+                          widget.date,
                           style: TextStyle(
                             fontSize: screenWidth * 0.035,
                             fontWeight: FontWeight.w400,
@@ -85,7 +129,7 @@ class AppointmentConnectingCard extends ConsumerWidget {
                             color: Colors.black, size: screenWidth * 0.05),
                         const SizedBox(width: 6),
                         Text(
-                          time,
+                          widget.time,
                           style: TextStyle(
                             fontSize: screenWidth * 0.035,
                             fontWeight: FontWeight.w400,
@@ -100,18 +144,20 @@ class AppointmentConnectingCard extends ConsumerWidget {
                 Row(
                   children: [
                     Icon(
-                        isOnline
+                        widget.isOnline
                             ? Icons.chat_rounded
                             : Icons.people_outline_rounded,
-                        color: isOnline ? Colors.blue : Color(0xFFDB5B8B),
+                        color:
+                            widget.isOnline ? Colors.blue : Color(0xFFDB5B8B),
                         size: screenWidth * 0.05),
                     const SizedBox(width: 6),
                     Text(
-                      isOnline ? "Tư vấn online" : "Tư vấn trực tiếp",
+                      widget.isOnline ? "Tư vấn online" : "Tư vấn trực tiếp",
                       style: TextStyle(
                         fontSize: screenWidth * 0.04,
                         fontWeight: FontWeight.w500,
-                        color: isOnline ? Colors.blue : Color(0xFFDB5B8B),
+                        color:
+                            widget.isOnline ? Colors.blue : Color(0xFFDB5B8B),
                       ),
                     ),
                   ],
@@ -129,6 +175,7 @@ class AppointmentConnectingCard extends ConsumerWidget {
                 children: [
                   MoreOptionsMenu(
                     options: [
+                      "Xem câu hỏi",
                       "Sửa lịch hẹn",
                       "Thay đổi bác sĩ",
                       "Thay đổi hình thức Tư vấn",
@@ -137,14 +184,35 @@ class AppointmentConnectingCard extends ConsumerWidget {
                     ],
                     onSelected: (value) {
                       switch (value) {
+                        case "Xem câu hỏi":
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: Text('Câu hỏi'),
+                                  backgroundColor: Colors.white,
+                                  content: Text(widget.question),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: Text('Đóng'),
+                                    ),
+                                  ],
+                                );
+                              });
                         case "Sửa lịch hẹn":
-                          EditDateAppointmentDialog(
-                            initialDate: DateTime(2025, 2, 5),
-                            selectedHour: "10:00",
+                          showEditDateAppointmentDialog(
+                            context,
+                            widget.appointment_id,
+                            widget.date,
+                            widget.time,
                           );
                           break;
                         case "Thay đổi hình thức Tư vấn":
-                          showChangeConsultationDialog(context);
+                          showChangeConsultationDialog(
+                              context, widget.appointment_id, widget.isOnline);
                           break;
                         case "Thay đổi bác sĩ":
                           showOptionDialogToChangeDoctor(
@@ -155,13 +223,18 @@ class AppointmentConnectingCard extends ConsumerWidget {
                               "ĐỒNG Ý");
                           break;
                         case "Thông tin bác sĩ":
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  DoctorDetail(doctorId: widget.doctor_id),
+                            ),
+                          );
+                          break;
                         case "Lịch sử thanh toán":
                           showPaymentHistoryDialog(
                             context,
-                            "MOMO",
-                            true,
-                            -99000,
-                            DateTime(2025, 2, 23, 14, 58),
+                            widget.appointment_id,
                           );
                         default:
                       }
@@ -175,7 +248,7 @@ class AppointmentConnectingCard extends ConsumerWidget {
                   width: screenWidth * 0.2,
                   child: CircleAvatar(
                     radius: screenWidth * 0.07,
-                    backgroundImage: AssetImage("assets/images/doctor.png"),
+                    backgroundImage: doctorProfile['avatar_url'],
                   ),
                 ),
               ),

@@ -1,35 +1,59 @@
+import 'dart:convert';
+
+import 'package:anyen_clinic/makeRequest.dart';
+import 'package:anyen_clinic/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-void showPaymentHistoryDialog(BuildContext context, String paymentMethod,
-    bool isSuccess, int money, DateTime time) {
+void showPaymentHistoryDialog(BuildContext context, String appointmentId) {
   showDialog(
     context: context,
     barrierDismissible: true,
     builder: (BuildContext context) {
-      return PaymentHistoryDialog(
-        paymentMethod: paymentMethod,
-        isSuccess: isSuccess,
-        money: money,
-        time: time,
-      );
+      return PaymentHistoryDialog(appointment_id: appointmentId);
     },
   );
 }
 
-class PaymentHistoryDialog extends StatelessWidget {
-  final String paymentMethod;
-  final bool isSuccess;
-  final int money;
-  final DateTime time;
+class PaymentHistoryDialog extends StatefulWidget {
+  final String appointment_id;
 
   const PaymentHistoryDialog({
     super.key,
-    required this.paymentMethod,
-    required this.isSuccess,
-    required this.money,
-    required this.time,
+    required this.appointment_id,
   });
+
+  @override
+  State<PaymentHistoryDialog> createState() => _PaymentHistoryDialogState();
+}
+
+class _PaymentHistoryDialogState extends State<PaymentHistoryDialog> {
+  Map<String, dynamic> payment = {};
+  Future<void> fetchPayment() async {
+    String appointmentId = widget.appointment_id;
+    final response = await makeRequest(
+        url: '$apiUrl/payment/get-payment',
+        method: 'GET',
+        body: {"appointment_id": appointmentId});
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        payment = data['data'];
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchPayment();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,24 +80,26 @@ class PaymentHistoryDialog extends StatelessWidget {
               const SizedBox(height: 16),
               _buildInfoRow(
                   "Hình thức thanh toán",
-                  paymentMethod,
+                  payment['payment_method'],
                   boldValue: true,
                   screenWidth),
               _buildInfoRow(
                 "Trạng thái",
-                isSuccess ? "Thành công" : "Thất bại",
+                payment['payment_status'] == 'Paid' ? "Thành công" : "Thất bại",
                 screenWidth,
-                colorValue: isSuccess ? Colors.green : Colors.red,
+                colorValue: payment['payment_status'] == 'Paid'
+                    ? Colors.green
+                    : Colors.red,
               ),
               _buildInfoRow(
                 "Số tiền",
-                "${money < 0 ? '' : '-'}${formatCurrency.format(money)} đ",
+                "${formatCurrency.format(payment['total_paid'])} đ",
                 screenWidth,
                 boldValue: true,
               ),
               _buildInfoRow(
                 "Thời gian",
-                formatDate.format(time),
+                formatDate.format(payment['paid_at']),
                 screenWidth,
                 boldValue: true,
               ),

@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:anyen_clinic/makeRequest.dart';
 import 'package:anyen_clinic/provider/FilterOptionProvider.dart';
 import 'package:anyen_clinic/appointment/widget/appointmentConnectedCard.dart';
 import 'package:anyen_clinic/dialog/option_dialog.dart';
+import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/BottomFilterBar_appointment.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,44 +19,30 @@ class ConnectedAppointmentScreen extends ConsumerStatefulWidget {
 
 class _ConnectedAppointmentScreenState
     extends ConsumerState<ConnectedAppointmentScreen> {
-  final List<Map<String, dynamic>> appointments = [
-    {
-      'isOnline': true,
-      'date': "05/03/2025",
-      'time': "9:00",
-      'status': "Đã hoàn thành"
-    },
-    {
-      'isOnline': false,
-      'date': "05/03/2025",
-      'time': "9:00",
-      'status': "Sắp tới"
-    },
-    {
-      'isOnline': true,
-      'date': "05/03/2025",
-      'time': "9:00",
-      'status': "Đã hoàn thành"
-    },
-    {
-      'isOnline': false,
-      'date': "05/03/2025",
-      'time': "9:00",
-      'status': "Sắp tới"
-    },
-    {
-      'isOnline': true,
-      'date': "05/03/2025",
-      'time': "9:00",
-      'status': "Đã hoàn thành"
-    },
-    {
-      'isOnline': false,
-      'date': "05/03/2025",
-      'time': "9:00",
-      'status': "Đã hoàn thành"
-    },
-  ];
+  List<Map<String, dynamic>> appointments = [];
+  Future<void> fetchAppointment() async {
+    final response = await makeRequest(
+      url: '$apiUrl/patient/get-all-appointments',
+      method: 'GET',
+    );
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        appointments = data['data'].where((appointment) {
+          return appointment['status'] == 'Confirmed' ||
+              appointment['status'] == 'Completed' ||
+              appointment['status'] == 'Canceled';
+        }).toList();
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -63,6 +52,17 @@ class _ConnectedAppointmentScreenState
       ref.read(isCancelProvider.notifier).reset();
       ref.read(isNewestProvider.notifier).reset();
     });
+    fetchAppointment();
+  }
+
+  String _getFormattedDate(String appointmentTime) {
+    DateTime dateTime = DateTime.parse(appointmentTime);
+    return "${dateTime.day}/${dateTime.month}/${dateTime.year}";
+  }
+
+  String _getFormattedTime(String appointmentTime) {
+    DateTime dateTime = DateTime.parse(appointmentTime);
+    return "${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}";
   }
 
   @override
@@ -80,8 +80,7 @@ class _ConnectedAppointmentScreenState
             direction: DismissDirection.endToStart,
             onDismissed: (direction) {
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content:
-                    Text('Lịch hẹn ${appointments[index]["date"]} đã được xoá'),
+                content: Text('Lịch hẹn đã được ẩn'),
                 duration: Duration(milliseconds: 500),
               ));
 
@@ -94,9 +93,9 @@ class _ConnectedAppointmentScreenState
               showOptionDialog(
                 context,
                 "Xác nhận",
-                "Bạn có chắc muốn xóa lịch hẹn ngày ${appointments[index]["date"]} không?",
+                "Bạn có chắc muốn ẩn lịch hẹn này không?",
                 "Huỷ",
-                "Xoá",
+                "Ẩn",
                 () {
                   completer.complete(true);
                 },
@@ -115,10 +114,13 @@ class _ConnectedAppointmentScreenState
               ),
             ),
             child: AppointmentConnectedCard(
-              isOnline: appointments[index]['isOnline'],
-              date: appointments[index]['date'],
-              time: appointments[index]['time'],
+              isOnline: appointments[index]['appointment_type'] == "Online",
+              date: _getFormattedDate(appointments[index]['appointment_time']),
+              time: _getFormattedTime(appointments[index]['appointment_time']),
               status: appointments[index]['status'],
+              question: appointments[index]['question'],
+              doctor_id: appointments[index]['doctor_id'],
+              appointment_id: appointments[index]['id'],
             ),
           );
         },

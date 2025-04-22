@@ -328,13 +328,13 @@ class _ChatScreenState extends State<ChatScreen> {
             onSelected: (String value) {
               switch (value) {
                 case "Lịch sử thanh toán":
-                  showPaymentHistoryDialog(
-                    context,
-                    "MOMO",
-                    true,
-                    -99000,
-                    DateTime(2025, 2, 23, 14, 58),
-                  );
+                  // showPaymentHistoryDialog(
+                  //   context,
+                  //   "MOMO",
+                  //   true,
+                  //   -99000,
+                  //   DateTime(2025, 2, 23, 14, 58),
+                  // );
                   break;
                 case "Xem thông tin bác sĩ":
                   // showDoctorInfoDialog(context);

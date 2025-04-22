@@ -3,21 +3,19 @@ import 'dart:convert';
 import 'package:anyen_clinic/doctor/listReview_doctor_screen.dart';
 import 'package:anyen_clinic/doctor/widget/reviewCard_widget.dart';
 import 'package:anyen_clinic/makeRequest.dart';
-import 'package:anyen_clinic/payment/payment_screen.dart';
 import 'package:anyen_clinic/storage.dart';
-import 'package:anyen_clinic/widget/consultationBottomBar.dart';
-import 'package:anyen_clinic/widget/sectionTitle.dart' show sectionTitle;
+import 'package:anyen_clinic/widget/sectionTitle.dart';
 import 'package:flutter/material.dart';
 
-class DoctorDetailScreen extends StatefulWidget {
+class DoctorDetail extends StatefulWidget {
   final String doctorId;
-  const DoctorDetailScreen({super.key, required this.doctorId});
+  const DoctorDetail({super.key, required this.doctorId});
 
   @override
-  State<DoctorDetailScreen> createState() => _DoctorDetailScreenState();
+  State<DoctorDetail> createState() => _DoctorDetailState();
 }
 
-class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
+class _DoctorDetailState extends State<DoctorDetail> {
   Map<String, dynamic> doctorProfile = {};
 
   Future<void> fetchDoctor() async {
@@ -252,16 +250,6 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
             ),
             SizedBox(height: screenHeight * 0.03),
           ],
-        ),
-      ),
-      bottomNavigationBar: ConsultationBottomBar(
-        screenHeight: screenHeight,
-        screenWidth: screenWidth,
-        content: "Chi phí tư vấn",
-        totalMoney: '${doctorProfile['price']}đ',
-        nameButton: "ĐẶT TƯ VẤN",
-        nextScreen: PaymentScreen(
-          doctorId: widget.doctorId,
         ),
       ),
     );

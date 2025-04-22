@@ -1,13 +1,20 @@
+import 'dart:convert';
+
+import 'package:anyen_clinic/appointment/appointment_screen.dart';
+import 'package:anyen_clinic/dialog/SuccessDialog.dart';
+import 'package:anyen_clinic/makeRequest.dart';
+import 'package:anyen_clinic/storage.dart';
 import 'package:flutter/material.dart';
 
-void showEditDateAppointmentDialog(
-    BuildContext context, DateTime initialDate, String selectedHour) {
+void showEditDateAppointmentDialog(BuildContext context, String appointmentId,
+    String selectedDate, String selectedHour) {
   showDialog(
     context: context,
     barrierDismissible: true,
     builder: (BuildContext context) {
       return EditDateAppointmentDialog(
-        initialDate: initialDate,
+        appointment_id: appointmentId,
+        selectedDate: selectedDate,
         selectedHour: selectedHour,
       );
     },
@@ -15,12 +22,13 @@ void showEditDateAppointmentDialog(
 }
 
 class EditDateAppointmentDialog extends StatefulWidget {
-  final DateTime initialDate;
+  final String appointment_id;
+  final String selectedDate;
   final String selectedHour;
-
   const EditDateAppointmentDialog({
     super.key,
-    required this.initialDate,
+    required this.appointment_id,
+    required this.selectedDate,
     required this.selectedHour,
   });
 
@@ -31,9 +39,13 @@ class EditDateAppointmentDialog extends StatefulWidget {
 
 class _EditDateAppointmentDialogState extends State<EditDateAppointmentDialog> {
   late List<DateTime> dates;
-  late int selectedDateIndex;
+  late int selectedDateIndex = 0;
   late int selectedTimeIndex;
 
+  late DateTime selectedDate;
+  late String selectedHour;
+
+  late DateTime initialDate;
   final List<String> times = [
     "9:00",
     "10:00",
@@ -45,13 +57,51 @@ class _EditDateAppointmentDialogState extends State<EditDateAppointmentDialog> {
 
   late ScrollController _scrollController;
 
+  Future<void> editTimeAppointment() async {
+    final parts = selectedHour.split(':');
+    final combinedDateTime = DateTime(
+      selectedDate.year,
+      selectedDate.month,
+      selectedDate.day,
+      int.parse(parts[0]),
+      int.parse(parts[1]),
+    );
+    final appointmentTime = combinedDateTime.toIso8601String();
+    try {
+      final response = await makeRequest(
+          url: '$apiUrl/patient/edit-appointment',
+          method: 'PATCH',
+          body: {
+            "appointment_id": widget.appointment_id,
+            "appoitment_time": appointmentTime,
+          });
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        showSuccessDialog(
+            context, AppointmentScreen(), "Thay đổi thành công", "QUay lại");
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data['mes'] ?? "Lỗi sửa lịch hẹn")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Đã xảy ra lỗi: $e")),
+      );
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController()..addListener(_loadMoreDates);
     _generateInitialDates();
-    selectedDateIndex = 0;
-    selectedTimeIndex = times.indexOf(widget.selectedHour);
+    selectedDate = DateTime.parse(widget.selectedDate);
+    selectedHour = widget.selectedHour;
+    initialDate = selectedDate;
+    selectedTimeIndex = times.indexOf(selectedHour);
   }
 
   @override
@@ -61,8 +111,7 @@ class _EditDateAppointmentDialogState extends State<EditDateAppointmentDialog> {
   }
 
   void _generateInitialDates() {
-    dates = List.generate(
-        7, (index) => widget.initialDate.add(Duration(days: index)));
+    dates = List.generate(7, (index) => initialDate.add(Duration(days: index)));
   }
 
   void _loadMoreDates() {
@@ -110,6 +159,7 @@ class _EditDateAppointmentDialogState extends State<EditDateAppointmentDialog> {
                     onTap: () {
                       setState(() {
                         selectedDateIndex = index;
+                        selectedDate = date;
                       });
                     },
                     child: Container(
@@ -160,6 +210,7 @@ class _EditDateAppointmentDialogState extends State<EditDateAppointmentDialog> {
                 onTap: () {
                   setState(() {
                     selectedTimeIndex = index;
+                    selectedHour = times[index];
                   });
                 },
                 child: Container(
@@ -200,9 +251,7 @@ class _EditDateAppointmentDialogState extends State<EditDateAppointmentDialog> {
                     style: TextStyle(fontSize: screenWidth * 0.04)),
               ),
               ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
+                onPressed: editTimeAppointment,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   foregroundColor: Colors.white,

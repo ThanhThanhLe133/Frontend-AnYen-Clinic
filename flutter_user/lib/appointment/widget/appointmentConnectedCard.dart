@@ -1,25 +1,68 @@
+import 'dart:convert';
 import 'dart:math';
 
+import 'package:anyen_clinic/appointment/details_doctor.dart';
 import 'package:anyen_clinic/dialog/ChangeConsultationDialog.dart';
 import 'package:anyen_clinic/dialog/PaymentHistory.dart';
+import 'package:anyen_clinic/makeRequest.dart';
+import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/buildMoreOption.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AppointmentConnectedCard extends ConsumerWidget {
+class AppointmentConnectedCard extends ConsumerStatefulWidget {
   const AppointmentConnectedCard(
       {super.key,
+      required this.question,
+      required this.doctor_id,
+      required this.appointment_id,
       required this.isOnline,
       required this.date,
-      this.status,
+      required this.status,
       required this.time});
   final bool isOnline;
   final String date;
   final String time;
-  final String? status;
+  final String status;
+  final String doctor_id;
+  final String appointment_id;
+  final String question;
+  @override
+  ConsumerState<AppointmentConnectedCard> createState() =>
+      AppointmentConnectedCardState();
+}
+
+class AppointmentConnectedCardState
+    extends ConsumerState<AppointmentConnectedCard> {
+  Map<String, dynamic> doctorProfile = {};
+  Future<void> fetchDoctor() async {
+    String doctorId = widget.doctor_id;
+    final response = await makeRequest(
+      url: '$apiUrl/get/get-doctor/?userId=$doctorId',
+      method: 'GET',
+    );
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        doctorProfile = data['data'];
+      });
+    }
+  }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void initState() {
+    super.initState();
+    fetchDoctor();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     return Container(
@@ -44,7 +87,7 @@ class AppointmentConnectedCard extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "BS.CKI Macus Horizon",
+                  doctorProfile['name'],
                   style: TextStyle(
                     fontSize: screenWidth * 0.045,
                     fontWeight: FontWeight.bold,
@@ -53,7 +96,7 @@ class AppointmentConnectedCard extends ConsumerWidget {
                 ),
                 SizedBox(height: screenWidth * 0.02),
                 Text(
-                  "Tâm lý - Nội tổng quát",
+                  doctorProfile["specialization"],
                   style: TextStyle(
                     fontSize: screenWidth * 0.04,
                     color: Colors.grey[400],
@@ -69,7 +112,7 @@ class AppointmentConnectedCard extends ConsumerWidget {
                             color: Colors.black, size: screenWidth * 0.05),
                         const SizedBox(width: 6),
                         Text(
-                          date,
+                          widget.date,
                           style: TextStyle(
                             fontSize: screenWidth * 0.035,
                             fontWeight: FontWeight.w400,
@@ -85,7 +128,7 @@ class AppointmentConnectedCard extends ConsumerWidget {
                             color: Colors.black, size: screenWidth * 0.05),
                         const SizedBox(width: 6),
                         Text(
-                          time,
+                          widget.time,
                           style: TextStyle(
                             fontSize: screenWidth * 0.035,
                             fontWeight: FontWeight.w400,
@@ -100,18 +143,20 @@ class AppointmentConnectedCard extends ConsumerWidget {
                 Row(
                   children: [
                     Icon(
-                        isOnline
+                        widget.isOnline
                             ? Icons.chat_rounded
                             : Icons.people_outline_rounded,
-                        color: isOnline ? Colors.blue : Color(0xFFDB5B8B),
+                        color:
+                            widget.isOnline ? Colors.blue : Color(0xFFDB5B8B),
                         size: screenWidth * 0.05),
                     const SizedBox(width: 6),
                     Text(
-                      isOnline ? "Tư vấn online" : "Tư vấn trực tiếp",
+                      widget.isOnline ? "Tư vấn online" : "Tư vấn trực tiếp",
                       style: TextStyle(
                         fontSize: screenWidth * 0.04,
                         fontWeight: FontWeight.w500,
-                        color: isOnline ? Colors.blue : Color(0xFFDB5B8B),
+                        color:
+                            widget.isOnline ? Colors.blue : Color(0xFFDB5B8B),
                       ),
                     ),
                   ],
@@ -127,49 +172,76 @@ class AppointmentConnectedCard extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  status != null && status!.isNotEmpty
-                      ? Container(
-                          width: screenWidth * 0.2,
-                          padding: EdgeInsets.symmetric(
-                              horizontal: screenWidth * 0.01,
-                              vertical: screenWidth * 0.01),
-                          decoration: BoxDecoration(
-                            color: status == "Đã hoàn thành"
-                                ? Color(0xFF19EA31)
-                                : status == "Đã huỷ"
-                                    ? Color(0xFF9BA5AC)
-                                    : Color(0xFF119CF0),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            textAlign: TextAlign.center,
-                            status!,
-                            style: TextStyle(
-                              fontSize: screenWidth * 0.02,
-                              color: Colors.white,
-                            ),
-                          ),
-                        )
-                      : SizedBox(),
+                  Container(
+                    width: screenWidth * 0.2,
+                    padding: EdgeInsets.symmetric(
+                        horizontal: screenWidth * 0.01,
+                        vertical: screenWidth * 0.01),
+                    decoration: BoxDecoration(
+                      color: widget.status == "Completed"
+                          ? Color(0xFF19EA31)
+                          : widget.status == "Canceled"
+                              ? Color(0xFF9BA5AC)
+                              : Color(0xFF119CF0),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      textAlign: TextAlign.center,
+                      widget.status == "Completed"
+                          ? "Đã hoàn thành"
+                          : widget.status == "Canceled"
+                              ? "Đã huỷ"
+                              : "Sắp tới",
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.02,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                   MoreOptionsMenu(
                     options: [
+                      "Xem câu hỏi",
                       "Thay đổi hình thức Tư vấn",
                       "Thông tin bác sĩ",
                       "Lịch sử thanh toán",
                     ],
                     onSelected: (value) {
                       switch (value) {
+                        case "Xem câu hỏi":
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: Text('Câu hỏi'),
+                                  backgroundColor: Colors.white,
+                                  content: Text(widget.question),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: Text('Đóng'),
+                                    ),
+                                  ],
+                                );
+                              });
                         case "Thay đổi hình thức Tư vấn":
-                          showChangeConsultationDialog(context);
+                          showChangeConsultationDialog(
+                              context, widget.appointment_id, widget.isOnline);
                           break;
-                        case 3:
+                        case "Thông tin bác sĩ":
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  DoctorDetail(doctorId: widget.doctor_id),
+                            ),
+                          );
+                          break;
                         case "Lịch sử thanh toán":
                           showPaymentHistoryDialog(
                             context,
-                            "MOMO",
-                            true,
-                            -99000,
-                            DateTime(2025, 2, 23, 14, 58),
+                            widget.appointment_id,
                           );
                         default:
                       }
