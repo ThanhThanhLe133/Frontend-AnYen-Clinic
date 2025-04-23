@@ -10,7 +10,7 @@
 
 
     <application
-        android:label="anyen_clinic"
+        android:label="An Yên Doctor"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:requestLegacyExternalStorage="true">

@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:ayclinic_doctor_admin/makeRequest.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:ayclinic_doctor_admin/widget/LabelMedicalRecord.dart';
-import 'package:ayclinic_doctor_admin/widget/MedicalRecord.dart';
 import 'package:ayclinic_doctor_admin/widget/infoWidget.dart';
 import 'package:ayclinic_doctor_admin/widget/sectionTitle.dart';
 import 'package:flutter/material.dart';

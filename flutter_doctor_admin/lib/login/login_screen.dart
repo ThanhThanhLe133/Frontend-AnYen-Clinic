@@ -10,7 +10,6 @@ import 'package:ayclinic_doctor_admin/widget/normalButton.dart';
 import 'package:ayclinic_doctor_admin/widget/phoneCode_drop_down/country_code_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
@@ -51,25 +50,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ref.read(phoneNumberProvider.notifier).state = phoneNumber;
     ref.read(passwordProvider.notifier).state = password;
     try {
-      final response = await http.post(
-        Uri.parse('$apiUrl/otp/send-otp'),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"phone_number": phoneNumber}),
+      // final response = await http.post(
+      //   Uri.parse('$apiUrl/otp/send-otp'),
+      //   headers: {"Content-Type": "application/json"},
+      //   body: json.encode({"phone_number": phoneNumber}),
+      // );
+      // debugPrint("🌐 API URL: $phoneNumber");
+      // debugPrint("📦 Status code: ${response.statusCode}");
+      // debugPrint("🧾 Body: ${response.body}");
+      // final responseData = jsonDecode(response.body);
+
+      // if (response.statusCode == 200) {
+
+      // } else {
+      //   debugPrint("⚠️ Error message from API: ${responseData['message']}");
+      //   throw Exception(responseData['message'] ?? "Lỗi đăng nhập");
+      // }
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => OTPVerificationScreen(source: "login"),
+        ),
       );
-
-      final responseData = jsonDecode(response.body);
-
-      if (response.statusCode == 200) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => OTPVerificationScreen(source: "login"),
-          ),
-        );
-      } else {
-        debugPrint("⚠️ Error message from API: ${responseData['message']}");
-        throw Exception(responseData["message"] ?? "Lỗi đăng nhập");
-      }
     } catch (e) {
       debugPrint("❌ Exception caught: ${e.toString()}");
       ScaffoldMessenger.of(

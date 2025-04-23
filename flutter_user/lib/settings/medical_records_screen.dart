@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:anyen_clinic/dialog/SuccessDialog.dart';
 import 'package:anyen_clinic/dialog/option_dialog.dart';
 import 'package:anyen_clinic/makeRequest.dart';
-import 'package:anyen_clinic/settings/account_screen.dart';
 import 'package:anyen_clinic/settings/edit_account_screen.dart';
 import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/CustomBackButton.dart';

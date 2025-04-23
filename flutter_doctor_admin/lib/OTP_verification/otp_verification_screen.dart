@@ -4,14 +4,12 @@ import 'package:ayclinic_doctor_admin/ADMIN/dashboard_admin/dashboard.dart';
 import 'package:ayclinic_doctor_admin/Provider/otp_provider.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/dashboard_doctor/dashboard.dart';
 import 'package:ayclinic_doctor_admin/dialog/SuccessDialog.dart';
-import 'package:ayclinic_doctor_admin/dialog/SuccessScreen.dart';
 import 'package:ayclinic_doctor_admin/forgotPass/forgot_pass_screen.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:ayclinic_doctor_admin/Provider/UserProvider.dart';
 import 'package:ayclinic_doctor_admin/widget/normalButton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';

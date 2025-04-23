@@ -5,7 +5,6 @@ import 'package:ayclinic_doctor_admin/makeRequest.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:ayclinic_doctor_admin/widget/PatientCardInList.dart';
-import 'package:flutter/material.dart';
 
 class PatientListScreen extends StatefulWidget {
   const PatientListScreen({super.key});

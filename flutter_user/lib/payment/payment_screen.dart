@@ -5,13 +5,12 @@ import 'package:anyen_clinic/appointment/appointment_screen.dart';
 import 'package:anyen_clinic/dialog/SuccessDialog.dart';
 import 'package:anyen_clinic/makeRequest.dart';
 import 'package:anyen_clinic/payment/PaymentOptionWidget.dart';
-import 'package:anyen_clinic/settings/account_screen.dart';
 import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/CustomBackButton.dart';
 import 'package:anyen_clinic/widget/DoctorCard.dart';
 import 'package:anyen_clinic/widget/consultationBottomBar.dart';
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
-import 'package:uni_links/uni_links.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class PaymentScreen extends StatefulWidget {
@@ -43,6 +42,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     "16:00"
   ];
   StreamSubscription? _linkSub;
+  final AppLinks _appLinks = AppLinks();
   late ScrollController _scrollController;
 
   void _generateInitialDates() {
@@ -159,7 +159,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     selectedDateIndex = 0;
     selectedTimeIndex = times.indexOf(selectedHour);
 
-    _linkSub = uriLinkStream.listen((Uri? uri) {
+    _linkSub = _appLinks.uriLinkStream.listen((Uri? uri) {
       if (uri != null && uri.scheme == 'myapp') {
         final orderId = uri.queryParameters['orderId'];
         if (orderId != null) {

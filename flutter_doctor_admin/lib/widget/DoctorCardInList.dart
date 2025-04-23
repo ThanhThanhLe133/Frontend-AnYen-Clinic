@@ -1,4 +1,3 @@
-import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/details_doctor_screen.dart';
 import 'package:flutter/material.dart';
 
 class DoctorCardInList extends StatelessWidget {

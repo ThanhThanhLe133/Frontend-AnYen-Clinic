@@ -1,4 +1,3 @@
-import 'package:anyen_clinic/dialog/PaymentHistory.dart';
 import 'package:anyen_clinic/dialog/Prescription.dart';
 import 'package:anyen_clinic/review/review_doctor_screen.dart';
 import 'package:anyen_clinic/widget/buildMoreOption.dart';
@@ -176,14 +175,14 @@ class MessageConnectedCard extends StatelessWidget {
                           break;
                         case "Thông tin bác sĩ":
                           break;
-                        case "Lịch sử thanh toán":
-                          showPaymentHistoryDialog(
-                            context,
-                            "MOMO",
-                            true,
-                            -99000,
-                            DateTime(2025, 2, 23, 14, 58),
-                          );
+                        // case "Lịch sử thanh toán":
+                        //   showPaymentHistoryDialog(
+                        //     context,
+                        //     "MOMO",
+                        //     true,
+                        //     -99000,
+                        //     DateTime(2025, 2, 23, 14, 58),
+                        //   );
                         default:
                       }
                     },

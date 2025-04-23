@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:anyen_clinic/dialog/PaymentHistory.dart';
 import 'package:anyen_clinic/widget/buildMoreOption.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -133,14 +132,14 @@ class MessageConnectingCard extends ConsumerWidget {
                       switch (value) {
                         case "Thông tin bác sĩ":
                           break;
-                        case "Lịch sử thanh toán":
-                          showPaymentHistoryDialog(
-                            context,
-                            "MOMO",
-                            true,
-                            -99000,
-                            DateTime(2025, 2, 23, 14, 58),
-                          );
+                        // case "Lịch sử thanh toán":
+                        //   showPaymentHistoryDialog(
+                        //     context,
+                        //     "MOMO",
+                        //     true,
+                        //     -99000,
+                        //     DateTime(2025, 2, 23, 14, 58),
+                        //   );
                         default:
                       }
                     },

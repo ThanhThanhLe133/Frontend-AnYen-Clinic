@@ -4,7 +4,6 @@ import 'package:anyen_clinic/doctor/details_doctor_screen.dart';
 import 'package:anyen_clinic/makeRequest.dart';
 import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/DoctorCardInList.dart';
-import 'package:anyen_clinic/widget/menu.dart';
 import 'package:flutter/material.dart';
 
 class DoctorListScreen extends StatefulWidget {

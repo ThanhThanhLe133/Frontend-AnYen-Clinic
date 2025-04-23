@@ -108,8 +108,9 @@ class _PsychologicalTestScreenState extends State<PsychologicalTestScreen> {
 
   // Hàm xử lý hoàn thành
   void completeTest() {
-    if (selectedAnswerIndex == -1)
+    if (selectedAnswerIndex == -1) {
       return; // Chưa chọn câu trả lời cuối thì chưa hoàn thành
+    }
     // Có thể lưu kết quả hoặc làm gì đó khi hoàn thành bài kiểm tra
     showDialog(
       context: context,

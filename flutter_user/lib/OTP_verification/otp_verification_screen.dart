@@ -144,7 +144,7 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
       );
 
       final responseData = jsonDecode(response.body);
-
+      debugPrint("⚠️ Error message from API: $responseData");
       if (response.statusCode == 200) {
         await saveAfterLogin(responseData);
 
@@ -208,6 +208,8 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
         }),
       );
       final responseData = jsonDecode(response.body);
+
+      debugPrint("⚠️ Error message from API: $responseData");
       if (response.statusCode == 200) {
         if (widget.source == "register") {
           await callRegisterAPI(phoneNumber, password);

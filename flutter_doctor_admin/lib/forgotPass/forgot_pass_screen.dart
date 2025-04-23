@@ -7,7 +7,6 @@ import 'package:ayclinic_doctor_admin/widget/inputPhoneNumber.dart';
 import 'package:ayclinic_doctor_admin/widget/normalButton.dart';
 import 'package:ayclinic_doctor_admin/widget/phoneCode_drop_down/country_code_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 

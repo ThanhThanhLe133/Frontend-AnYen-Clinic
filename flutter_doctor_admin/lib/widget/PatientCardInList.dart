@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ayclinic_doctor_admin/ADMIN/patient/patient_detail_screen.dart';
 
 class PatientCardInList extends StatelessWidget {
   final double screenWidth;
