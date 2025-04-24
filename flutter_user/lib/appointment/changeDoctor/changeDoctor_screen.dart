@@ -1,8 +1,12 @@
-import 'package:anyen_clinic/doctor/list_doctor_screen.dart';
+import 'package:anyen_clinic/appointment/changeDoctor/Doctor_List.dart';
 import 'package:flutter/material.dart';
 
 class ChangeDoctorScreen extends StatelessWidget {
-  const ChangeDoctorScreen({super.key});
+  const ChangeDoctorScreen({
+    super.key,
+    required this.doctorId,
+  });
+  final String doctorId;
 
   @override
   Widget build(BuildContext context) {
@@ -10,7 +14,8 @@ class ChangeDoctorScreen extends StatelessWidget {
     double screenHeight = MediaQuery.of(context).size.width;
     bool isSelected = true;
     return StatefulBuilder(builder: (context, setState) {
-      return Scaffold(backgroundColor: Colors.white, body: DoctorListScreen());
+      return Scaffold(
+          backgroundColor: Colors.white, body: DoctorList(doctorId: doctorId));
     });
   }
 }

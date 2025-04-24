@@ -2,11 +2,12 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:anyen_clinic/appointment/details_doctor.dart';
-import 'package:anyen_clinic/appointment/widget/DialogToChangeDoctor.dart';
+import 'package:anyen_clinic/appointment/changeDoctor/DialogToChangeDoctor.dart';
 import 'package:anyen_clinic/dialog/ChangeConsultationDialog.dart';
 import 'package:anyen_clinic/dialog/EditDateAppointmentDialog.dart';
 import 'package:anyen_clinic/dialog/PaymentHistory.dart';
 import 'package:anyen_clinic/makeRequest.dart';
+import 'package:anyen_clinic/provider/patient_provider.dart';
 import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/buildMoreOption.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +18,7 @@ class AppointmentConnectingCard extends ConsumerStatefulWidget {
       {super.key,
       required this.question,
       required this.doctor_id,
+      required this.total_paid,
       required this.appointment_id,
       required this.isOnline,
       required this.date,
@@ -26,6 +28,7 @@ class AppointmentConnectingCard extends ConsumerStatefulWidget {
   final String time;
   final String doctor_id;
   final String appointment_id;
+  final String total_paid;
   final String question;
 
   @override
@@ -59,6 +62,7 @@ class AppointmentConnectingCardState
   @override
   void initState() {
     super.initState();
+    ref.read(doctorIdProvider.notifier).state = widget.doctor_id;
     fetchDoctor();
   }
 
@@ -97,7 +101,7 @@ class AppointmentConnectingCardState
                 ),
                 SizedBox(height: screenWidth * 0.02),
                 Text(
-                  doctorProfile["specialization"],
+                  doctorProfile['specialization'],
                   style: TextStyle(
                     fontSize: screenWidth * 0.04,
                     color: Colors.grey[400],
@@ -217,6 +221,9 @@ class AppointmentConnectingCardState
                         case "Thay đổi bác sĩ":
                           showOptionDialogToChangeDoctor(
                               context,
+                              widget.appointment_id,
+                              widget.doctor_id,
+                              widget.total_paid,
                               "Thay đổi bác sĩ",
                               "Bạn có chắc chắn muốn thay đổi bác sĩ tư vấn?",
                               "HUỶ",

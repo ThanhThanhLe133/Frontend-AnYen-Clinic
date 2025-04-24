@@ -116,6 +116,7 @@ class _ConnectingAppointmentScreenState
             },
             movementDuration: Duration(milliseconds: 100),
             child: AppointmentConnectingCard(
+              total_paid: appointments[index]['total_paid'],
               question: appointments[index]['question'],
               doctor_id: appointments[index]['doctor_id'],
               appointment_id: appointments[index]['id'],

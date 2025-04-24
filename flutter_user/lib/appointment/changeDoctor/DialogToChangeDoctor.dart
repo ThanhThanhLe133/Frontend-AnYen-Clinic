@@ -1,8 +1,18 @@
-import 'package:anyen_clinic/appointment/changeDoctor_screen.dart';
+import 'package:anyen_clinic/appointment/changeDoctor/changeDoctor_screen.dart';
+import 'package:anyen_clinic/appointment/changeDoctor/editDoctor_screen.dart';
+import 'package:anyen_clinic/provider/patient_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as ref;
 
-void showOptionDialogToChangeDoctor(BuildContext context, String title,
-    String content, String cancel, String confirm) {
+void showOptionDialogToChangeDoctor(
+    BuildContext context,
+    String appointmentId,
+    String doctorId,
+    String totalPaid,
+    String title,
+    String content,
+    String cancel,
+    String confirm) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -61,7 +71,10 @@ void showOptionDialogToChangeDoctor(BuildContext context, String title,
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => ChangeDoctorScreen()),
+                              builder: (context) => EditDoctorScreen(
+                                  doctorId: doctorId,
+                                  totalPaid: totalPaid,
+                                  appointmentId: appointmentId)),
                         );
                       },
                       child: Text(

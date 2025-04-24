@@ -1,13 +1,14 @@
-import 'package:anyen_clinic/dashboard/dashboard.dart';
 import 'package:anyen_clinic/login/login_screen.dart';
 import 'package:anyen_clinic/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: "assets/config/.env");
+
   final bool isLoggedIn = await getLogin();
   runApp(ProviderScope(child: MainApp(isLoggedIn: isLoggedIn)));
 }
@@ -28,7 +29,7 @@ class MainApp extends StatelessWidget {
           bodySmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
         ),
       ),
-      home: Dashboard(),
+      home: LoginScreen(),
     );
   }
 }
