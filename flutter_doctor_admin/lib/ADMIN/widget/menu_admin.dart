@@ -12,6 +12,7 @@ import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/doctor_list_screen.dar
 import '../manage_doctor/listReview_doctor_screen.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/psychological_test/psychological_test_home_screen.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/patient/patient_list_screen.dart';
+// import 'package:ayclinic_doctor_admin/ADMIN/admin_review/admin_review_list.dart';
 
 final menuOpenProvider = StateProvider<bool>((ref) => false);
 
@@ -73,6 +74,7 @@ class _MenuAdminState extends ConsumerState<MenuAdmin> {
           PsychologicalTestHomeScreen(),
         ),
         buildMenuItem(Icons.list, "Danh sách bệnh nhân", PatientListScreen()),
+        // buildMenuItem(Icons.list, "Danh sách đánh giá", AdminReviewList()),
 
         // buildMenuItem(Icons.support_agent, "Liên hệ CSKH", ChatScreen()),
       ],
