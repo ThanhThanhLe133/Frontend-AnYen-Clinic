@@ -3,8 +3,13 @@ import 'dart:convert';
 import 'package:anyen_clinic/doctor/details_doctor_screen.dart';
 import 'package:anyen_clinic/makeRequest.dart';
 import 'package:anyen_clinic/storage.dart';
+import 'package:anyen_clinic/widget/CustomBackButton.dart';
 import 'package:anyen_clinic/widget/DoctorCardInList.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/http.dart' as https;
+import 'package:http/src/response.dart';
 
 class DoctorListScreen extends StatefulWidget {
   const DoctorListScreen({super.key});
@@ -26,6 +31,7 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
       url: '$apiUrl/get/get-all-doctors',
       method: 'GET',
     );
+
     if (response.statusCode != 200) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -35,7 +41,7 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
     } else {
       final data = jsonDecode(response.body);
       setState(() {
-        doctors = data['data'];
+        doctors = List<Map<String, dynamic>>.from(data['data']);
       });
     }
   }
@@ -43,10 +49,11 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
   @override
   void initState() {
     super.initState();
-    fetchDoctors();
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
-    _loadMoreDoctors(); // Load dữ liệu ban đầu
+    fetchDoctors().then((_) {
+      _loadMoreDoctors();
+    });
   }
 
   @override
@@ -100,13 +107,7 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.chevron_left, color: Color(0xFF9BA5AC)),
-          iconSize: screenWidth * 0.08,
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+        leading: CustomBackButton(),
         title: Text(
           "Danh sách bác sĩ",
           style: TextStyle(
@@ -133,28 +134,23 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
           itemCount: _displayedDoctors.length + (_isLoading ? 1 : 0),
           itemBuilder: (context, index) {
             if (index == _displayedDoctors.length) {
-              return Center(child: CircularProgressIndicator());
+              return Center(
+                child: SpinKitWaveSpinner(
+                  color: const Color.fromARGB(
+                      255, 72, 166, 243), // Bạn đổi màu tùy ý
+                  size: 50.0, // Size cũng chỉnh theo ý
+                ),
+              );
             }
-            return GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => DoctorDetailScreen(
-                      doctorId: _displayedDoctors[index]['doctorId']!,
-                    ),
-                  ),
-                );
-              },
-              child: DoctorCardInList(
-                screenWidth: screenWidth,
-                screenHeight: screenHeight,
-                name: _displayedDoctors[index]['name']!,
-                specialty: _displayedDoctors[index]['specialization']!,
-                percentage: 100,
-                workplace: _displayedDoctors[index]['workplace']!,
-                imageUrl: _displayedDoctors[index]['avatar_url']!,
-              ),
+            return DoctorCardInList(
+              screenWidth: screenWidth,
+              screenHeight: screenHeight,
+              name: _displayedDoctors[index]['name']!,
+              specialty: _displayedDoctors[index]['specialization']!,
+              percentage: 100,
+              workplace: _displayedDoctors[index]['workplace']!,
+              imageUrl: _displayedDoctors[index]['avatar_url']!,
+              doctorId: _displayedDoctors[index]['doctorId'],
             );
           },
         ),

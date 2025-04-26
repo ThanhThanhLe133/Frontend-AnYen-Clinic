@@ -4,7 +4,6 @@ import 'package:anyen_clinic/appointment/changeDoctor/editDoctor_screen.dart';
 import 'package:anyen_clinic/doctor/listReview_doctor_screen.dart';
 import 'package:anyen_clinic/doctor/widget/reviewCard_widget.dart';
 import 'package:anyen_clinic/makeRequest.dart';
-import 'package:anyen_clinic/payment/payment_screen.dart';
 import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/consultationBottomBar.dart';
 import 'package:anyen_clinic/widget/sectionTitle.dart' show sectionTitle;

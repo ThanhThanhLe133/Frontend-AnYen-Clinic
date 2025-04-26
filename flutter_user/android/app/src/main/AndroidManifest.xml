@@ -38,7 +38,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                   <!-- Scheme: myapp://payment-success -->
-            <data
+                <data
                 android:scheme="myapp"
                 android:host="payment-success" />
             </intent-filter>

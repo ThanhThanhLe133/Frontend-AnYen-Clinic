@@ -1,8 +1,5 @@
-import 'dart:convert';
-
 import 'package:ayclinic_doctor_admin/OTP_verification/otp_verification_screen.dart';
 import 'package:ayclinic_doctor_admin/forgotPass/forgot_pass_screen.dart';
-import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:ayclinic_doctor_admin/Provider/UserProvider.dart';
 import 'package:ayclinic_doctor_admin/widget/buildPasswordField.dart';
 import 'package:ayclinic_doctor_admin/widget/inputPhoneNumber.dart';
@@ -11,7 +8,6 @@ import 'package:ayclinic_doctor_admin/widget/phoneCode_drop_down/country_code_pr
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});

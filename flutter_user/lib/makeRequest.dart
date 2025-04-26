@@ -12,10 +12,10 @@ Future<http.Response> makeRequest({
   File? file,
   String? fileFieldName,
 }) async {
-  String? refreshToken =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjkxYjcwZDMzLTI4OWEtNDU2MS1iMTIxLTI3MWYzY2M3YmNhZSIsImlhdCI6MTc0NTM5NDc2OSwiZXhwIjoxNzQ1OTk5NTY5fQ.zDlpXRIfUjFqcQ9a15CsDIgqpQi7UhfPv1HO6dRl1W8";
   String? accessToken =
-      "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjkxYjcwZDMzLTI4OWEtNDU2MS1iMTIxLTI3MWYzY2M3YmNhZSIsInBob25lX251bWJlciI6Iis4NDM5NzgxMzM5OCIsInJvbGVzIjpbInBhdGllbnQiLCJhZG1pbiJdLCJpYXQiOjE3NDUzOTgwNzAsImV4cCI6MTc0NTQwMTY3MH0.rZNXoW8DbM14olE3ZnP-PUJY6-vui6ESvyZZqfBFGmw";
+      "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjkxYjcwZDMzLTI4OWEtNDU2MS1iMTIxLTI3MWYzY2M3YmNhZSIsInBob25lX251bWJlciI6Iis4NDM5NzgxMzM5OCIsInJvbGVzIjpbInBhdGllbnQiLCJhZG1pbiJdLCJpYXQiOjE3NDU2ODA3MTIsImV4cCI6MTc0NTY4NDMxMn0.yrRKoeEWWCx3rK806XnTlntkeNROLlp2DuHlAlCRkgo";
+  String? refreshToken =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjkxYjcwZDMzLTI4OWEtNDU2MS1iMTIxLTI3MWYzY2M3YmNhZSIsImlhdCI6MTc0NTY4MDcxMiwiZXhwIjoxNzQ2Mjg1NTEyfQ.OvayhKDjbRQ6rUDTR3hKvZtl1E9Gz5YGXHxmXcfj0JE";
 
   Map<String, String> requestHeaders = headers ?? {};
 
@@ -41,7 +41,9 @@ Future<http.Response> makeRequest({
 
       switch (method.toUpperCase()) {
         case 'GET':
-          return await http.get(uri, headers: requestHeaders);
+          debugPrint('Got response!');
+          return await http.get(uri);
+
         case 'POST':
           return await http.post(
             uri,
@@ -61,6 +63,7 @@ Future<http.Response> makeRequest({
             body: body != null ? json.encode(body) : null,
           );
         default:
+          debugPrint('Got response!');
           throw Exception('Unsupported method');
       }
     }

@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:anyen_clinic/appointment/details_doctor.dart';
 import 'package:anyen_clinic/appointment/changeDoctor/details_doctor_change.dart';
 import 'package:anyen_clinic/makeRequest.dart';
 import 'package:anyen_clinic/storage.dart';
@@ -153,6 +152,7 @@ class _DoctorListState extends State<DoctorList> {
                 );
               },
               child: DoctorCardInList(
+                doctorId: _displayedDoctors[index]['doctorId'],
                 screenWidth: screenWidth,
                 screenHeight: screenHeight,
                 name: _displayedDoctors[index]['name']!,
