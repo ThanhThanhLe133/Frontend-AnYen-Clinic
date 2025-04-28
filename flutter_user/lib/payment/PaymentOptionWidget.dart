@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 class PaymentOptionWidget extends StatelessWidget {
   final String text;
   final bool isMoMo;
-  final bool isSelected;
+  final String value;
+  final String selectedPayment;
   final VoidCallback onTap;
   final double screenWidth;
 
@@ -11,7 +12,8 @@ class PaymentOptionWidget extends StatelessWidget {
     super.key,
     required this.text,
     required this.isMoMo,
-    required this.isSelected,
+    required this.value,
+    required this.selectedPayment,
     required this.onTap,
     required this.screenWidth,
   });
@@ -27,9 +29,9 @@ class PaymentOptionWidget extends StatelessWidget {
           children: [
             Transform.scale(
               scale: screenWidth / 500,
-              child: Radio(
-                value: true,
-                groupValue: isSelected,
+              child: Radio<String>(
+                value: value,
+                groupValue: selectedPayment,
                 onChanged: (_) => onTap(),
                 activeColor: Colors.blue,
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,

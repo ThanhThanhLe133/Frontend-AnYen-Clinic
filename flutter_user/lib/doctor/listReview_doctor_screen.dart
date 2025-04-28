@@ -1,12 +1,74 @@
+import 'dart:convert';
+
+import 'package:anyen_clinic/appointment/changeDoctor/details_doctor_change.dart';
 import 'package:anyen_clinic/doctor/widget/buttonReview_widget.dart';
 import 'package:anyen_clinic/doctor/widget/infoTitle_widget.dart';
 import 'package:anyen_clinic/dialog/option_dialog.dart';
+import 'package:anyen_clinic/makeRequest.dart';
+import 'package:anyen_clinic/review/ReviewList.dart';
+import 'package:anyen_clinic/storage.dart';
 
 import 'package:anyen_clinic/widget/sectionTitle.dart' show sectionTitle;
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
-class ListReviewDoctorScreen extends StatelessWidget {
-  const ListReviewDoctorScreen({super.key});
+class ListReviewDoctorScreen extends StatefulWidget {
+  final String doctorId;
+  const ListReviewDoctorScreen({super.key, required this.doctorId});
+
+  @override
+  State<ListReviewDoctorScreen> createState() => _ListReviewDoctorScreenState();
+}
+
+class _ListReviewDoctorScreenState extends State<ListReviewDoctorScreen> {
+  Map<String, dynamic> doctorProfile = {};
+  List<Map<String, dynamic>> reviews = [];
+  Future<void> fetchDoctor() async {
+    String doctorId = widget.doctorId;
+    final response = await makeRequest(
+      url: '$apiUrl/get/get-doctor/?userId=$doctorId',
+      method: 'GET',
+    );
+    if (response.statusCode != 200) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        doctorProfile = data['data'];
+      });
+    }
+  }
+
+  Future<void> fetchReview() async {
+    String doctorId = widget.doctorId;
+    final response = await makeRequest(
+      url: '$apiUrl/get/get-all-reviews/?doctorId=$doctorId',
+      method: 'GET',
+    );
+    if (response.statusCode != 200) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        reviews = List<Map<String, dynamic>>.from(data['data']);
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await fetchDoctor();
+      await fetchReview();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,187 +104,194 @@ class ListReviewDoctorScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(
-            horizontal: screenWidth * 0.06, vertical: screenHeight * 0.01),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: double.infinity,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      body: doctorProfile.isEmpty
+          ? Center(
+              child: SpinKitWaveSpinner(
+                color: Colors.blue, // Bạn đổi màu tùy ý
+                size: 75.0, // Size cũng chỉnh theo ý
+              ),
+            )
+          : SingleChildScrollView(
+              padding: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.06,
+                  vertical: screenHeight * 0.01),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  CircleAvatar(
-                    radius: screenWidth * 0.11,
-                    backgroundImage:
-                        NetworkImage('https://i.imgur.com/Y6W5JhB.png'),
-                  ),
-                  SizedBox(width: screenWidth * 0.05),
-                  Expanded(
-                    child: Column(
+                  SizedBox(
+                    width: double.infinity,
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'BS.CKI Macus Horizon',
-                          style: TextStyle(
-                              fontSize: screenWidth * 0.05,
-                              fontWeight: FontWeight.bold),
+                        CircleAvatar(
+                          radius: screenWidth * 0.11,
+                          backgroundImage:
+                              NetworkImage(doctorProfile['avatar_url']),
                         ),
-                        Text(
-                          'Tâm lý - Nội tổng quát',
-                          softWrap: true,
-                          maxLines: null,
-                          style: TextStyle(
-                              fontSize: screenWidth * 0.035,
-                              color: Colors.grey),
-                        ),
-                        Text(
-                          'Bệnh viện ĐH Y Dược HCM Bệnh viện ĐH Y Dược HCM ',
-                          softWrap: true,
-                          maxLines: null,
-                          style: TextStyle(
-                              fontSize: screenWidth * 0.035,
-                              color: Colors.grey),
+                        SizedBox(width: screenWidth * 0.05),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                doctorProfile['name'],
+                                style: TextStyle(
+                                    fontSize: screenWidth * 0.05,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                'Chuyên khoa: ${doctorProfile["specialization"]}',
+                                softWrap: true,
+                                maxLines: null,
+                                style: TextStyle(
+                                    fontSize: screenWidth * 0.035,
+                                    color: Colors.grey),
+                              ),
+                              Text(
+                                doctorProfile['workplace'],
+                                softWrap: true,
+                                maxLines: null,
+                                style: TextStyle(
+                                    fontSize: screenWidth * 0.035,
+                                    color: Colors.grey),
+                              ),
+                              Text(
+                                doctorProfile['infoStatus'],
+                                softWrap: true,
+                                maxLines: null,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    fontSize: screenWidth * 0.04,
+                                    color: Colors.blue,
+                                    fontStyle: FontStyle.italic),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
                   ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(
-                  horizontal: screenWidth * 0.01,
-                  vertical: screenHeight * 0.02),
-              child: Text(
-                '"Sẵn sàng lắng nghe, thấu hiểu và chia sẻ"',
-                softWrap: true,
-                maxLines: null,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: screenWidth * 0.04,
-                    color: Colors.blue,
-                    fontStyle: FontStyle.italic),
-              ),
-            ),
-            Container(
-              width: screenWidth * 0.9,
-              padding: EdgeInsets.all(screenWidth * 0.02),
-              margin: EdgeInsets.all(screenWidth * 0.02),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color:
-                        Colors.black.withOpacity(0.1), // Bóng đậm hơn một chút
-                    blurRadius: 7, // Mở rộng bóng ra xung quanh
-                    spreadRadius: 1, // Kéo dài bóng theo mọi hướng
-                    offset: Offset(0, 0), // Không dịch chuyển, bóng tỏa đều
+                  SizedBox(
+                    height: screenHeight * 0.01,
                   ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  infoTitle(
-                      title: 'Lượt tư vấn',
-                      value: '100+',
-                      icon: Icons.people,
-                      screenHeight: screenHeight,
-                      screenWidth: screenWidth),
                   Container(
-                    width: 1,
-                    height: screenHeight * 0.06,
-                    color: Colors.black.withOpacity(0.25),
+                    width: screenWidth * 0.9,
+                    padding: EdgeInsets.all(screenWidth * 0.02),
+                    margin: EdgeInsets.all(screenWidth * 0.02),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black
+                              .withOpacity(0.1), // Bóng đậm hơn một chút
+                          blurRadius: 7, // Mở rộng bóng ra xung quanh
+                          spreadRadius: 1, // Kéo dài bóng theo mọi hướng
+                          offset:
+                              Offset(0, 0), // Không dịch chuyển, bóng tỏa đều
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        infoTitle(
+                            title: "Lượt tư vấn",
+                            value: '${doctorProfile['appointment_count']}+',
+                            icon: Icons.people,
+                            screenHeight: screenHeight,
+                            screenWidth: screenWidth),
+                        Container(
+                          width: 1,
+                          height: screenHeight * 0.06,
+                          color: Colors.black.withOpacity(0.25),
+                        ),
+                        infoTitle(
+                            title: "Kinh nghiệm",
+                            value: '${doctorProfile['yearExperience']} năm',
+                            icon: Icons.history,
+                            screenHeight: screenHeight,
+                            screenWidth: screenWidth),
+                        Container(
+                          width: 1,
+                          height: screenHeight * 0.06,
+                          color: Colors.black.withOpacity(0.25),
+                        ),
+                        infoTitle(
+                            title: 'Hài lòng',
+                            value: '${doctorProfile['averageSatisfaction']}%',
+                            icon: Icons.thumb_up,
+                            screenHeight: screenHeight,
+                            screenWidth: screenWidth),
+                      ],
+                    ),
                   ),
-                  infoTitle(
-                      title: 'Kinh nghiệm',
-                      value: '9 Năm',
-                      icon: Icons.history,
+                  SizedBox(height: screenHeight * 0.01),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Tỷ lệ hài lòng: ',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: screenWidth * 0.04)),
+                      Text('${doctorProfile['averageSatisfaction']}%',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: screenWidth * 0.055,
+                              color: Colors.blue)),
+                      Text('/${reviews.length} lượt đánh giá',
+                          style: TextStyle(fontSize: screenWidth * 0.04)),
+                    ],
+                  ),
+                  sectionTitle(
+                      title: 'Mức độ hài lòng',
                       screenHeight: screenHeight,
                       screenWidth: screenWidth),
-                  Container(
-                    width: 1,
-                    height: screenHeight * 0.06,
-                    color: Colors.black.withOpacity(0.25),
+                  ratingWidget(
+                    screenWidth: screenWidth,
+                    label: "Rất hài lòng",
+                    percentage: calculateVeryPleasedPercentage(reviews),
                   ),
-                  infoTitle(
-                      title: 'Hài lòng',
-                      value: '100%',
-                      icon: Icons.thumb_up,
+                  ratingWidget(
+                    screenWidth: screenWidth,
+                    label: "Hài lòng",
+                    percentage: calculatePleasedPercentage(reviews),
+                  ),
+                  ratingWidget(
+                    screenWidth: screenWidth,
+                    label: "Bình thường",
+                    percentage: calculateNormalPercentage(reviews),
+                  ),
+                  ratingWidget(
+                    screenWidth: screenWidth,
+                    label: "Không hài lòng",
+                    percentage: calculateUnpleasedPercentage(reviews),
+                  ),
+                  sectionTitle(
+                      title: 'Bình luận của khách hàng',
                       screenHeight: screenHeight,
                       screenWidth: screenWidth),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      ButtonReview(
+                          label: "Hữu ích",
+                          screenWidth: screenWidth,
+                          screenHeight: screenHeight),
+                      SizedBox(width: screenWidth * 0.05),
+                      ButtonReview(
+                          label: "Mới nhất",
+                          screenWidth: screenWidth,
+                          screenHeight: screenHeight),
+                    ],
+                  ),
+                  ReviewList(
+                      screenHeight: screenHeight,
+                      screenWidth: screenWidth,
+                      doctorId: widget.doctorId),
                 ],
               ),
             ),
-            SizedBox(height: screenHeight * 0.01),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Tỷ lệ hài lòng: ',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: screenWidth * 0.04)),
-                Text('100%',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: screenWidth * 0.055,
-                        color: Colors.blue)),
-                Text('/87 lượt đánh giá',
-                    style: TextStyle(fontSize: screenWidth * 0.035)),
-              ],
-            ),
-            sectionTitle(
-                title: 'Mức độ hài lòng',
-                screenHeight: screenHeight,
-                screenWidth: screenWidth),
-            ratingWidget(
-              screenWidth: screenWidth,
-              label: "Rất hài lòng",
-              percentage: 100,
-            ),
-            ratingWidget(
-              screenWidth: screenWidth,
-              label: "Hài lòng",
-              percentage: 0,
-            ),
-            ratingWidget(
-              screenWidth: screenWidth,
-              label: "Bình thường",
-              percentage: 0,
-            ),
-            ratingWidget(
-              screenWidth: screenWidth,
-              label: "Không hài lòng",
-              percentage: 0,
-            ),
-            sectionTitle(
-                title: 'Bình luận của khách hàng',
-                screenHeight: screenHeight,
-                screenWidth: screenWidth),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                ButtonReview(
-                    label: "Hữu ích",
-                    screenWidth: screenWidth,
-                    screenHeight: screenHeight),
-                SizedBox(width: screenWidth * 0.05),
-                ButtonReview(
-                    label: "Mới nhất",
-                    screenWidth: screenWidth,
-                    screenHeight: screenHeight),
-              ],
-            ),
-            ReviewList(
-              screenHeight: screenHeight,
-              screenWidth: screenWidth,
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
@@ -277,235 +346,6 @@ class ratingWidget extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class ReviewList extends StatelessWidget {
-  final double screenHeight;
-  final double screenWidth;
-  const ReviewList(
-      {super.key, required this.screenHeight, required this.screenWidth});
-
-  @override
-  Widget build(BuildContext context) {
-    ScrollController scrollController = ScrollController();
-    return Column(
-      children: [
-        ReviewCardDetail(
-          username: "User1",
-          date: "07/07/2024",
-          reviewText:
-              "Bs tư vấn thân thiện, dễ hiểu và rất có tâm Bs tư vấn thân thiện, dễ hiểu và rất có tâmBs tư vấn thân thiện, dễ hiểu và rất có tâmBs tư vấn thân thiện, dễ hiểu và rất có tâm....",
-          emoji: "😍",
-          satisfactionText: "Rất hài lòng",
-          screenHeight: screenHeight,
-          screenWidth: screenWidth,
-        ),
-        ReviewCardDetail(
-          username: "User2",
-          date: "06/07/2024",
-          reviewText: "Bác sĩ giải thích chi tiết, giúp tôi an tâm hơn.",
-          emoji: "😊",
-          satisfactionText: "Hài lòng",
-          screenHeight: screenHeight,
-          screenWidth: screenWidth,
-        ),
-        ReviewCardDetail(
-          username: "User3",
-          date: "05/07/2024",
-          reviewText: "Bác sĩ rất tận tình và nhiệt huyết với bệnh nhân.",
-          emoji: "👍",
-          satisfactionText: "Tốt",
-          screenHeight: screenHeight,
-          screenWidth: screenWidth,
-        ),
-      ],
-    );
-  }
-}
-
-class ReviewCardDetail extends StatelessWidget {
-  final String username;
-  final String date;
-  final String reviewText;
-  final String emoji;
-  final String satisfactionText;
-  final double screenWidth;
-  final double screenHeight;
-  const ReviewCardDetail({
-    super.key,
-    required this.username,
-    required this.date,
-    required this.reviewText,
-    required this.emoji,
-    required this.satisfactionText,
-    required this.screenHeight,
-    required this.screenWidth,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: screenWidth * 0.9,
-      padding: EdgeInsets.all(screenWidth * 0.05),
-      margin: EdgeInsets.all(screenWidth * 0.02),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: Color(0xFF9AA5AC),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: Colors.blueAccent,
-                child: Icon(Icons.person, color: Colors.white),
-              ),
-              SizedBox(width: screenWidth * 0.05),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(username,
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: screenWidth * 0.045)),
-                  Text(date,
-                      style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: screenWidth * 0.035)),
-                ],
-              ),
-            ],
-          ),
-          SizedBox(height: screenWidth * 0.02),
-          Row(
-            children: [
-              Text(emoji, style: TextStyle(fontSize: screenWidth * 0.04)),
-              SizedBox(width: screenWidth * 0.01),
-              Text(satisfactionText,
-                  style: TextStyle(
-                      color: Colors.orange[800],
-                      fontWeight: FontWeight.bold,
-                      fontSize: screenWidth * 0.04)),
-            ],
-          ),
-          SizedBox(height: screenWidth * 0.02),
-          Text(
-            reviewText,
-            style: TextStyle(fontSize: screenWidth * 0.035),
-            softWrap: true,
-            maxLines: null,
-          ),
-          Padding(
-            padding: EdgeInsets.only(top: screenHeight * 0.02),
-            child: Row(
-              children: [
-                ButtonReviewDetail(
-                    icon: Icon(
-                      Icons.thumb_up_off_alt,
-                    ),
-                    label: "Hữu ích",
-                    screenWidth: screenWidth,
-                    screenHeight: screenHeight),
-                SizedBox(width: screenWidth * 0.05),
-                ButtonReviewDetail(
-                    label: "Báo cáo",
-                    action: (context) => showOptionDialog(
-                          context,
-                          "Báo cáo",
-                          "Nội dung không phù hợp",
-                          "HUỶ",
-                          "XÁC NHẬN",
-                          null,
-                        ),
-                    screenWidth: screenWidth,
-                    screenHeight: screenHeight),
-              ],
-            ),
-          )
-        ],
-      ),
-    );
-  }
-}
-
-class ButtonReviewDetail extends StatefulWidget {
-  final String label;
-  final double screenWidth;
-  final double screenHeight;
-  final Icon? icon;
-  final void Function(BuildContext)? action;
-  const ButtonReviewDetail({
-    super.key,
-    required this.label,
-    required this.screenWidth,
-    required this.screenHeight,
-    this.icon,
-    this.action,
-  });
-
-  @override
-  _ButtonReviewDetailState createState() => _ButtonReviewDetailState();
-}
-
-class _ButtonReviewDetailState extends State<ButtonReviewDetail> {
-  bool isPressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return OutlinedButton(
-      onPressed: () {
-        if (widget.action != null) {
-          widget.action!(context); // Truyền context vào action
-        }
-        setState(() {
-          isPressed = !isPressed;
-        });
-      },
-      style: OutlinedButton.styleFrom(
-        foregroundColor:
-            isPressed ? Color(0xFF119CF0) : const Color(0xFF40494F),
-        padding: EdgeInsets.symmetric(
-          horizontal: widget.screenWidth * 0.04,
-          vertical: widget.screenWidth * 0.03,
-        ),
-        side: BorderSide(
-          color: isPressed ? Color(0xFF119CF0) : const Color(0xFFD9D9D9),
-          width: 1,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(5),
-        ),
-        textStyle: TextStyle(
-          fontSize: widget.screenWidth * 0.035,
-          fontFamily: 'Inter-Medium',
-          color: isPressed ? Colors.red : const Color(0xFFD9D9D9),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (widget.icon != null) ...[
-            Container(
-              child: Icon(
-                widget.icon!.icon,
-                color: isPressed ? Color(0xFF119CF0) : Colors.grey,
-              ),
-            ),
-            SizedBox(width: widget.screenWidth * 0.02),
-          ],
-          Text(widget.label),
-        ],
       ),
     );
   }

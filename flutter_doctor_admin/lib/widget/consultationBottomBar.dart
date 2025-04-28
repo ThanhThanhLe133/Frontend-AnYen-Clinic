@@ -1,5 +1,6 @@
 import 'package:ayclinic_doctor_admin/widget/circleButton.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class ConsultationBottomBar extends StatelessWidget {
   final double screenWidth;
@@ -17,6 +18,10 @@ class ConsultationBottomBar extends StatelessWidget {
     required this.nameButton,
     required this.nextScreen,
   });
+  String formatCurrency(String totalMoney) {
+    final money = int.tryParse(totalMoney.replaceAll('.', '')) ?? 0;
+    return NumberFormat('###,###', 'vi_VN').format(money).replaceAll(',', '.');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +61,7 @@ class ConsultationBottomBar extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  totalMoney,
+                  formatCurrency(totalMoney),
                   style: TextStyle(
                     fontSize: screenWidth * 0.07,
                     fontWeight: FontWeight.w700,

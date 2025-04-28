@@ -1,7 +1,9 @@
 import 'dart:math';
 
+import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/circleButton.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class ConsultationBottomBar extends StatelessWidget {
   final double screenWidth;
@@ -56,11 +58,14 @@ class ConsultationBottomBar extends StatelessWidget {
                         fontSize: screenWidth * 0.05),
                   ),
                 ),
-                Text(totalMoney,
-                    style: TextStyle(
-                        fontSize: screenWidth * 0.07,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.blue)),
+                Text(
+                  formatCurrency(totalMoney),
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.07,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.blue,
+                  ),
+                ),
               ],
             ),
             SizedBox(

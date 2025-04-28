@@ -9,6 +9,7 @@ import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/BottomFilterBar_appointment.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class ConnectingAppointmentScreen extends ConsumerStatefulWidget {
   const ConnectingAppointmentScreen({super.key});
@@ -25,8 +26,8 @@ class _ConnectingAppointmentScreenState
       url: '$apiUrl/patient/get-all-appointments',
       method: 'GET',
     );
+
     if (response.statusCode != 200) {
-      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
@@ -34,8 +35,17 @@ class _ConnectingAppointmentScreenState
     } else {
       final data = jsonDecode(response.body);
       setState(() {
-        appointments = data['data'].where((appointment) {
+        appointments =
+            List<Map<String, dynamic>>.from(data['data']).where((appointment) {
           return appointment['status'] == 'Pending';
+        }).map((appointment) {
+          // Lấy thông tin 'total_paid' và thêm vào bản ghi
+          return {
+            ...appointment,
+            'total_paid': appointment['payment'] != null
+                ? appointment['payment']['total_paid']
+                : 0,
+          };
         }).toList();
       });
     }
@@ -70,63 +80,40 @@ class _ConnectingAppointmentScreenState
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: ListView.builder(
-        itemCount: appointments.length,
-        itemBuilder: (context, index) {
-          return Dismissible(
-            key: Key(appointments[index].toString()),
-            direction: DismissDirection.endToStart,
-            onDismissed: (direction) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text('Lịch hẹn đã được ẩn'),
-                duration: Duration(milliseconds: 500),
-              ));
-
-              setState(() {
-                appointments.removeAt(index);
-              });
-            },
-            confirmDismiss: (direction) async {
-              Completer<bool> completer = Completer<bool>();
-              showOptionDialog(
-                context,
-                "Xác nhận",
-                "Bạn có chắc muốn ẩn lịch hẹn này không?",
-                "Huỷ",
-                "Ẩn",
-                () {
-                  completer.complete(true);
-                },
-              );
-              return await completer.future ?? false;
-            },
-            background: Container(
-              color: Colors.white,
-              alignment: Alignment.centerRight,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 20.0),
-                child: Icon(
-                  Icons.delete_outline,
-                  color: Colors.redAccent,
-                ),
+      body: appointments.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.event_busy,
+                    size: 50.0,
+                    color: Colors.grey,
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    "Chưa có lịch hẹn",
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                  ),
+                ],
               ),
+            )
+          : ListView.builder(
+              itemCount: appointments.length,
+              itemBuilder: (context, index) {
+                return AppointmentConnectingCard(
+                  question: appointments[index]['question'],
+                  doctor_id: appointments[index]['doctor_id'],
+                  appointment_id: appointments[index]['id'],
+                  isOnline: appointments[index]['appointment_type'] == "Online",
+                  date: _getFormattedDate(
+                      appointments[index]['appointment_time']),
+                  time: _getFormattedTime(
+                      appointments[index]['appointment_time']),
+                  total_paid: appointments[index]['total_paid'],
+                );
+              },
             ),
-            dismissThresholds: {
-              DismissDirection.endToStart: 0.2,
-            },
-            movementDuration: Duration(milliseconds: 100),
-            child: AppointmentConnectingCard(
-              total_paid: appointments[index]['total_paid'],
-              question: appointments[index]['question'],
-              doctor_id: appointments[index]['doctor_id'],
-              appointment_id: appointments[index]['id'],
-              isOnline: appointments[index]['appointment_type'] == "Online",
-              date: _getFormattedDate(appointments[index]['appointment_time']),
-              time: _getFormattedTime(appointments[index]['appointment_time']),
-            ),
-          );
-        },
-      ),
       bottomNavigationBar: BottomFilterBar(
         screenWidth: screenWidth,
       ),

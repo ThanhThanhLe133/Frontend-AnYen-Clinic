@@ -41,11 +41,9 @@ class _EditDateAppointmentDialogState extends State<EditDateAppointmentDialog> {
   late List<DateTime> dates;
   late int selectedDateIndex = 0;
   late int selectedTimeIndex;
-
+  late DateTime initialDate;
   late DateTime selectedDate;
   late String selectedHour;
-
-  late DateTime initialDate;
   final List<String> times = [
     "9:00",
     "10:00",
@@ -97,11 +95,12 @@ class _EditDateAppointmentDialogState extends State<EditDateAppointmentDialog> {
   void initState() {
     super.initState();
     _scrollController = ScrollController()..addListener(_loadMoreDates);
-    _generateInitialDates();
-    selectedDate = DateTime.parse(widget.selectedDate);
-    selectedHour = widget.selectedHour;
+    selectedDate = formatToDateTime(widget.selectedDate);
     initialDate = selectedDate;
+    _generateInitialDates();
+    selectedHour = widget.selectedHour;
     selectedTimeIndex = times.indexOf(selectedHour);
+    debugPrint(selectedHour);
   }
 
   @override

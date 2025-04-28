@@ -1,3 +1,4 @@
+import 'package:anyen_clinic/appointment/appointment_screen.dart';
 import 'package:anyen_clinic/doctor/list_doctor_screen.dart';
 import 'package:anyen_clinic/storage.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +29,7 @@ class MainApp extends StatelessWidget {
           bodySmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
         ),
       ),
-      home: DoctorListScreen(),
+      home: AppointmentScreen(),
     );
   }
 }

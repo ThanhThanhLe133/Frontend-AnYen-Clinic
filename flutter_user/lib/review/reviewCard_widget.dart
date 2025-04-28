@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class ReviewCard extends StatelessWidget {
+class ReviewCardMini extends StatelessWidget {
   final String username;
   final String date;
   final String reviewText;
@@ -9,7 +9,7 @@ class ReviewCard extends StatelessWidget {
   final double screenWidth;
   final double screenHeight;
 
-  const ReviewCard({
+  const ReviewCardMini({
     super.key,
     required this.username,
     required this.date,

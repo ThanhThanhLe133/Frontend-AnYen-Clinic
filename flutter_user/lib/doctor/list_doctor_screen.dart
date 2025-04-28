@@ -5,6 +5,7 @@ import 'package:anyen_clinic/makeRequest.dart';
 import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/CustomBackButton.dart';
 import 'package:anyen_clinic/widget/DoctorCardInList.dart';
+import 'package:anyen_clinic/widget/menu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:http/http.dart' as http;
@@ -104,6 +105,7 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
+      floatingActionButton: Menu(),
       backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
@@ -136,9 +138,8 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
             if (index == _displayedDoctors.length) {
               return Center(
                 child: SpinKitWaveSpinner(
-                  color: const Color.fromARGB(
-                      255, 72, 166, 243), // Bạn đổi màu tùy ý
-                  size: 50.0, // Size cũng chỉnh theo ý
+                  color: const Color.fromARGB(255, 72, 166, 243),
+                  size: 75.0,
                 ),
               );
             }
@@ -147,7 +148,7 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
               screenHeight: screenHeight,
               name: _displayedDoctors[index]['name']!,
               specialty: _displayedDoctors[index]['specialization']!,
-              percentage: 100,
+              percentage: _displayedDoctors[index]['averageSatisfaction'],
               workplace: _displayedDoctors[index]['workplace']!,
               imageUrl: _displayedDoctors[index]['avatar_url']!,
               doctorId: _displayedDoctors[index]['doctorId'],

@@ -13,9 +13,9 @@ Future<http.Response> makeRequest({
   String? fileFieldName,
 }) async {
   String? accessToken =
-      "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjkxYjcwZDMzLTI4OWEtNDU2MS1iMTIxLTI3MWYzY2M3YmNhZSIsInBob25lX251bWJlciI6Iis4NDM5NzgxMzM5OCIsInJvbGVzIjpbInBhdGllbnQiLCJhZG1pbiJdLCJpYXQiOjE3NDU2ODA3MTIsImV4cCI6MTc0NTY4NDMxMn0.yrRKoeEWWCx3rK806XnTlntkeNROLlp2DuHlAlCRkgo";
+      "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjkxYjcwZDMzLTI4OWEtNDU2MS1iMTIxLTI3MWYzY2M3YmNhZSIsInBob25lX251bWJlciI6Iis4NDM5NzgxMzM5OCIsInJvbGVzIjpbInBhdGllbnQiLCJhZG1pbiJdLCJpYXQiOjE3NDU4NDQyMzMsImV4cCI6MTc0NTg0NzgzM30.mxMmuSAoYMKj3eLu0FF_jh_8lRlki6RVuAxMg4GiIjQ";
   String? refreshToken =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjkxYjcwZDMzLTI4OWEtNDU2MS1iMTIxLTI3MWYzY2M3YmNhZSIsImlhdCI6MTc0NTY4MDcxMiwiZXhwIjoxNzQ2Mjg1NTEyfQ.OvayhKDjbRQ6rUDTR3hKvZtl1E9Gz5YGXHxmXcfj0JE";
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjkxYjcwZDMzLTI4OWEtNDU2MS1iMTIxLTI3MWYzY2M3YmNhZSIsImlhdCI6MTc0NTgxNDA2NiwiZXhwIjoxNzQ2NDE4ODY2fQ.LoUpe30v_CBIaNP_XOB12Uz9n13HQRM64u6x86BOmJ4";
 
   Map<String, String> requestHeaders = headers ?? {};
 
@@ -42,8 +42,10 @@ Future<http.Response> makeRequest({
       switch (method.toUpperCase()) {
         case 'GET':
           debugPrint('Got response!');
-          return await http.get(uri);
-
+          return await http.get(
+            uri,
+            headers: requestHeaders,
+          );
         case 'POST':
           return await http.post(
             uri,
@@ -85,7 +87,7 @@ Future<http.Response> makeRequest({
         final respond = jsonDecode(refreshRes.body);
         final newAccessToken = respond['access_token'];
         final newRefreshToken = respond['refresh_token'];
-        debugPrint("ddd $newAccessToken");
+        debugPrint("$newAccessToken");
         // Lưu token mới
         await saveAccessToken(newAccessToken);
         if (newRefreshToken != null) await saveRefreshToken(newRefreshToken);

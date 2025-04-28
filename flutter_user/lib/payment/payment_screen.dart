@@ -11,6 +11,7 @@ import 'package:anyen_clinic/widget/DoctorCard.dart';
 import 'package:anyen_clinic/widget/consultationBottomBar.dart';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class PaymentScreen extends StatefulWidget {
@@ -27,11 +28,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
   late List<DateTime> dates;
   late int selectedDateIndex;
   late int selectedTimeIndex;
-  late DateTime selectedDate;
-  late String selectedHour;
-  double total_price = 0;
+  late DateTime selectedDate = DateTime.now();
+
+  int total_price = 0;
 
   String selectedConsult = "Online";
+  String selectedPayment = "MoMo";
   DateTime initialDate = DateTime.now();
   final List<String> times = [
     "9:00",
@@ -41,6 +43,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     "15:00",
     "16:00"
   ];
+  late String selectedHour = times[0];
   StreamSubscription? _linkSub;
   final AppLinks _appLinks = AppLinks();
   late ScrollController _scrollController;
@@ -61,6 +64,17 @@ class _PaymentScreenState extends State<PaymentScreen> {
     }
   }
 
+  void openUrl(String url) async {
+    final Uri uri = Uri.parse(url);
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri,
+          mode: LaunchMode.externalApplication); // Mở trong trình duyệt ngoài
+    } else {
+      throw 'Không thể mở URL: $url';
+    }
+  }
+
   Future<void> createPayment() async {
     final parts = selectedHour.split(':');
     final combinedDateTime = DateTime(
@@ -70,7 +84,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
       int.parse(parts[0]),
       int.parse(parts[1]),
     );
+
     final appointmentTime = combinedDateTime.toIso8601String();
+    debugPrint(appointmentTime);
+
     try {
       final response = await makeRequest(
           url: '$apiUrl/payment/create-payment-momo',
@@ -87,12 +104,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
       if (response.statusCode == 200 && data['payUrl'] != null) {
         final payUrl = data['payUrl'];
-        if (await canLaunchUrl(Uri.parse(payUrl))) {
-          await launchUrl(Uri.parse(payUrl),
-              mode: LaunchMode.externalApplication);
-        } else {
-          throw "Không thể mở đường dẫn thanh toán.";
-        }
+        openUrl(payUrl);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(data['mes'] ?? "Lỗi tạo thanh toán")),
@@ -151,11 +163,20 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   @override
+  void dispose() {
+    questionController.dispose();
+    _linkSub?.cancel();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
     fetchDoctor();
     _scrollController = ScrollController()..addListener(_loadMoreDates);
     _generateInitialDates();
+
     selectedDateIndex = 0;
     selectedTimeIndex = times.indexOf(selectedHour);
 
@@ -170,18 +191,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   @override
-  void dispose() {
-    _scrollController.dispose();
-    questionController.dispose();
-    _linkSub?.cancel();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
-    bool isSelected = true;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -205,346 +218,363 @@ class _PaymentScreenState extends State<PaymentScreen> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: Padding(
-          padding: EdgeInsets.all(screenWidth * 0.05),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.question_mark,
-                    size: screenWidth * 0.05,
-                    color: Colors.blue,
-                  ),
-                  Text(
-                    "Câu hỏi sẽ được gửi đến",
-                    style: TextStyle(
-                        fontSize: screenWidth * 0.04,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF40494F)),
-                  ),
-                ],
+      body: doctorProfile.isEmpty
+          ? Center(
+              child: SpinKitWaveSpinner(
+                color: Colors.blue,
+                size: 75.0,
               ),
-              SizedBox(height: 8),
-              DoctorCard(
-                doctorName: doctorProfile['name'],
-                specialty: doctorProfile['specialization'],
-                imageUrl: doctorProfile['avatar_url'],
-              ),
-              SizedBox(
-                height: screenWidth * 0.03,
-              ),
-              Container(
-                width: screenWidth * 0.9,
-                padding: EdgeInsets.symmetric(
-                    horizontal: screenWidth * 0.02,
-                    vertical: screenWidth * 0.02),
-                margin: EdgeInsets.all(screenWidth * 0.02),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black
-                          .withOpacity(0.1), // Bóng đậm hơn một chút
-                      blurRadius: 7, // Mở rộng bóng ra xung quanh
-                      spreadRadius: 1, // Kéo dài bóng theo mọi hướng
-                      offset: Offset(0, 0), // Không dịch chuyển, bóng tỏa đều
-                    ),
-                  ],
-                ),
+            )
+          : SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Padding(
+                padding: EdgeInsets.all(screenWidth * 0.05),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "Hình thức thanh toán",
-                      style: TextStyle(
-                          fontSize: screenWidth * 0.04,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF40494F)),
-                    ),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        PaymentOptionWidget(
-                            text: "Momo",
-                            isMoMo: true,
-                            isSelected: isSelected,
-                            onTap: () {
-                              setState(() => isSelected = true);
-                            },
-                            screenWidth: screenWidth),
-                        PaymentOptionWidget(
-                            text: "Chuyển khoản ngân hàng",
-                            isMoMo: false,
-                            isSelected: !isSelected,
-                            onTap: () {
-                              setState(() => isSelected = true);
-                            },
-                            screenWidth: screenWidth),
-                      ],
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                width: screenWidth * 0.9,
-                padding: EdgeInsets.symmetric(
-                    horizontal: screenWidth * 0.04,
-                    vertical: screenWidth * 0.02),
-                margin: EdgeInsets.all(screenWidth * 0.02),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black
-                          .withOpacity(0.1), // Bóng đậm hơn một chút
-                      blurRadius: 7, // Mở rộng bóng ra xung quanh
-                      spreadRadius: 1, // Kéo dài bóng theo mọi hướng
-                      offset: Offset(0, 0), // Không dịch chuyển, bóng tỏa đều
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Hình thức tư vấn",
-                      style: TextStyle(
-                          fontSize: screenWidth * 0.04,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF40494F)),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        SizedBox(
-                          child: _buildOption(
-                              Icons.chat_rounded, "Online", isSelected, () {
-                            setState(() {
-                              selectedConsult = "Online";
-                              isSelected = true;
-                            });
-                          }, screenWidth),
+                        Icon(
+                          Icons.question_mark,
+                          size: screenWidth * 0.05,
+                          color: Colors.blue,
                         ),
-                        SizedBox(
-                          child: _buildOption(Icons.people_alt_rounded,
-                              "Trực tiếp", !isSelected, () {
-                            setState(() {
-                              isSelected = false;
-                              selectedConsult = "Offline";
-                            });
-                          }, screenWidth),
+                        Text(
+                          "Câu hỏi sẽ được gửi đến",
+                          style: TextStyle(
+                              fontSize: screenWidth * 0.04,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF40494F)),
                         ),
                       ],
                     ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                width: screenWidth * 0.9,
-                padding: EdgeInsets.symmetric(
-                    horizontal: screenWidth * 0.04,
-                    vertical: screenWidth * 0.02),
-                margin: EdgeInsets.all(screenWidth * 0.02),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black
-                          .withOpacity(0.1), // Bóng đậm hơn một chút
-                      blurRadius: 7, // Mở rộng bóng ra xung quanh
-                      spreadRadius: 1, // Kéo dài bóng theo mọi hướng
-                      offset: Offset(0, 0), // Không dịch chuyển, bóng tỏa đều
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Đặt lịch tư vấn",
-                      style: TextStyle(
-                          fontSize: screenWidth * 0.04,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF40494F)),
+                    SizedBox(height: 8),
+                    DoctorCard(
+                      doctorName: doctorProfile['name'],
+                      specialty: doctorProfile['specialization'],
+                      imageUrl: doctorProfile['avatar_url'],
                     ),
                     SizedBox(
-                      height: 10,
+                      height: screenWidth * 0.03,
                     ),
-                    Scrollbar(
-                      controller: _scrollController,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        controller: _scrollController,
-                        physics: AlwaysScrollableScrollPhysics(),
-                        child: Row(
-                          children: List.generate(dates.length, (index) {
-                            DateTime date = dates[index];
-                            return GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  selectedDateIndex = index;
-                                  selectedDate = date;
-                                });
-                              },
-                              child: Container(
-                                margin: EdgeInsets.symmetric(
-                                    horizontal: screenWidth * 0.02),
-                                padding: EdgeInsets.symmetric(
-                                    vertical: screenWidth * 0.01,
-                                    horizontal: screenWidth * 0.02),
-                                decoration: BoxDecoration(
-                                  color: selectedDateIndex == index
-                                      ? Colors.blue[50]
-                                      : Colors.white,
-                                  borderRadius: BorderRadius.circular(10),
-                                  border:
-                                      Border.all(color: Colors.grey.shade300),
-                                ),
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      date.weekday == 1
-                                          ? "CN"
-                                          : "T${date.weekday}",
-                                      style: TextStyle(
-                                          fontSize: screenWidth * 0.03,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    SizedBox(height: screenWidth * 0.02),
-                                    Text(
-                                      "${date.day}/${date.month}", // Ngày/Tháng
-                                      style: TextStyle(
-                                          fontSize: screenWidth * 0.035,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }),
-                        ),
+                    Container(
+                      width: screenWidth * 0.9,
+                      padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth * 0.02,
+                          vertical: screenWidth * 0.02),
+                      margin: EdgeInsets.all(screenWidth * 0.02),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black
+                                .withOpacity(0.1), // Bóng đậm hơn một chút
+                            blurRadius: 7, // Mở rộng bóng ra xung quanh
+                            spreadRadius: 1, // Kéo dài bóng theo mọi hướng
+                            offset:
+                                Offset(0, 0), // Không dịch chuyển, bóng tỏa đều
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Hình thức thanh toán",
+                            style: TextStyle(
+                                fontSize: screenWidth * 0.04,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF40494F)),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              PaymentOptionWidget(
+                                  text: "Momo",
+                                  value: "MoMo",
+                                  selectedPayment: selectedPayment,
+                                  isMoMo: true,
+                                  onTap: () {
+                                    setState(() {
+                                      selectedPayment = "MoMo";
+                                    });
+                                  },
+                                  screenWidth: screenWidth),
+                              PaymentOptionWidget(
+                                  text: "Chuyển khoản ngân hàng",
+                                  isMoMo: false,
+                                  value: "Banking",
+                                  selectedPayment: selectedPayment,
+                                  onTap: () {
+                                    setState(() {
+                                      selectedPayment = "Banking";
+                                    });
+                                  },
+                                  screenWidth: screenWidth),
+                            ],
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                        ],
                       ),
                     ),
-                    SizedBox(height: 20),
-                    Divider(height: 1),
-                    SizedBox(height: 20),
-                    Center(
-                      child: Wrap(
-                        spacing: 5,
-                        runSpacing: 10,
-                        alignment: WrapAlignment.center,
-                        children: List.generate(times.length, (index) {
-                          return GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                selectedTimeIndex = index;
-                                selectedHour = times[index];
-                              });
-                            },
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                  vertical: screenWidth * 0.02,
-                                  horizontal: screenWidth * 0.04),
-                              decoration: BoxDecoration(
-                                color: selectedTimeIndex == index
-                                    ? Colors.blue[50]
-                                    : Colors.white,
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: Colors.grey.shade300),
+                    Container(
+                      width: screenWidth * 0.9,
+                      padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth * 0.04,
+                          vertical: screenWidth * 0.02),
+                      margin: EdgeInsets.all(screenWidth * 0.02),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black
+                                .withOpacity(0.1), // Bóng đậm hơn một chút
+                            blurRadius: 7, // Mở rộng bóng ra xung quanh
+                            spreadRadius: 1, // Kéo dài bóng theo mọi hướng
+                            offset:
+                                Offset(0, 0), // Không dịch chuyển, bóng tỏa đều
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Hình thức tư vấn",
+                            style: TextStyle(
+                                fontSize: screenWidth * 0.04,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF40494F)),
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              SizedBox(
+                                child: _buildOption(Icons.chat_rounded,
+                                    "Online", selectedConsult, () {
+                                  setState(() {
+                                    selectedConsult = "Online";
+                                  });
+                                }, screenWidth),
                               ),
-                              child: Text(
-                                times[index],
-                                style: TextStyle(fontSize: screenWidth * 0.04),
+                              SizedBox(
+                                child: _buildOption(Icons.people_alt_rounded,
+                                    "Offline", selectedConsult, () {
+                                  setState(() {
+                                    selectedConsult = "Offline";
+                                  });
+                                }, screenWidth),
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      width: screenWidth * 0.9,
+                      padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth * 0.04,
+                          vertical: screenWidth * 0.02),
+                      margin: EdgeInsets.all(screenWidth * 0.02),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black
+                                .withOpacity(0.1), // Bóng đậm hơn một chút
+                            blurRadius: 7, // Mở rộng bóng ra xung quanh
+                            spreadRadius: 1, // Kéo dài bóng theo mọi hướng
+                            offset:
+                                Offset(0, 0), // Không dịch chuyển, bóng tỏa đều
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Đặt lịch tư vấn",
+                            style: TextStyle(
+                                fontSize: screenWidth * 0.04,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF40494F)),
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          Scrollbar(
+                            controller: _scrollController,
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              controller: _scrollController,
+                              physics: AlwaysScrollableScrollPhysics(),
+                              child: Row(
+                                children: List.generate(dates.length, (index) {
+                                  DateTime date = dates[index];
+                                  return GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        selectedDateIndex = index;
+                                        selectedDate = date;
+                                      });
+                                    },
+                                    child: Container(
+                                      margin: EdgeInsets.symmetric(
+                                          horizontal: screenWidth * 0.02),
+                                      padding: EdgeInsets.symmetric(
+                                          vertical: screenWidth * 0.01,
+                                          horizontal: screenWidth * 0.02),
+                                      decoration: BoxDecoration(
+                                        color: selectedDateIndex == index
+                                            ? Colors.blue[50]
+                                            : Colors.white,
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(
+                                            color: Colors.grey.shade300),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                            date.weekday == 1
+                                                ? "CN"
+                                                : "T${date.weekday}",
+                                            style: TextStyle(
+                                                fontSize: screenWidth * 0.03,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          SizedBox(height: screenWidth * 0.02),
+                                          Text(
+                                            "${date.day}/${date.month}", // Ngày/Tháng
+                                            style: TextStyle(
+                                                fontSize: screenWidth * 0.035,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }),
                               ),
                             ),
-                          );
-                        }),
+                          ),
+                          SizedBox(height: 20),
+                          Divider(height: 1),
+                          SizedBox(height: 20),
+                          Center(
+                            child: Wrap(
+                              spacing: 5,
+                              runSpacing: 10,
+                              alignment: WrapAlignment.center,
+                              children: List.generate(times.length, (index) {
+                                return GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      selectedTimeIndex = index;
+                                      selectedHour = times[index];
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: screenWidth * 0.02,
+                                        horizontal: screenWidth * 0.04),
+                                    decoration: BoxDecoration(
+                                      color: selectedTimeIndex == index
+                                          ? Colors.blue[50]
+                                          : Colors.white,
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                          color: Colors.grey.shade300),
+                                    ),
+                                    child: Text(
+                                      times[index],
+                                      style: TextStyle(
+                                          fontSize: screenWidth * 0.04),
+                                    ),
+                                  ),
+                                );
+                              }),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                        ],
                       ),
                     ),
-                    SizedBox(
-                      height: 10,
+                    QuestionField(
+                      screenWidth: screenWidth,
+                      controller: questionController,
                     ),
-                  ],
-                ),
-              ),
-              QuestionField(
-                screenWidth: screenWidth,
-                controller: questionController,
-              ),
-              Container(
-                width: screenWidth * 0.9,
-                padding: EdgeInsets.symmetric(
-                    horizontal: screenWidth * 0.04,
-                    vertical: screenWidth * 0.02),
-                margin: EdgeInsets.all(screenWidth * 0.02),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black
-                          .withOpacity(0.1), // Bóng đậm hơn một chút
-                      blurRadius: 7, // Mở rộng bóng ra xung quanh
-                      spreadRadius: 1, // Kéo dài bóng theo mọi hướng
-                      offset: Offset(0, 0), // Không dịch chuyển, bóng tỏa đều
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Chi tiết thanh toán",
-                      style: TextStyle(
-                          fontSize: screenWidth * 0.04,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF40494F)),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "1 lượt tư vấn",
-                          style: TextStyle(
-                              fontSize: screenWidth * 0.035,
-                              color: Color(0xFFDB5B8B)),
-                        ),
-                        Text('$total_price',
+                    Container(
+                      width: screenWidth * 0.9,
+                      padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth * 0.04,
+                          vertical: screenWidth * 0.02),
+                      margin: EdgeInsets.all(screenWidth * 0.02),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black
+                                .withOpacity(0.1), // Bóng đậm hơn một chút
+                            blurRadius: 7, // Mở rộng bóng ra xung quanh
+                            spreadRadius: 1, // Kéo dài bóng theo mọi hướng
+                            offset:
+                                Offset(0, 0), // Không dịch chuyển, bóng tỏa đều
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Chi tiết thanh toán",
                             style: TextStyle(
-                                fontSize: screenWidth * 0.035,
-                                fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                    SizedBox(
-                      height: 10,
+                                fontSize: screenWidth * 0.04,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF40494F)),
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "1 lượt tư vấn",
+                                style: TextStyle(
+                                    fontSize: screenWidth * 0.035,
+                                    color: Color(0xFFDB5B8B)),
+                              ),
+                              Text(formatCurrency(total_price.toString()),
+                                  style: TextStyle(
+                                      fontSize: screenWidth * 0.035,
+                                      fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
       bottomNavigationBar: ConsultationBottomBar(
         screenHeight: screenHeight,
         screenWidth: screenWidth,
@@ -629,7 +659,7 @@ class QuestionField extends StatelessWidget {
   }
 }
 
-Widget _buildOption(IconData icon, String text, bool isSelected,
+Widget _buildOption(IconData icon, String text, String selectedConsult,
     VoidCallback onTap, double screenWidth) {
   return GestureDetector(
     onTap: onTap,
@@ -638,10 +668,10 @@ Widget _buildOption(IconData icon, String text, bool isSelected,
       children: [
         Transform.scale(
           scale: screenWidth / 500,
-          child: Radio(
-            value: true,
-            groupValue: isSelected,
-            onChanged: (_) => onTap(),
+          child: Radio<String>(
+            value: text, // Giá trị của option này
+            groupValue: selectedConsult, // Giá trị được chọn
+            onChanged: (_) => onTap(), // Khi chọn thì gọi onTap
             activeColor: Colors.blue,
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),

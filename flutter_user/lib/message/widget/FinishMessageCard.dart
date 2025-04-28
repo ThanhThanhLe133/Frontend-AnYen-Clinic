@@ -124,37 +124,6 @@ class MessageConnectedCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  status.isNotEmpty
-                      ? GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => ReviewDoctorScreen()),
-                            );
-                          },
-                          child: Container(
-                            width: screenWidth * 0.2,
-                            padding: EdgeInsets.symmetric(
-                                horizontal: screenWidth * 0.01,
-                                vertical: screenWidth * 0.01),
-                            decoration: BoxDecoration(
-                              color: status == "Đã đánh giá"
-                                  ? Color(0xFFD9D9D9)
-                                  : Color(0xFFDB5B8B),
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: Text(
-                              textAlign: TextAlign.center,
-                              status,
-                              style: TextStyle(
-                                fontSize: screenWidth * 0.025,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        )
-                      : SizedBox(),
                   MoreOptionsMenu(
                     options: [
                       "Xem đơn thuốc",

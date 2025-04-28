@@ -5,6 +5,7 @@ import 'package:anyen_clinic/makeRequest.dart';
 import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/DoctorCardInList.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class DoctorList extends StatefulWidget {
   const DoctorList({
@@ -37,10 +38,10 @@ class _DoctorListState extends State<DoctorList> {
       Navigator.pop(context);
     } else {
       final data = jsonDecode(response.body);
+
       setState(() {
-        doctors = data['data']
-            .where((doctor) => doctor['id'] != widget.doctorId)
-            .toList();
+        doctors = List<Map<String, dynamic>>.from(data['data']
+            .where((doctor) => doctor['doctorId'] != widget.doctorId));
       });
     }
   }
@@ -51,7 +52,9 @@ class _DoctorListState extends State<DoctorList> {
     fetchDoctors();
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
-    _loadMoreDoctors(); // Load dữ liệu ban đầu
+    fetchDoctors().then((_) {
+      _loadMoreDoctors();
+    });
   }
 
   @override
@@ -138,7 +141,12 @@ class _DoctorListState extends State<DoctorList> {
           itemCount: _displayedDoctors.length + (_isLoading ? 1 : 0),
           itemBuilder: (context, index) {
             if (index == _displayedDoctors.length) {
-              return Center(child: CircularProgressIndicator());
+              return Center(
+                child: SpinKitWaveSpinner(
+                  color: const Color.fromARGB(255, 72, 166, 243),
+                  size: 75.0,
+                ),
+              );
             }
             return GestureDetector(
               onTap: () {
@@ -151,7 +159,7 @@ class _DoctorListState extends State<DoctorList> {
                   ),
                 );
               },
-              child: DoctorCardInList(
+              child: DoctorCardChange(
                 doctorId: _displayedDoctors[index]['doctorId'],
                 screenWidth: screenWidth,
                 screenHeight: screenHeight,
@@ -164,6 +172,100 @@ class _DoctorListState extends State<DoctorList> {
             );
           },
         ),
+      ),
+    );
+  }
+}
+
+class DoctorCardChange extends StatelessWidget {
+  final double screenWidth;
+  final double screenHeight;
+  final String name;
+  final String specialty;
+  final String workplace;
+  final String imageUrl;
+  final int percentage;
+  final String doctorId;
+
+  const DoctorCardChange(
+      {super.key,
+      required this.screenWidth,
+      required this.screenHeight,
+      required this.name,
+      required this.specialty,
+      required this.workplace,
+      required this.imageUrl,
+      required this.percentage,
+      required this.doctorId});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(bottom: screenHeight * 0.02),
+      padding: EdgeInsets.all(screenWidth * 0.04),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade300),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 5,
+            spreadRadius: 2,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Image.network(
+              imageUrl,
+              width: screenWidth * 0.2,
+              height: screenWidth * 0.2,
+              fit: BoxFit.cover,
+            ),
+          ),
+          SizedBox(width: screenWidth * 0.04),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.045,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Row(
+                  children: [
+                    Icon(Icons.thumb_up,
+                        color: Colors.blue, size: screenWidth * 0.05),
+                    SizedBox(width: screenWidth * 0.02),
+                    Text(
+                      '$percentage% hài lòng',
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.04,
+                        color: Colors.blue,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: screenHeight * 0.005),
+                Text(
+                  'Chuyên khoa: $specialty',
+                  style: TextStyle(fontSize: screenWidth * 0.03),
+                ),
+                Text(
+                  'Công tác: $workplace',
+                  style: TextStyle(fontSize: screenWidth * 0.03),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

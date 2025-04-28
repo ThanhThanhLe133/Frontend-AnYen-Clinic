@@ -1,12 +1,15 @@
 import 'dart:convert';
 
 import 'package:anyen_clinic/doctor/listReview_doctor_screen.dart';
-import 'package:anyen_clinic/doctor/widget/reviewCard_widget.dart';
+import 'package:anyen_clinic/doctor/widget/infoTitle_widget.dart';
+import 'package:anyen_clinic/review/reviewCard_widget.dart';
 import 'package:anyen_clinic/makeRequest.dart';
 import 'package:anyen_clinic/payment/payment_screen.dart';
+import 'package:anyen_clinic/review/ReviewListMini.dart';
 import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/CustomBackButton.dart';
 import 'package:anyen_clinic/widget/consultationBottomBar.dart';
+import 'package:anyen_clinic/widget/descriptionText.dart';
 import 'package:anyen_clinic/widget/sectionTitle.dart' show sectionTitle;
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -81,7 +84,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
           ? Center(
               child: SpinKitWaveSpinner(
                 color: Colors.blue, // Bạn đổi màu tùy ý
-                size: 50.0, // Size cũng chỉnh theo ý
+                size: 75.0, // Size cũng chỉnh theo ý
               ),
             )
           : SingleChildScrollView(
@@ -157,30 +160,34 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        _infoTile(
-                            'Lượt tư vấn',
-                            '${doctorProfile['appointment_count']}+',
-                            Icons.people,
-                            screenHeight,
-                            screenWidth),
+                        infoTitle(
+                            title: "Lượt tư vấn",
+                            value: '${doctorProfile['appointment_count']}+',
+                            icon: Icons.people,
+                            screenHeight: screenHeight,
+                            screenWidth: screenWidth),
                         Container(
                           width: 1,
-                          height: screenHeight * 0.06,
+                          height: screenHeight * 0.07,
                           color: Colors.black.withOpacity(0.25),
                         ),
-                        _infoTile(
-                            'Kinh nghiệm',
-                            '${doctorProfile['yearExperience']} năm',
-                            Icons.history,
-                            screenHeight,
-                            screenWidth),
+                        infoTitle(
+                            title: "Kinh nghiệm",
+                            value: '${doctorProfile['yearExperience']} năm',
+                            icon: Icons.history,
+                            screenHeight: screenHeight,
+                            screenWidth: screenWidth),
                         Container(
                           width: 1,
-                          height: screenHeight * 0.06,
+                          height: screenHeight * 0.07,
                           color: Colors.black.withOpacity(0.25),
                         ),
-                        _infoTile('Hài lòng', '100%', Icons.thumb_up,
-                            screenHeight, screenWidth),
+                        infoTitle(
+                            title: 'Hài lòng',
+                            value: '${doctorProfile['averageSatisfaction']}%',
+                            icon: Icons.thumb_up,
+                            screenHeight: screenHeight,
+                            screenWidth: screenWidth),
                       ],
                     ),
                   ),
@@ -202,8 +209,9 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) =>
-                                      ListReviewDoctorScreen()),
+                                  builder: (context) => ListReviewDoctorScreen(
+                                        doctorId: widget.doctorId,
+                                      )),
                             );
                           },
                           child: Row(
@@ -224,16 +232,17 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                       ),
                     ],
                   ),
-                  ReviewList(
+                  ReviewListMini(
                     screenHeight: screenHeight,
                     screenWidth: screenWidth,
+                    doctorId: widget.doctorId,
                   ),
                   sectionTitle(
                     title: 'Quá trình công tác',
                     screenHeight: screenHeight,
                     screenWidth: screenWidth,
                   ),
-                  _descriptionText(
+                  descriptionText(
                     doctorProfile['workExperience'],
                     screenHeight,
                     screenWidth,
@@ -243,7 +252,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                     screenHeight: screenHeight,
                     screenWidth: screenWidth,
                   ),
-                  _descriptionText(
+                  descriptionText(
                     doctorProfile['educationHistory'],
                     screenHeight,
                     screenWidth,
@@ -253,7 +262,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                     screenHeight: screenHeight,
                     screenWidth: screenWidth,
                   ),
-                  _descriptionText(
+                  descriptionText(
                     doctorProfile['medicalLicense'],
                     screenHeight,
                     screenWidth,
@@ -266,7 +275,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
         screenHeight: screenHeight,
         screenWidth: screenWidth,
         content: "Chi phí tư vấn",
-        totalMoney: '${doctorProfile['price']}đ',
+        totalMoney: '${doctorProfile['price']}',
         nameButton: "ĐẶT TƯ VẤN",
         nextScreen: PaymentScreen(
           doctorId: widget.doctorId,
@@ -274,103 +283,4 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
       ),
     );
   }
-
-  Widget _infoTile(String title, String value, IconData icon,
-      double screenHeight, double screenWidth) {
-    return Column(
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-              fontSize: screenWidth * 0.035, color: Color(0xFF40494F)),
-        ),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: screenWidth * 0.05, color: Colors.blue),
-            SizedBox(width: screenWidth * 0.02),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: screenWidth * 0.045,
-                color: Colors.blue,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class ReviewList extends StatelessWidget {
-  final double screenHeight;
-  final double screenWidth;
-  const ReviewList(
-      {super.key, required this.screenHeight, required this.screenWidth});
-
-  @override
-  Widget build(BuildContext context) {
-    ScrollController scrollController = ScrollController();
-    return Scrollbar(
-      thumbVisibility: false,
-      controller: scrollController,
-      child: Container(
-        height: screenHeight * 0.22,
-        width: screenWidth * 0.9,
-        constraints: BoxConstraints(
-          minHeight: screenHeight * 0.1,
-          maxHeight: screenHeight * 0.25,
-        ),
-        child: ListView(
-          controller: scrollController,
-          physics: BouncingScrollPhysics(),
-          scrollDirection: Axis.horizontal,
-          children: [
-            ReviewCard(
-              username: "User1",
-              date: "07/07/2024",
-              reviewText:
-                  "Bs tư vấn thân thiện, dễ hiểu và rất có tâm Bs tư vấn thân thiện, dễ hiểu và rất có tâmBs tư vấn thân thiện, dễ hiểu và rất có tâmBs tư vấn thân thiện, dễ hiểu và rất có tâm....",
-              emoji: "😍",
-              satisfactionText: "Rất hài lòng",
-              screenHeight: screenHeight,
-              screenWidth: screenWidth,
-            ),
-            ReviewCard(
-              username: "User2",
-              date: "06/07/2024",
-              reviewText: "Bác sĩ giải thích chi tiết, giúp tôi an tâm hơn.",
-              emoji: "😊",
-              satisfactionText: "Hài lòng",
-              screenHeight: screenHeight,
-              screenWidth: screenWidth,
-            ),
-            ReviewCard(
-              username: "User3",
-              date: "05/07/2024",
-              reviewText: "Bác sĩ rất tận tình và nhiệt huyết với bệnh nhân.",
-              emoji: "👍",
-              satisfactionText: "Tốt",
-              screenHeight: screenHeight,
-              screenWidth: screenWidth,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-Widget _descriptionText(String text, double screenHeight, double screenWidth) {
-  return Align(
-    alignment: Alignment.centerLeft,
-    child: Padding(
-      padding: EdgeInsets.only(bottom: screenHeight * 0.01),
-      child: Text(text,
-          textAlign: TextAlign.left,
-          style: TextStyle(
-              fontSize: screenWidth * 0.04, color: Color(0xFF40494F))),
-    ),
-  );
 }
