@@ -7,6 +7,7 @@ import 'package:anyen_clinic/dialog/ChangeConsultationDialog.dart';
 import 'package:anyen_clinic/dialog/EditDateAppointmentDialog.dart';
 import 'package:anyen_clinic/dialog/PaymentHistory.dart';
 import 'package:anyen_clinic/dialog/option_dialog.dart';
+import 'package:anyen_clinic/doctor/details_doctor_screen.dart';
 import 'package:anyen_clinic/makeRequest.dart';
 import 'package:anyen_clinic/provider/patient_provider.dart';
 import 'package:anyen_clinic/storage.dart';
@@ -272,7 +273,7 @@ class AppointmentConnectingCardState
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => DoctorDetail(
+                                    builder: (context) => DoctorDetailScreen(
                                         doctorId: widget.doctor_id),
                                   ),
                                 );

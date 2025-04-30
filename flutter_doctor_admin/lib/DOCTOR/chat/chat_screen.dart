@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/chat/CallScreen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/chat/CameraScreen.dart';
-import 'package:ayclinic_doctor_admin/dialog/PatientInfo.dart';
 import 'package:ayclinic_doctor_admin/dialog/option_dialog.dart';
 import 'package:ayclinic_doctor_admin/widget/CustomBackButton.dart';
 import 'package:ayclinic_doctor_admin/widget/buildButton.dart';
@@ -368,7 +367,7 @@ class _ChatScreenState extends State<ChatScreen> {
             onSelected: (String value) {
               switch (value) {
                 case "Xem thông tin bệnh nhân":
-                  showPatientInfoDialog(context);
+                  // showPatientInfoDialog(context);
                   break;
                 case "Kết thúc tư vấn":
                   showOptionDialog(

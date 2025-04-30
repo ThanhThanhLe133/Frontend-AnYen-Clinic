@@ -1,6 +1,7 @@
 import 'package:ayclinic_doctor_admin/ADMIN/appointment/connected_appointment_screen%20copy.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/appointment/connecting_appointment_screen.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/widget/menu_admin.dart';
+import 'package:ayclinic_doctor_admin/widget/CustomBackButton.dart';
 import 'package:ayclinic_doctor_admin/widget/statusWidget.dart';
 import 'package:flutter/material.dart';
 
@@ -24,13 +25,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
       floatingActionButton: MenuAdmin(),
       appBar: AppBar(
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.chevron_left, color: Color(0xFF9BA5AC)),
-          iconSize: screenWidth * 0.08,
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+        leading: CustomBackButton(),
         title: Text(
           "Lịch hẹn",
           style: TextStyle(

@@ -1,6 +1,10 @@
+import 'dart:convert';
+
 import 'package:ayclinic_doctor_admin/ADMIN/Provider/FilterOptionProvider.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/appointment/widget/appointmentConnectingCard.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/widget/BottomFilterBar_appointment.dart';
+import 'package:ayclinic_doctor_admin/makeRequest.dart';
+import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -13,44 +17,40 @@ class ConnectingAppointmentScreen extends ConsumerStatefulWidget {
 
 class _ConnectingAppointmentScreenState
     extends ConsumerState<ConnectingAppointmentScreen> {
-  final List<Map<String, dynamic>> appointments = [
-    {
-      'isOnline': true,
-      'date': "05/03/2025",
-      'time': "9:00",
-      'question': "ddddddddddddddddddddđ",
-    },
-    {
-      'isOnline': false,
-      'date': "05/03/2025",
-      'time': "9:00",
-      'question': "ddddddddddddddddddddđ",
-    },
-    {
-      'isOnline': true,
-      'date': "05/03/2025",
-      'time': "9:00",
-      'question': "ddddddddddddddddddddđ",
-    },
-    {
-      'isOnline': false,
-      'date': "05/03/2025",
-      'time': "9:00",
-      'question': "ddddddddddddddddddddđ",
-    },
-    {
-      'isOnline': true,
-      'date': "05/03/2025",
-      'time': "9:00",
-      'question': "ddddddddddddddddddddđ",
-    },
-    {
-      'isOnline': false,
-      'date': "05/03/2025",
-      'time': "9:00",
-      'question': "ddddddddddddddddddddđ",
-    },
-  ];
+  List<Map<String, dynamic>> appointments = [];
+  Future<void> fetchAppointment() async {
+    final response = await makeRequest(
+      url: '$apiUrl/admin/get-all-appointments',
+      method: 'GET',
+    );
+
+    if (response.statusCode != 200) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        appointments =
+            List<Map<String, dynamic>>.from(data['data'])
+                .where((appointment) {
+                  return appointment['status'] == 'Pending' ||
+                      appointment['status'] == 'Unpaid';
+                })
+                .map((appointment) {
+                  return {
+                    ...appointment,
+                    'total_paid':
+                        appointment['payment'] != null
+                            ? appointment['payment']['total_paid']
+                            : 0,
+                  };
+                })
+                .toList();
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -61,16 +61,19 @@ class _ConnectingAppointmentScreenState
       ref.read(isCancelProvider.notifier).reset();
       ref.read(isNewestProvider.notifier).reset();
     });
+    fetchAppointment();
   }
 
-  // Future<void> loadData() async {
-  //   // Thực hiện các thao tác tải lại dữ liệu, ví dụ gọi API hoặc query database
-  //   // Sau khi tải dữ liệu, gọi setState để cập nhật lại danh sách appointments
-  //   setState(() {
-  //     // Giả sử sau khi tải lại dữ liệu, bạn gán lại cho appointments
-  //     appointments = await fetchAppointmentsFromDatabase(); // Ví dụ
-  //   });
-  // }
+  String _getFormattedDate(String appointmentTime) {
+    DateTime dateTime = DateTime.parse(appointmentTime);
+    return "${dateTime.day}/${dateTime.month}/${dateTime.year}";
+  }
+
+  String _getFormattedTime(String appointmentTime) {
+    DateTime dateTime = DateTime.parse(appointmentTime);
+    return "${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}";
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
@@ -78,17 +81,42 @@ class _ConnectingAppointmentScreenState
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: ListView.builder(
-        itemCount: appointments.length,
-        itemBuilder: (context, index) {
-          return AppointmentConnectingCard(
-            isOnline: appointments[index]['isOnline'],
-            date: appointments[index]['date'],
-            time: appointments[index]['time'],
-            question: appointments[index]['question'],
-          );
-        },
-      ),
+      body:
+          appointments.isEmpty
+              ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.event_busy, size: 50.0, color: Colors.grey),
+                    SizedBox(height: 10),
+                    Text(
+                      "Chưa có lịch hẹn",
+                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              )
+              : ListView.builder(
+                itemCount: appointments.length,
+                itemBuilder: (context, index) {
+                  return AppointmentConnectingCard(
+                    appointment_id: appointments[index]['id'],
+                    status: appointments[index]['status'],
+                    isOnline:
+                        appointments[index]['appointment_type'] == "Online",
+                    doctor_id: appointments[index]['doctor_id'],
+                    patient_id: appointments[index]['patient_id'],
+                    date: _getFormattedDate(
+                      appointments[index]['appointment_time'],
+                    ),
+                    time: _getFormattedTime(
+                      appointments[index]['appointment_time'],
+                    ),
+                    total_paid: appointments[index]['total_paid'],
+                    question: appointments[index]['question'],
+                  );
+                },
+              ),
       bottomNavigationBar: BottomFilterBar(screenWidth: screenWidth),
     );
   }

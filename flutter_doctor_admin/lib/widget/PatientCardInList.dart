@@ -73,8 +73,8 @@ class PatientCardInList extends StatelessWidget {
                 Row(
                   children: [
                     Icon(
-                      gender == 'Nữ' ? Icons.female : Icons.male,
-                      color: gender == 'Nữ' ? Colors.pink : Colors.blue,
+                      gender == 'female' ? Icons.female : Icons.male,
+                      color: gender == 'female' ? Colors.pink : Colors.blue,
                       size: screenWidth * 0.05,
                     ),
                     SizedBox(width: screenWidth * 0.02),

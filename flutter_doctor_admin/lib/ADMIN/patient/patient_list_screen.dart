@@ -1,10 +1,13 @@
 import 'dart:convert';
 
 import 'package:ayclinic_doctor_admin/ADMIN/patient/patient_detail_screen.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/widget/menu_admin.dart';
 import 'package:ayclinic_doctor_admin/makeRequest.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
+import 'package:ayclinic_doctor_admin/widget/CustomBackButton.dart';
 import 'package:flutter/material.dart';
 import 'package:ayclinic_doctor_admin/widget/PatientCardInList.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class PatientListScreen extends StatefulWidget {
   const PatientListScreen({super.key});
@@ -29,7 +32,7 @@ class _PatientListScreenState extends State<PatientListScreen> {
     } else {
       final data = jsonDecode(response.body);
       setState(() {
-        patients = data['data'];
+        patients = List<Map<String, dynamic>>.from(data['data']);
       });
     }
   }
@@ -49,12 +52,8 @@ class _PatientListScreenState extends State<PatientListScreen> {
 
       appBar: AppBar(
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.chevron_left, color: Color(0xFF9BA5AC)),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+        leading: CustomBackButton(),
+
         title: Text(
           "Danh sách bệnh nhân",
           style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
@@ -66,9 +65,18 @@ class _PatientListScreenState extends State<PatientListScreen> {
           child: Container(color: Color(0xFF9BA5AC), height: 1.0),
         ),
       ),
+      floatingActionButton: MenuAdmin(),
       body: ListView.builder(
         itemCount: patients.length,
         itemBuilder: (context, index) {
+          if (index == patients.length) {
+            return Center(
+              child: SpinKitWaveSpinner(
+                color: const Color.fromARGB(255, 72, 166, 243),
+                size: 75.0,
+              ),
+            );
+          }
           final patient = patients[index];
           return GestureDetector(
             onTap: () {
@@ -77,15 +85,15 @@ class _PatientListScreenState extends State<PatientListScreen> {
             child: PatientCardInList(
               screenWidth: MediaQuery.of(context).size.width,
               screenHeight: MediaQuery.of(context).size.height,
-              name: patient['full_name']!,
+              name: patient['full_name'],
               gender: patient['gender']!,
               age:
                   (DateTime.now().year -
                           DateTime.parse(patient['date_of_birth']).year)
                       .toString(),
               imageUrl: patient['avatar_url']!,
-              reviewCount: "0", // Truyền số lượt đánh giá
-              visitCount: patient['appointment_count']!, // Truyền số lượt khám
+              reviewCount: patient['review_count'].toString(),
+              visitCount: patient['appointment_count'].toString(),
             ),
           );
         },

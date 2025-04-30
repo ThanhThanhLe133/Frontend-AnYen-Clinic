@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:ayclinic_doctor_admin/dialog/PatientInfo.dart';
+import 'package:ayclinic_doctor_admin/dialog/PaymentHistory.dart';
 import 'package:ayclinic_doctor_admin/widget/buildMoreOption.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -135,32 +135,30 @@ class AppointmentConnectedCard extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  status != null && status!.isNotEmpty
-                      ? Container(
-                        width: screenWidth * 0.2,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: screenWidth * 0.01,
-                          vertical: screenWidth * 0.01,
-                        ),
-                        decoration: BoxDecoration(
-                          color:
-                              status == "Đã hoàn thành"
-                                  ? Color(0xFF19EA31)
-                                  : status == "Đã huỷ"
-                                  ? Color(0xFF9BA5AC)
-                                  : Color(0xFF119CF0),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          textAlign: TextAlign.center,
-                          status!,
-                          style: TextStyle(
-                            fontSize: screenWidth * 0.02,
-                            color: Colors.white,
-                          ),
-                        ),
-                      )
-                      : SizedBox(),
+                  Container(
+                    width: screenWidth * 0.2,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: screenWidth * 0.01,
+                      vertical: screenWidth * 0.01,
+                    ),
+                    decoration: BoxDecoration(
+                      color:
+                          status == "Đã hoàn thành"
+                              ? Color(0xFF19EA31)
+                              : status == "Đã huỷ"
+                              ? Color(0xFF9BA5AC)
+                              : Color(0xFF119CF0),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      textAlign: TextAlign.center,
+                      status!,
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.022,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                   MoreOptionsMenu(
                     options: [
                       "Thông tin bệnh nhân",
@@ -173,9 +171,9 @@ class AppointmentConnectedCard extends ConsumerWidget {
                     ],
                     onSelected: (value) {
                       switch (value) {
-                        case "Thông tin bệnh nhân":
-                          showPatientInfoDialog(context);
-                          break;
+                        // case "Thông tin bệnh nhân":
+                        //   showPatientInfoDialog(context);
+                        //   break;
 
                         default:
                       }

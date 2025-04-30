@@ -7,48 +7,36 @@ import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:ayclinic_doctor_admin/widget/buildButton.dart';
 import 'package:flutter/material.dart';
 
-void showChangeConsultationDialog(
-  BuildContext context,
-  String appointmentId,
-  bool isOnline,
-) {
+void showCancelAppointmentDialog(BuildContext context, String appointmentId) {
   double screenWidth = MediaQuery.of(context).size.width;
   showDialog(
     context: context,
     barrierDismissible: true,
     builder: (BuildContext context) {
-      return EditConsultationDialog(
-        appointment_id: appointmentId,
-        isOnline: isOnline,
-      );
+      return CancelAppointmentDialog(appointment_id: appointmentId);
     },
   );
 }
 
-class EditConsultationDialog extends StatefulWidget {
+class CancelAppointmentDialog extends StatefulWidget {
   final String appointment_id;
-  final bool isOnline;
-  const EditConsultationDialog({
-    super.key,
-    required this.appointment_id,
-    required this.isOnline,
-  });
+  const CancelAppointmentDialog({super.key, required this.appointment_id});
 
   @override
-  _EditConsultationDialogState createState() => _EditConsultationDialogState();
+  _CancelAppointmentDialogState createState() =>
+      _CancelAppointmentDialogState();
 }
 
-class _EditConsultationDialogState extends State<EditConsultationDialog> {
-  late String selectedConsult;
-  late bool isOnline;
-  Future<void> editAppointment() async {
+class _CancelAppointmentDialogState extends State<CancelAppointmentDialog> {
+  final TextEditingController _cancelReasonController = TextEditingController();
+  Future<void> cancelAppointment() async {
     try {
       final response = await makeRequest(
         url: '$apiUrl/admin/edit-appointment',
         method: 'PATCH',
         body: {
-          "appointment_id": widget.appointment_id,
-          "appointment_type": selectedConsult,
+          "status": "Canceled",
+          "cancel_reason": _cancelReasonController.text.trim(),
         },
       );
 
@@ -76,8 +64,6 @@ class _EditConsultationDialogState extends State<EditConsultationDialog> {
   @override
   void initState() {
     super.initState();
-    selectedConsult = widget.isOnline ? "Online" : "Trực tiếp";
-    isOnline = widget.isOnline;
   }
 
   @override
@@ -92,7 +78,7 @@ class _EditConsultationDialogState extends State<EditConsultationDialog> {
       ),
       title: Center(
         child: Text(
-          "Thay đổi hình thức tư vấn",
+          "Huỷ lịch hẹn",
           style: TextStyle(
             fontSize: screenWidth * 0.055,
             fontWeight: FontWeight.bold,
@@ -107,36 +93,26 @@ class _EditConsultationDialogState extends State<EditConsultationDialog> {
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                SizedBox(
-                  child: _buildOption(
-                    Icons.chat_rounded,
-                    "Online",
-                    isOnline,
-                    () {
-                      setState(() {
-                        isOnline = true;
-                        selectedConsult = "Online";
-                      });
-                    },
-                    screenWidth,
-                  ),
+              children: [],
+            ),
+            SizedBox(height: screenWidth * 0.05),
+            TextField(
+              controller: _cancelReasonController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                hintText: "Nhập lý do huỷ cuộc hẹn...",
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.blue,
+                  ), // màu viền mặc định
                 ),
-                SizedBox(
-                  child: _buildOption(
-                    Icons.people_alt_rounded,
-                    "Trực tiếp",
-                    !isOnline,
-                    () {
-                      setState(() {
-                        isOnline = false;
-                        selectedConsult = "Offline";
-                      });
-                    },
-                    screenWidth,
-                  ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.blue, width: 2.0),
                 ),
-              ],
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.blue),
+                ),
+              ),
             ),
             SizedBox(height: screenWidth * 0.05),
             Row(
@@ -152,7 +128,7 @@ class _EditConsultationDialogState extends State<EditConsultationDialog> {
                   isPrimary: true,
                   screenWidth: screenWidth,
                   onPressed: () {
-                    editAppointment();
+                    cancelAppointment();
                   },
                 ),
               ],
@@ -162,39 +138,4 @@ class _EditConsultationDialogState extends State<EditConsultationDialog> {
       ),
     );
   }
-}
-
-Widget _buildOption(
-  IconData icon,
-  String text,
-  bool isSelected,
-  VoidCallback onTap,
-  double screenWidth,
-) {
-  return GestureDetector(
-    onTap: onTap,
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Transform.scale(
-          scale: screenWidth / 500,
-          child: Radio(
-            value: true,
-            groupValue: isSelected,
-            onChanged: (_) => onTap(),
-            activeColor: Colors.blue,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-        ),
-        Icon(icon, color: Colors.blue, size: screenWidth * 0.04),
-        SizedBox(width: screenWidth * 0.01),
-        Text(
-          text,
-          maxLines: null,
-          softWrap: true,
-          style: TextStyle(fontSize: screenWidth * 0.04),
-        ),
-      ],
-    ),
-  );
 }

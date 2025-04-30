@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:ayclinic_doctor_admin/dialog/PatientInfo.dart';
 import 'package:ayclinic_doctor_admin/dialog/Prescription.dart';
 import 'package:ayclinic_doctor_admin/dialog/Summary.dart';
 import 'package:ayclinic_doctor_admin/widget/buildMoreOption.dart';
@@ -146,7 +145,7 @@ class FinishMessageCard extends StatelessWidget {
                     onSelected: (value) {
                       switch (value) {
                         case "Thông tin bệnh nhân":
-                          showPatientInfoDialog(context);
+                          // showPatientInfoDialog(context);
                           break;
                         case "Xem tổng kết":
                           showSummaryDialog(context);

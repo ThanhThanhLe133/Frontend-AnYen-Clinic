@@ -13,7 +13,7 @@ Future<http.Response> makeRequest({
   String? fileFieldName,
 }) async {
   String? accessToken =
-      "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjkxYjcwZDMzLTI4OWEtNDU2MS1iMTIxLTI3MWYzY2M3YmNhZSIsInBob25lX251bWJlciI6Iis4NDM5NzgxMzM5OCIsInJvbGVzIjpbInBhdGllbnQiLCJhZG1pbiJdLCJpYXQiOjE3NDYwMjU5NzAsImV4cCI6MTc0NjAyOTU3MH0.TzhcqOe5umzIVP7aYkygvOpKZPVtlW6YIZ9YSxck2p0";
+      "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjkxYjcwZDMzLTI4OWEtNDU2MS1iMTIxLTI3MWYzY2M3YmNhZSIsInBob25lX251bWJlciI6Iis4NDM5NzgxMzM5OCIsInJvbGVzIjpbInBhdGllbnQiLCJhZG1pbiJdLCJpYXQiOjE3NDYwMzU0NTMsImV4cCI6MTc0NjAzOTA1M30.XxHhsD4ZLihkti92VP5cmdfPWn94PEoMK1_z_31wqXI";
   String? refreshToken =
       "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjkxYjcwZDMzLTI4OWEtNDU2MS1iMTIxLTI3MWYzY2M3YmNhZSIsInBob25lX251bWJlciI6Iis4NDM5NzgxMzM5OCIsInJvbGVzIjpbInBhdGllbnQiLCJhZG1pbiJdLCJpYXQiOjE3NDYwMTY1MTIsImV4cCI6MTc0NjAyMDExMn0.WM0rp5pesj5OXsxUvCHkQJbiKmannk_qWu0iD0NKSvQ";
   Map<String, String> requestHeaders = headers ?? {};
@@ -45,6 +45,10 @@ Future<http.Response> makeRequest({
 
       switch (method.toUpperCase()) {
         case 'GET':
+          if (url.contains('get-patient-profile') ||
+              url.contains('get-patient-health-records')) {
+            return await http.get(uri);
+          }
           return await http.get(uri, headers: requestHeaders);
         case 'POST':
           return await http.post(

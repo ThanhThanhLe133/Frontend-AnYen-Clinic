@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:ayclinic_doctor_admin/ADMIN/review/review_doctor_screen.dart';
-import 'package:ayclinic_doctor_admin/dialog/PatientInfo.dart';
 import 'package:ayclinic_doctor_admin/dialog/Prescription.dart';
 import 'package:ayclinic_doctor_admin/dialog/Summary.dart';
 import 'package:ayclinic_doctor_admin/widget/buildMoreOption.dart';
@@ -191,7 +190,7 @@ class FinishConsultingCard extends StatelessWidget {
                     onSelected: (value) {
                       switch (value) {
                         case "Thông tin bệnh nhân":
-                          showPatientInfoDialog(context);
+                          // showPatientInfoDialog(context);
                           break;
                         case "Thông tin bác sĩ":
                           showSummaryDialog(context);

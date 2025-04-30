@@ -79,7 +79,7 @@ class _MenuAdminState extends ConsumerState<MenuAdmin> {
           "Trắc nghiệm tâm lý",
           PsychologicalTestHomeScreen(),
         ),
-        buildMenuItem(Icons.list, "Danh sách bệnh nhân", PatientListScreen()),
+        buildMenuItem(Icons.people, "Danh sách bệnh nhân", PatientListScreen()),
         buildMenuItem(Icons.settings, "Cài đặt", AccountScreen()),
       ],
     );
