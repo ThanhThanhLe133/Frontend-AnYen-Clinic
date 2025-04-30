@@ -1,9 +1,11 @@
 import 'dart:math';
 
+import 'package:ayclinic_doctor_admin/ADMIN/admin_review/admin_review_screen.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/appointment/appointment_screen.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/consulting/consulting_screen.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/dashboard_admin/dashboard.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/message/message_screen.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/settings/account_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fab_circular_menu_plus/fab_circular_menu_plus.dart';
@@ -63,20 +65,22 @@ class _MenuAdminState extends ConsumerState<MenuAdmin> {
       children: [
         buildMenuItem(Icons.home, "Trang chủ", DashboardAdmin()),
         buildMenuItem(Icons.add, "Thêm bác sĩ", AddDoctorScreen()),
-        buildMenuItem(Icons.list, "Danh sách bác sĩ", DoctorListScreen()),
+        buildMenuItem(
+          Icons.local_hospital,
+          "Danh sách bác sĩ",
+          DoctorListScreen(),
+        ),
         buildMenuItem(Icons.event, "Lịch hẹn", AppointmentScreen()),
         buildMenuItem(Icons.message, "Tin nhắn", MessageScreen()),
-        buildMenuItem(Icons.question_answer, "DS Tư vấn", ConsultingScreen()),
-        buildMenuItem(Icons.settings, "Cài đặt", ListReviewDoctorScreen()),
+        buildMenuItem(Icons.reviews, "DS đánh giá", AdminReviewScreen()),
+
         buildMenuItem(
           Icons.library_books,
           "Trắc nghiệm tâm lý",
           PsychologicalTestHomeScreen(),
         ),
         buildMenuItem(Icons.list, "Danh sách bệnh nhân", PatientListScreen()),
-        // buildMenuItem(Icons.list, "Danh sách đánh giá", AdminReviewList()),
-
-        // buildMenuItem(Icons.support_agent, "Liên hệ CSKH", ChatScreen()),
+        buildMenuItem(Icons.settings, "Cài đặt", AccountScreen()),
       ],
     );
   }

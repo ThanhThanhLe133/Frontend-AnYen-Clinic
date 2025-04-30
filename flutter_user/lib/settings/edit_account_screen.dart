@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:anyen_clinic/dialog/SuccessDialog.dart';
+import 'package:anyen_clinic/function.dart';
 import 'package:anyen_clinic/login/login_screen.dart';
 import 'package:anyen_clinic/makeRequest.dart';
 import 'package:anyen_clinic/settings/account_screen.dart';

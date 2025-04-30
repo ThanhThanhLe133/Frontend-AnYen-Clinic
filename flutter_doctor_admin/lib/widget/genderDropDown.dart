@@ -18,6 +18,16 @@ class _GenderDropdownState extends State<GenderDropdown> {
     if (_genders.contains(widget.controller.text)) {
       _selectedGender = widget.controller.text;
     }
+    widget.controller.addListener(_updateSelectedGenderFromController);
+  }
+
+  void _updateSelectedGenderFromController() {
+    if (_genders.contains(widget.controller.text) &&
+        widget.controller.text != _selectedGender) {
+      setState(() {
+        _selectedGender = widget.controller.text;
+      });
+    }
   }
 
   @override

@@ -42,13 +42,3 @@ Future<void> deleteRefreshToken() async {
 Future<void> deleteLogin() async {
   await storage.delete(key: 'isLoggedIn');
 }
-
-String formatDate(String? dateString) {
-  if (dateString == null || dateString.isEmpty) return 'Unknown';
-  try {
-    DateTime parsedDate = DateTime.parse(dateString);
-    return DateFormat('MM/dd/yyyy').format(parsedDate);
-  } catch (e) {
-    return '';
-  }
-}

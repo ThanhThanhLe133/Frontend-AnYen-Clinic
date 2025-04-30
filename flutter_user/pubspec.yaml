@@ -32,6 +32,7 @@ dependencies:
   app_links: ^3.5.0
   flutter_spinkit: ^5.2.0
   shimmer: ^3.0.0
+  path: ^1.8.0
 
 
 dev_dependencies:

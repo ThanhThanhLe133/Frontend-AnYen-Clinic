@@ -23,7 +23,9 @@ class infoTitle extends StatelessWidget {
         Text(
           title,
           style: TextStyle(
-              fontSize: screenWidth * 0.035, color: Color(0xFF40494F)),
+            fontSize: screenWidth * 0.035,
+            color: Color(0xFF40494F),
+          ),
         ),
         Row(
           mainAxisSize: MainAxisSize.min,

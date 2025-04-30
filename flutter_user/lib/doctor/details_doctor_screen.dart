@@ -83,8 +83,8 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
       body: doctorProfile.isEmpty
           ? Center(
               child: SpinKitWaveSpinner(
-                color: Colors.blue, // Bạn đổi màu tùy ý
-                size: 75.0, // Size cũng chỉnh theo ý
+                color: Colors.blue,
+                size: 75.0,
               ),
             )
           : SingleChildScrollView(

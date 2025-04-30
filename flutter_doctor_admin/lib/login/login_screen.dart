@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:ayclinic_doctor_admin/OTP_verification/otp_verification_screen.dart';
 import 'package:ayclinic_doctor_admin/forgotPass/forgot_pass_screen.dart';
 import 'package:ayclinic_doctor_admin/Provider/UserProvider.dart';
+import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:ayclinic_doctor_admin/widget/buildPasswordField.dart';
 import 'package:ayclinic_doctor_admin/widget/inputPhoneNumber.dart';
 import 'package:ayclinic_doctor_admin/widget/normalButton.dart';
@@ -8,6 +11,7 @@ import 'package:ayclinic_doctor_admin/widget/phoneCode_drop_down/country_code_pr
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -46,22 +50,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ref.read(phoneNumberProvider.notifier).state = phoneNumber;
     ref.read(passwordProvider.notifier).state = password;
     try {
-      // final response = await http.post(
-      //   Uri.parse('$apiUrl/otp/send-otp'),
-      //   headers: {"Content-Type": "application/json"},
-      //   body: json.encode({"phone_number": phoneNumber}),
-      // );
-      // debugPrint("🌐 API URL: $phoneNumber");
-      // debugPrint("📦 Status code: ${response.statusCode}");
-      // debugPrint("🧾 Body: ${response.body}");
-      // final responseData = jsonDecode(response.body);
+      final response = await http.post(
+        Uri.parse('$apiUrl/otp/send-otp'),
+        headers: {"Content-Type": "application/json"},
+        body: json.encode({"phone_number": phoneNumber}),
+      );
+      debugPrint("🌐 API URL: $phoneNumber");
+      debugPrint("📦 Status code: ${response.statusCode}");
+      debugPrint("🧾 Body: ${response.body}");
+      final responseData = jsonDecode(response.body);
 
-      // if (response.statusCode == 200) {
-
-      // } else {
-      //   debugPrint("⚠️ Error message from API: ${responseData['message']}");
-      //   throw Exception(responseData['message'] ?? "Lỗi đăng nhập");
-      // }
+      if (response.statusCode == 200) {
+      } else {
+        debugPrint("⚠️ Error message from API: ${responseData['message']}");
+        throw Exception(responseData['message'] ?? "Lỗi đăng nhập");
+      }
       Navigator.push(
         context,
         MaterialPageRoute(

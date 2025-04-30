@@ -239,7 +239,7 @@ class _ButtonReviewDetailState extends State<ButtonReviewDetail> {
         textStyle: TextStyle(
           fontSize: widget.screenWidth * 0.035,
           fontFamily: 'Inter-Medium',
-          color: isPressed ? Colors.red : const Color(0xFFD9D9D9),
+          color: isPressed ? Colors.blue : const Color(0xFFD9D9D9),
         ),
       ),
       child: Row(

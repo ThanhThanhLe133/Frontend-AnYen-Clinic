@@ -41,7 +41,6 @@ Future<http.Response> makeRequest({
 
       switch (method.toUpperCase()) {
         case 'GET':
-          debugPrint('Got response!');
           return await http.get(
             uri,
             headers: requestHeaders,

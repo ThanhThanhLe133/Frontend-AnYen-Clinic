@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:anyen_clinic/appointment/appointment_screen.dart';
 import 'package:anyen_clinic/appointment/changeDoctor/changeDoctor_screen.dart';
 import 'package:anyen_clinic/dialog/SuccessDialog.dart';
+import 'package:anyen_clinic/function.dart';
 import 'package:anyen_clinic/makeRequest.dart';
 import 'package:anyen_clinic/payment/PaymentOptionWidget.dart';
 import 'package:anyen_clinic/provider/patient_provider.dart';

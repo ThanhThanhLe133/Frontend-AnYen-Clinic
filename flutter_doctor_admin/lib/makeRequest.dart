@@ -12,14 +12,13 @@ Future<http.Response> makeRequest({
   File? file,
   String? fileFieldName,
 }) async {
-  String? refreshToken = await getRefreshToken();
-  String? accessToken = await getAccessToken();
-
+  String? accessToken =
+      "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjkxYjcwZDMzLTI4OWEtNDU2MS1iMTIxLTI3MWYzY2M3YmNhZSIsInBob25lX251bWJlciI6Iis4NDM5NzgxMzM5OCIsInJvbGVzIjpbInBhdGllbnQiLCJhZG1pbiJdLCJpYXQiOjE3NDYwMjU5NzAsImV4cCI6MTc0NjAyOTU3MH0.TzhcqOe5umzIVP7aYkygvOpKZPVtlW6YIZ9YSxck2p0";
+  String? refreshToken =
+      "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjkxYjcwZDMzLTI4OWEtNDU2MS1iMTIxLTI3MWYzY2M3YmNhZSIsInBob25lX251bWJlciI6Iis4NDM5NzgxMzM5OCIsInJvbGVzIjpbInBhdGllbnQiLCJhZG1pbiJdLCJpYXQiOjE3NDYwMTY1MTIsImV4cCI6MTc0NjAyMDExMn0.WM0rp5pesj5OXsxUvCHkQJbiKmannk_qWu0iD0NKSvQ";
   Map<String, String> requestHeaders = headers ?? {};
 
-  if (accessToken != null) {
-    requestHeaders['Authorization'] = accessToken;
-  }
+  requestHeaders['Authorization'] = accessToken;
 
   final Uri uri = Uri.parse(url);
 
@@ -31,6 +30,11 @@ Future<http.Response> makeRequest({
       }
 
       var request = http.MultipartRequest('POST', uri);
+      if (body != null) {
+        body.forEach((key, value) {
+          request.fields[key] = value.toString();
+        });
+      }
       var pic = await http.MultipartFile.fromPath(fileFieldName, file.path);
       request.files.add(pic);
       request.headers.addAll(requestHeaders);
