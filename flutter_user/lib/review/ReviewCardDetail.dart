@@ -9,8 +9,6 @@ import 'package:anyen_clinic/storage.dart';
 import 'package:flutter/material.dart';
 
 class ReviewCardDetail extends StatefulWidget {
-  final bool isReport;
-  final bool isHelpful;
   final String username;
   final String date;
   final String reviewText;
@@ -21,8 +19,6 @@ class ReviewCardDetail extends StatefulWidget {
   final double screenHeight;
   const ReviewCardDetail({
     super.key,
-    required this.isReport,
-    required this.isHelpful,
     required this.reviewId,
     required this.username,
     required this.date,
@@ -76,11 +72,37 @@ class _ReviewCardDetailState extends State<ReviewCardDetail> {
     }
   }
 
+  Future<void> fetchPatientReview() async {
+    String reviewId = widget.reviewId;
+    final response = await makeRequest(
+      url: '$apiUrl/review/get-review/?review_id=$reviewId',
+      method: 'GET',
+    );
+    if (response.statusCode != 200) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      if (data['err'] == 0) {
+        setState(() {
+          isPressedHelpful = data['data']['isHelpful'] ?? false;
+          isPressedReport = data['data']['isReport'] ?? false;
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data['mes'] ?? "Lỗi tải dữ liệu.")),
+        );
+        Navigator.pop(context);
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    isPressedReport = widget.isReport;
-    isPressedHelpful = widget.isHelpful;
+    fetchPatientReview();
   }
 
   @override
