@@ -27,7 +27,7 @@ class _SummaryDialogState extends State<SummaryDialog> {
   Future<void> fetchSummary() async {
     String appointmentId = widget.appointment_id;
     final response = await makeRequest(
-      url: '$apiUrl/admin/get-appointment',
+      url: '$apiUrl/admin/get-appointment/?appointment_id=$appointmentId',
       method: 'GET',
     );
     if (response.statusCode != 200) {

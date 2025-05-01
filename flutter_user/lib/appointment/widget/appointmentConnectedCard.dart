@@ -5,7 +5,9 @@ import 'package:anyen_clinic/appointment/appointment_screen.dart';
 import 'package:anyen_clinic/appointment/details_doctor.dart';
 import 'package:anyen_clinic/dialog/ChangeConsultationDialog.dart';
 import 'package:anyen_clinic/dialog/PaymentHistory.dart';
+import 'package:anyen_clinic/dialog/Prescription.dart';
 import 'package:anyen_clinic/dialog/SuccessDialog.dart';
+import 'package:anyen_clinic/dialog/Summary.dart';
 import 'package:anyen_clinic/dialog/option_dialog.dart';
 import 'package:anyen_clinic/doctor/details_doctor_screen.dart';
 import 'package:anyen_clinic/makeRequest.dart';
@@ -247,7 +249,8 @@ class AppointmentConnectedCardState
                             "Thông tin bác sĩ",
                             "Lịch sử thanh toán",
                             "Ẩn lịch hẹn",
-                            "Xem đơn thuốc"
+                            "Xem đơn thuốc",
+                            "Xem tổng kết"
                           ],
                           onSelected: (value) {
                             switch (value) {
@@ -325,24 +328,39 @@ class AppointmentConnectedCardState
                                 showOptionDialog(
                                     context,
                                     "Xác nhận",
-                                    "Bạn có chắc muốn ẩn lịch hẹn này không?",
+                                    "Bạn có chắc muốn ẩn lịch hẹn này không? Lịch hẹn sẽ không còn được hiển thị nữa!",
                                     "Huỷ",
                                     "Ẩn",
                                     hideAppointment);
                                 break;
                               case "Xem đơn thuốc":
                                 if (widget.status != "Completed") {
-                                  showOptionDialog(
-                                      context,
-                                      "Lỗi",
-                                      "Cuộc hẹn chưa hoàn thành",
-                                      "HUỶ",
-                                      "OK", () {
-                                    Navigator.of(context).pop();
-                                  });
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                          "Cuộc hẹn chưa hoàn thành/đã huỷ"),
+                                    ),
+                                  );
                                 } else {
-                                  // showPrescriptionDialog(context,
-                                  //     widget.appointment_id, widget.isOnline);
+                                  showPrescriptionDialog(
+                                    context,
+                                    widget.appointment_id,
+                                  );
+                                }
+                                break;
+                              case "Xem tổng kết":
+                                if (widget.status != "Completed") {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                          "Cuộc hẹn chưa hoàn thành/đã huỷ"),
+                                    ),
+                                  );
+                                } else {
+                                  showSummaryDialog(
+                                    context,
+                                    widget.appointment_id,
+                                  );
                                 }
                                 break;
                               default:

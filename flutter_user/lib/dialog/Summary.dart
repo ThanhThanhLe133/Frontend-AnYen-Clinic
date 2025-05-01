@@ -1,11 +1,10 @@
 import 'dart:convert';
-
-import 'package:ayclinic_doctor_admin/makeRequest.dart';
-import 'package:ayclinic_doctor_admin/storage.dart';
-import 'package:ayclinic_doctor_admin/widget/buildButton.dart';
+import 'package:anyen_clinic/makeRequest.dart';
+import 'package:anyen_clinic/storage.dart';
+import 'package:anyen_clinic/widget/buildButton.dart';
 import 'package:flutter/material.dart';
 
-void showSummaryDoctorDialog(BuildContext context, String appointmentId) {
+void showSummaryDialog(BuildContext context, String appointmentId) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -27,7 +26,7 @@ class _SummaryDialogState extends State<SummaryDialog> {
   Future<void> fetchSummary() async {
     String appointmentId = widget.appointment_id;
     final response = await makeRequest(
-      url: '$apiUrl/doctor/get-appointment/?appointment_id=$appointmentId',
+      url: '$apiUrl/patient/get-appointment/?appointment_id=$appointmentId',
       method: 'GET',
     );
     if (response.statusCode != 200) {
@@ -75,16 +74,6 @@ class _SummaryDialogState extends State<SummaryDialog> {
             Center(
               child: Text(
                 summary['description'],
-                style: TextStyle(
-                  fontSize: screenWidth * 0.04,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            SizedBox(height: screenWidth * 0.05),
-            Center(
-              child: Text(
-                summary['note_for_admin'],
                 style: TextStyle(
                   fontSize: screenWidth * 0.04,
                   fontWeight: FontWeight.bold,
