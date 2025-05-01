@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:ayclinic_doctor_admin/ADMIN/patient/patient_detail_screen.dart';
+import 'package:ayclinic_doctor_admin/dialog/patient_detail_screen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/appointment/appointment_screen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/dialog/InputPrescription.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/dialog/InputSummary.dart';

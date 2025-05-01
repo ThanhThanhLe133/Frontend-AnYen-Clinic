@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/details_doctor_screen.dart';
-import 'package:ayclinic_doctor_admin/ADMIN/patient/patient_detail_screen.dart';
+import 'package:ayclinic_doctor_admin/dialog/patient_detail_screen.dart';
 import 'package:ayclinic_doctor_admin/dialog/CancelAppointmentDialog.dart';
 import 'package:ayclinic_doctor_admin/dialog/ChangeConsultationDialog.dart';
 import 'package:ayclinic_doctor_admin/dialog/EditDateAppointmentDialog.dart';
