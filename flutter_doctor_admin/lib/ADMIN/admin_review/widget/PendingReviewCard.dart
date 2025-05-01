@@ -8,6 +8,7 @@ class PendingReviewCard extends StatelessWidget {
   final String satisfactionText;
   final double screenWidth;
   final double screenHeight;
+  final bool isNegative; // Thêm thuộc tính mới
 
   const PendingReviewCard({
     super.key,
@@ -18,6 +19,7 @@ class PendingReviewCard extends StatelessWidget {
     required this.satisfactionText,
     required this.screenHeight,
     required this.screenWidth,
+    this.isNegative = false, // Mặc định là false
   });
 
   @override
@@ -40,12 +42,33 @@ class PendingReviewCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            username,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: screenWidth * 0.045,
-            ),
+          Row( // ✅ Thêm hàng chứa tên và nhãn
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                username,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: screenWidth * 0.045,
+                ),
+              ),
+              if (isNegative)
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.red[400],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    "Tiêu cực",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: screenWidth * 0.03,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+            ],
           ),
           SizedBox(height: 4),
           Text(

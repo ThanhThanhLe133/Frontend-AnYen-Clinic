@@ -16,6 +16,7 @@ class ApprovedScreen extends StatelessWidget {
         'reviewText': 'Thái độ phục vụ rất tốt!',
         'emoji': '😊',
         'satisfactionText': 'Rất hài lòng',
+        'reportCount': 2, // ✅ Có 2 lượt báo cáo
       },
       {
         'username': 'Lê Thị B',
@@ -23,24 +24,43 @@ class ApprovedScreen extends StatelessWidget {
         'reviewText': 'Chưa hài lòng với thời gian xử lý.',
         'emoji': '😕',
         'satisfactionText': 'Chưa hài lòng',
+        'reportCount': 0, // ✅ Không có lượt báo cáo
+      },
+            {
+        'username': 'Nguyễn Văn A',
+        'date': '20/04/2025',
+        'reviewText': 'Thái độ phục vụ rất tốt!',
+        'emoji': '😊',
+        'satisfactionText': 'Rất hài lòng',
+        'reportCount': 2, // ✅ Có 2 lượt báo cáo
+      },
+      {
+        'username': 'Lê Thị B',
+        'date': '18/04/2025',
+        'reviewText': 'Chưa hài lòng với thời gian xử lý.',
+        'emoji': '😕',
+        'satisfactionText': 'Chưa hài lòng',
+        'reportCount': 0, // ✅ Không có lượt báo cáo
       },
     ];
 
     return ListView.builder(
       shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
+      physics: BouncingScrollPhysics(),
       itemCount: reviews.length,
       itemBuilder: (context, index) {
         final review = reviews[index];
-        return ApprovedReviewCard(
-          username: review['username'] ?? '',
-          date: review['date'] ?? '',
-          reviewText: review['reviewText'] ?? '',
-          emoji: review['emoji'] ?? '',
-          satisfactionText: review['satisfactionText'] ?? '',
-          screenHeight: screenHeight,
-          screenWidth: screenWidth,
-        );
+return ApprovedReviewCard(
+  username: (review['username'] as String?) ?? '',
+  date: (review['date'] as String?) ?? '',
+  reviewText: (review['reviewText'] as String?) ?? '',
+  emoji: (review['emoji'] as String?) ?? '',
+  satisfactionText: (review['satisfactionText'] as String?) ?? '',
+  screenHeight: screenHeight,
+  screenWidth: screenWidth,
+  reportCount: (review['reportCount'] as int?) ?? 0, // ✅ Fix kiểu dữ liệu
+);
+
       },
     );
   }

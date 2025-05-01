@@ -8,6 +8,7 @@ class ApprovedReviewCard extends StatelessWidget {
   final String satisfactionText;
   final double screenWidth;
   final double screenHeight;
+  final int reportCount; // ✅ Thêm trường mới
 
   const ApprovedReviewCard({
     super.key,
@@ -18,6 +19,7 @@ class ApprovedReviewCard extends StatelessWidget {
     required this.satisfactionText,
     required this.screenHeight,
     required this.screenWidth,
+    this.reportCount = 0, // ✅ Mặc định là 0
   });
 
   @override
@@ -40,12 +42,34 @@ class ApprovedReviewCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            username,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: screenWidth * 0.045,
-            ),
+          // ✅ Hàng chứa username và nhãn số báo cáo
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                username,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: screenWidth * 0.045,
+                ),
+              ),
+              if (reportCount > 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.red[400],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '$reportCount báo cáo',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: screenWidth * 0.03,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+            ],
           ),
           SizedBox(height: 4),
           Text(

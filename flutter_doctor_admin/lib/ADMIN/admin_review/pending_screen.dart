@@ -16,6 +16,7 @@ class PendingScreen extends StatelessWidget {
         'reviewText': 'Cần cải thiện chất lượng tư vấn.',
         'emoji': '😐',
         'satisfactionText': 'Bình thường',
+        'isNegative': false, // ✅ thêm trường này
       },
       {
         'username': 'Phạm Thị D',
@@ -23,23 +24,41 @@ class PendingScreen extends StatelessWidget {
         'reviewText': 'Dịch vụ tốt nhưng thời gian chờ lâu.',
         'emoji': '😕',
         'satisfactionText': 'Chưa hài lòng',
+        'isNegative': true, // ✅ đánh dấu tiêu cực
+      },
+            {
+        'username': 'Trần Văn C',
+        'date': '22/04/2025',
+        'reviewText': 'Cần cải thiện chất lượng tư vấn.',
+        'emoji': '😐',
+        'satisfactionText': 'Bình thường',
+        'isNegative': false, // ✅ thêm trường này
+      },
+      {
+        'username': 'Phạm Thị D',
+        'date': '19/04/2025',
+        'reviewText': 'Dịch vụ tốt nhưng thời gian chờ lâu.',
+        'emoji': '😕',
+        'satisfactionText': 'Chưa hài lòng',
+        'isNegative': true, // ✅ đánh dấu tiêu cực
       },
     ];
 
     return ListView.builder(
       shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
+      physics: BouncingScrollPhysics(),
       itemCount: pendingReviews.length,
       itemBuilder: (context, index) {
         final review = pendingReviews[index];
         return PendingReviewCard(
-          username: review['username'] ?? '',
-          date: review['date'] ?? '',
-          reviewText: review['reviewText'] ?? '',
-          emoji: review['emoji'] ?? '',
-          satisfactionText: review['satisfactionText'] ?? '',
+          username: review['username'] as String? ?? '',
+          date: review['date'] as String? ?? '',
+          reviewText: review['reviewText'] as String? ?? '',
+          emoji: review['emoji'] as String? ?? '',
+          satisfactionText: review['satisfactionText'] as String? ?? '',
           screenHeight: screenHeight,
           screenWidth: screenWidth,
+          isNegative: review['isNegative'] as bool? ?? false, // ép kiểu bool
         );
       },
     );
