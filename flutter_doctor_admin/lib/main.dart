@@ -32,7 +32,7 @@ class MainApp extends StatelessWidget {
           bodySmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
         ),
       ),
-      home: DashboardDoctor(),
+      home: AdminReviewScreen(),
     );
   }
 }

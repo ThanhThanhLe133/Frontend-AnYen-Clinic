@@ -1,67 +1,89 @@
+import 'dart:convert';
+
+import 'package:ayclinic_doctor_admin/function.dart';
+import 'package:ayclinic_doctor_admin/makeRequest.dart';
+import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/admin_review/widget/ApprovedReviewCard.dart';
 
-class ApprovedScreen extends StatelessWidget {
+class ApprovedScreen extends StatefulWidget {
   const ApprovedScreen({super.key});
+
+  @override
+  State<ApprovedScreen> createState() => _ApprovedScreenState();
+}
+
+class _ApprovedScreenState extends State<ApprovedScreen> {
+  List<Map<String, dynamic>> reviews = [];
+
+  Future<void> fetchReviews() async {
+    final response = await makeRequest(
+      url: '$apiUrl/admin/get-all-reviews',
+      method: 'GET',
+    );
+
+    if (response.statusCode != 200) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        reviews =
+            List<Map<String, dynamic>>.from(data['data']).where((review) {
+              return review['status'] == 'Approved' ||
+                  review['status'] == 'Hidden';
+            }).toList();
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchReviews();
+  }
 
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
 
-    final reviews = [
-      {
-        'username': 'Nguyễn Văn A',
-        'date': '20/04/2025',
-        'reviewText': 'Thái độ phục vụ rất tốt!',
-        'emoji': '😊',
-        'satisfactionText': 'Rất hài lòng',
-        'reportCount': 2, // ✅ Có 2 lượt báo cáo
-      },
-      {
-        'username': 'Lê Thị B',
-        'date': '18/04/2025',
-        'reviewText': 'Chưa hài lòng với thời gian xử lý.',
-        'emoji': '😕',
-        'satisfactionText': 'Chưa hài lòng',
-        'reportCount': 0, // ✅ Không có lượt báo cáo
-      },
-            {
-        'username': 'Nguyễn Văn A',
-        'date': '20/04/2025',
-        'reviewText': 'Thái độ phục vụ rất tốt!',
-        'emoji': '😊',
-        'satisfactionText': 'Rất hài lòng',
-        'reportCount': 2, // ✅ Có 2 lượt báo cáo
-      },
-      {
-        'username': 'Lê Thị B',
-        'date': '18/04/2025',
-        'reviewText': 'Chưa hài lòng với thời gian xử lý.',
-        'emoji': '😕',
-        'satisfactionText': 'Chưa hài lòng',
-        'reportCount': 0, // ✅ Không có lượt báo cáo
-      },
-    ];
-
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: BouncingScrollPhysics(),
-      itemCount: reviews.length,
-      itemBuilder: (context, index) {
-        final review = reviews[index];
-return ApprovedReviewCard(
-  username: (review['username'] as String?) ?? '',
-  date: (review['date'] as String?) ?? '',
-  reviewText: (review['reviewText'] as String?) ?? '',
-  emoji: (review['emoji'] as String?) ?? '',
-  satisfactionText: (review['satisfactionText'] as String?) ?? '',
-  screenHeight: screenHeight,
-  screenWidth: screenWidth,
-  reportCount: (review['reportCount'] as int?) ?? 0, // ✅ Fix kiểu dữ liệu
-);
-
-      },
-    );
+    return reviews.isEmpty
+        ? Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.event_busy, size: 50.0, color: Colors.grey),
+              SizedBox(height: 10),
+              Text(
+                "Chưa có đánh giá",
+                style: TextStyle(fontSize: 18, color: Colors.grey),
+              ),
+            ],
+          ),
+        )
+        : ListView.builder(
+          shrinkWrap: true,
+          physics: BouncingScrollPhysics(),
+          itemCount: reviews.length,
+          itemBuilder: (context, index) {
+            final review = reviews[index];
+            return ApprovedReviewCard(
+              reviewId: review['id'],
+              status: review['status'],
+              username: review['full_name'] as String? ?? '',
+              date: formatDate(review['createdAt']),
+              reviewText: review['comment'] ?? '',
+              emoji: getEmojiFromRating(review['rating']),
+              satisfactionText: getSatisfactionText(review['rating']),
+              screenHeight: screenHeight,
+              screenWidth: screenWidth,
+              reportCount:
+                  int.tryParse(review['report_count']?.toString() ?? '0') ?? 0,
+            );
+          },
+        );
   }
 }

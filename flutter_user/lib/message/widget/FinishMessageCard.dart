@@ -133,14 +133,14 @@ class MessageConnectedCard extends StatelessWidget {
                     onSelected: (value) {
                       switch (value) {
                         case "Xem đơn thuốc":
-                          showPrescriptionDialog(
-                            context,
-                            [
-                              {"name": "Paracetamol", "dosage": "Sáng 1v"},
-                              {"name": "Amoxicillin", "dosage": "Sáng 1v"},
-                              {"name": "Vitamin C", "dosage": "Sáng 1v"},
-                            ],
-                          );
+                          // showPrescriptionDialog(
+                          //   context,
+                          //   [
+                          //     {"name": "Paracetamol", "dosage": "Sáng 1v"},
+                          //     {"name": "Amoxicillin", "dosage": "Sáng 1v"},
+                          //     {"name": "Vitamin C", "dosage": "Sáng 1v"},
+                          //   ],
+                          // );
                           break;
                         case "Thông tin bác sĩ":
                           break;
