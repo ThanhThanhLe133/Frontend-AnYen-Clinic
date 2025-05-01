@@ -1,18 +1,72 @@
+import 'dart:convert';
+
+import 'package:ayclinic_doctor_admin/DOCTOR/dialog/InputPrescription.dart';
 import 'package:ayclinic_doctor_admin/dialog/option_dialog.dart';
+import 'package:ayclinic_doctor_admin/makeRequest.dart';
+import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:ayclinic_doctor_admin/widget/buildButton.dart';
 import 'package:flutter/material.dart';
 
-void showInputSummaryDialog(BuildContext context) {
+void showInputSummaryDialog(BuildContext context, String appointmentId) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
-      return InputSummaryDialog();
+      return InputSummaryDialog(appointment_id: appointmentId);
     },
   );
 }
 
-class InputSummaryDialog extends StatelessWidget {
-  const InputSummaryDialog({super.key});
+class InputSummaryDialog extends StatefulWidget {
+  const InputSummaryDialog({super.key, required this.appointment_id});
+  final String appointment_id;
+
+  @override
+  State<InputSummaryDialog> createState() => _InputSummaryDialogState();
+}
+
+class _InputSummaryDialogState extends State<InputSummaryDialog> {
+  TextEditingController descriptionController = TextEditingController();
+  TextEditingController noteAdminController = TextEditingController();
+
+  Future<void> completeAppointment() async {
+    String description = descriptionController.text.trim();
+    String noteForAdmin = noteAdminController.text.trim();
+    try {
+      final response = await makeRequest(
+        url: '$apiUrl/doctor/confirm-appointment',
+        method: 'PATCH',
+        body: {
+          "appointment_id": widget.appointment_id,
+          "description": description,
+          "note_for_admin": noteForAdmin,
+        },
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Cuộc hẹn đã được kết thúc")));
+        showInputPrescriptionDialog(context, widget.appointment_id);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data['mes'] ?? "Lỗi kết thúc lịch hẹn")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Đã xảy ra lỗi: $e")));
+    }
+  }
+
+  @override
+  void dispose() {
+    descriptionController.dispose();
+    noteAdminController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +111,7 @@ class InputSummaryDialog extends StatelessWidget {
               SizedBox(height: screenWidth * 0.05),
               _buildLabel("Tổng kết"),
               SizedBox(height: screenWidth * 0.03),
-              _buildTextField(50, 5),
+              _buildTextField(50, 5, descriptionController),
               SizedBox(height: screenWidth * 0.03),
 
               Align(
@@ -68,7 +122,7 @@ class InputSummaryDialog extends StatelessWidget {
                   textAlign: TextAlign.left,
                 ),
               ),
-              _buildTextField(20, 2),
+              _buildTextField(20, 2, noteAdminController),
               SizedBox(height: screenWidth * 0.05),
               Center(
                 child: CustomButton(
@@ -82,7 +136,9 @@ class InputSummaryDialog extends StatelessWidget {
                         "Bạn muốn xác nhận kết thúc ca tư vấn này?",
                         "HUỶ",
                         "ĐỒNG Ý",
-                        null,
+                        () {
+                          completeAppointment();
+                        },
                       ),
                 ),
               ),
@@ -113,8 +169,13 @@ Widget _buildLabel(String text) {
 }
 
 /// Hàm tạo ô nhập thông tin
-Widget _buildTextField(double minHeight, int maxLines) {
+Widget _buildTextField(
+  double minHeight,
+  int maxLines,
+  TextEditingController controller,
+) {
   return TextField(
+    controller: controller,
     style: TextStyle(fontSize: 14),
     decoration: InputDecoration(
       isDense: true,

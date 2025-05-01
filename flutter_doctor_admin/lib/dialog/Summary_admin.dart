@@ -1,17 +1,54 @@
+import 'dart:convert';
+
+import 'package:ayclinic_doctor_admin/makeRequest.dart';
+import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:ayclinic_doctor_admin/widget/buildButton.dart';
 import 'package:flutter/material.dart';
 
-void showSummaryDialog(BuildContext context) {
+void showSummaryAdminDialog(BuildContext context, String appointmentId) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
-      return SummaryDialog();
+      return SummaryDialog(appointment_id: appointmentId);
     },
   );
 }
 
-class SummaryDialog extends StatelessWidget {
-  const SummaryDialog({super.key});
+class SummaryDialog extends StatefulWidget {
+  final String appointment_id;
+  const SummaryDialog({super.key, required this.appointment_id});
+
+  @override
+  State<SummaryDialog> createState() => _SummaryDialogState();
+}
+
+class _SummaryDialogState extends State<SummaryDialog> {
+  Map<String, dynamic> summary = {};
+  Future<void> fetchSummary() async {
+    String appointmentId = widget.appointment_id;
+    final response = await makeRequest(
+      url: '$apiUrl/admin/get-appointment',
+      method: 'GET',
+    );
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        summary = data['data'];
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchSummary();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +74,17 @@ class SummaryDialog extends StatelessWidget {
             SizedBox(height: screenWidth * 0.05),
             Center(
               child: Text(
-                "bệnh nhân abccsjjjjjjjjjjjjjjjjjjjjjj",
+                summary['description'],
+                style: TextStyle(
+                  fontSize: screenWidth * 0.04,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            SizedBox(height: screenWidth * 0.05),
+            Center(
+              child: Text(
+                summary['note_for_admin'],
                 style: TextStyle(
                   fontSize: screenWidth * 0.04,
                   fontWeight: FontWeight.bold,

@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:ayclinic_doctor_admin/dialog/Prescription.dart';
-import 'package:ayclinic_doctor_admin/dialog/Summary.dart';
+import 'package:ayclinic_doctor_admin/dialog/Summary_doctor.dart';
 import 'package:ayclinic_doctor_admin/widget/buildMoreOption.dart';
 import 'package:flutter/material.dart';
 
@@ -148,14 +148,14 @@ class FinishMessageCard extends StatelessWidget {
                           // showPatientInfoDialog(context);
                           break;
                         case "Xem tổng kết":
-                          showSummaryDialog(context);
+                          // showSummaryDialog(context);
                           break;
                         case "Xem đơn thuốc":
-                          showPrescriptionDialog(context, [
-                            {"name": "Paracetamol", "dosage": "Sáng 1v"},
-                            {"name": "Amoxicillin", "dosage": "Sáng 1v"},
-                            {"name": "Vitamin C", "dosage": "Sáng 1v"},
-                          ]);
+                          // showPrescriptionDialog(context, [
+                          //   {"name": "Paracetamol", "dosage": "Sáng 1v"},
+                          //   {"name": "Amoxicillin", "dosage": "Sáng 1v"},
+                          //   {"name": "Vitamin C", "dosage": "Sáng 1v"},
+                          // ]);
                           break;
                         default:
                       }
@@ -180,7 +180,8 @@ class FinishMessageCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     ElevatedButton(
-                      onPressed: () => showSummaryDialog(context),
+                      onPressed: () {},
+                      // => showSummaryDialog(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xFF119CF0), //
                         shape: RoundedRectangleBorder(

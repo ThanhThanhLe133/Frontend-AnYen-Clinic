@@ -1,30 +1,86 @@
+import 'dart:convert';
+
+import 'package:ayclinic_doctor_admin/DOCTOR/appointment/appointment_screen.dart';
+import 'package:ayclinic_doctor_admin/dialog/SuccessDialog.dart';
+import 'package:ayclinic_doctor_admin/makeRequest.dart';
+import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:ayclinic_doctor_admin/widget/buildButton.dart';
 import 'package:flutter/material.dart';
 
-void showInputPrescriptionDialog(BuildContext context) {
+void showInputPrescriptionDialog(BuildContext context, String appointmentId) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
-      return InputPrescriptionDialog();
+      return InputPrescriptionDialog(appointment_id: appointmentId);
     },
   );
 }
 
 class InputPrescriptionDialog extends StatefulWidget {
-  const InputPrescriptionDialog({super.key});
-
+  const InputPrescriptionDialog({super.key, required this.appointment_id});
+  final String appointment_id;
   @override
   State<InputPrescriptionDialog> createState() =>
       _InputPrescriptionDialogState();
 }
 
 class _InputPrescriptionDialogState extends State<InputPrescriptionDialog> {
-  List<TextEditingController> controllers = [TextEditingController()];
+  List<Map<String, TextEditingController>> controllers = [
+    {'name_amount': TextEditingController(), 'dosage': TextEditingController()},
+  ];
 
   void _addTextField() {
     setState(() {
-      controllers.add(TextEditingController());
+      controllers.add({
+        'name_amount': TextEditingController(),
+        'dosage': TextEditingController(),
+      });
     });
+  }
+
+  Future<void> savePrescription() async {
+    try {
+      List<Map<String, String>> details =
+          controllers.map((controllerMap) {
+            return {
+              "name_amount": controllerMap['name_amount']!.text,
+              "dosage": controllerMap['dosage']!.text,
+            };
+          }).toList();
+      final response = await makeRequest(
+        url: '$apiUrl/doctor/create-prescription',
+        method: 'PATCH',
+        body: {"appointment_id": widget.appointment_id, "details": details},
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        showSuccessDialog(
+          context,
+          AppointmentScreen(),
+          "Lưu thành công",
+          "Quay lại",
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data['mes'] ?? "Lỗi kết thúc lịch hẹn")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Đã xảy ra lỗi: $e")));
+    }
+  }
+
+  @override
+  void dispose() {
+    for (var controllerMap in controllers) {
+      controllerMap['name_amount']?.dispose();
+      controllerMap['dosage']?.dispose();
+    }
+    super.dispose();
   }
 
   @override
@@ -90,13 +146,22 @@ class _InputPrescriptionDialogState extends State<InputPrescriptionDialog> {
               SizedBox(height: screenWidth * 0.05),
               Divider(height: 1),
               SizedBox(height: screenWidth * 0.05),
-              Center(
-                child: CustomButton(
-                  text: "Thêm mới",
-                  isPrimary: true,
-                  screenWidth: screenWidth,
-                  onPressed: _addTextField,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  CustomButton(
+                    text: "Thêm mới",
+                    isPrimary: false,
+                    screenWidth: screenWidth,
+                    onPressed: _addTextField,
+                  ),
+                  CustomButton(
+                    text: "Lưu",
+                    isPrimary: true,
+                    screenWidth: screenWidth,
+                    onPressed: savePrescription,
+                  ),
+                ],
               ),
             ],
           ),
@@ -107,7 +172,10 @@ class _InputPrescriptionDialogState extends State<InputPrescriptionDialog> {
 }
 
 /// Hàm tạo ô nhập thông tin
-Widget _buildTextField(TextEditingController controller, double screenWidth) {
+Widget _buildTextField(
+  Map<String, TextEditingController> controllerMap,
+  double screenWidth,
+) {
   return Padding(
     padding: EdgeInsets.symmetric(vertical: screenWidth * 0.02),
     child: Row(
@@ -116,7 +184,7 @@ Widget _buildTextField(TextEditingController controller, double screenWidth) {
         SizedBox(
           width: screenWidth * 0.4,
           child: TextField(
-            controller: controller,
+            controller: controllerMap['name_amount'],
             style: TextStyle(fontSize: 14),
             decoration: InputDecoration(
               isDense: true,
@@ -141,6 +209,7 @@ Widget _buildTextField(TextEditingController controller, double screenWidth) {
         SizedBox(
           width: screenWidth * 0.2,
           child: TextField(
+            controller: controllerMap['dosage'],
             style: TextStyle(fontSize: 14),
             decoration: InputDecoration(
               isDense: true,

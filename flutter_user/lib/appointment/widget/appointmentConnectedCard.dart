@@ -246,7 +246,8 @@ class AppointmentConnectedCardState
                             "Thay đổi hình thức Tư vấn",
                             "Thông tin bác sĩ",
                             "Lịch sử thanh toán",
-                            "Ẩn lịch hẹn"
+                            "Ẩn lịch hẹn",
+                            "Xem đơn thuốc"
                           ],
                           onSelected: (value) {
                             switch (value) {
@@ -328,6 +329,22 @@ class AppointmentConnectedCardState
                                     "Huỷ",
                                     "Ẩn",
                                     hideAppointment);
+                                break;
+                              case "Xem đơn thuốc":
+                                if (widget.status != "Completed") {
+                                  showOptionDialog(
+                                      context,
+                                      "Lỗi",
+                                      "Cuộc hẹn chưa hoàn thành",
+                                      "HUỶ",
+                                      "OK", () {
+                                    Navigator.of(context).pop();
+                                  });
+                                } else {
+                                  // showPrescriptionDialog(context,
+                                  //     widget.appointment_id, widget.isOnline);
+                                }
+                                break;
                               default:
                             }
                           },
@@ -368,7 +385,7 @@ class AppointmentConnectedCardState
                                       horizontal: screenWidth * 0.01,
                                       vertical: screenWidth * 0.01),
                                   decoration: BoxDecoration(
-                                    color: widget.review_id != ""
+                                    color: widget.review_id == ""
                                         ? Color(0xFFD9D9D9)
                                         : Color(0xFFDB5B8B),
                                     borderRadius: BorderRadius.circular(5),

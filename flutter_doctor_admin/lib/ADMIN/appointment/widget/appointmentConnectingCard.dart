@@ -321,10 +321,21 @@ class AppointmentConnectingCardState
                                   );
                                   break;
                                 case "Huỷ lịch hẹn":
-                                  showCancelAppointmentDialog(
-                                    context,
-                                    widget.appointment_id,
-                                  );
+                                  if (widget.status == "Unpaid") {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          "Cuộc hẹn chưa được thanh toán. Không thể huỷ!",
+                                        ),
+                                      ),
+                                    );
+                                  } else {
+                                    showCancelAppointmentDialog(
+                                      context,
+                                      widget.appointment_id,
+                                    );
+                                  }
+
                                   break;
                                 case "Sửa lịch hẹn":
                                   showEditDateAppointmentDialog(
@@ -372,8 +383,8 @@ class AppointmentConnectingCardState
                               width: screenWidth * 0.15,
                               child: CircleAvatar(
                                 radius: screenWidth * 0.07,
-                                backgroundImage: AssetImage(
-                                  "assets/images/user.png",
+                                backgroundImage: NetworkImage(
+                                  patientProfile['avatar_url'],
                                 ),
                               ),
                             ),
