@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:anyen_clinic/forgotPass/forgot_pass_screen.dart';
 import 'package:anyen_clinic/login/login_screen.dart';
@@ -9,6 +10,7 @@ import 'package:anyen_clinic/provider/patient_provider.dart';
 import 'package:anyen_clinic/register/register_screen.dart';
 import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/normalButton.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -86,7 +88,7 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
     super.dispose();
   }
 
-  void ResetProvider() {
+  void resetProvider() {
     ref.read(phoneNumberProvider.notifier).state = '';
     ref.read(passwordProvider.notifier).state = '';
     ref.read(otpProvider.notifier).resetOTP();
@@ -108,7 +110,7 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
       if (response.statusCode == 200) {
         showSuccessDialog(
             context, LoginScreen(), "Xác nhận thành công", "Đăng nhập");
-        ResetProvider();
+        resetProvider();
       } else {
         throw Exception(responseData["message"] ?? "Lỗi đăng ký");
       }
@@ -126,10 +128,49 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
         context, ForgotPassScreen(), "Xác nhận thành công", "Tạo mật khẩu mới");
   }
 
+  Future<void> setupFCM(String accessToken) async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+    // Lấy device token
+    String? fcmToken = await messaging.getToken();
+    print('FCM Token: $fcmToken');
+
+    // Gửi token lên server
+    if (fcmToken != null) {
+      final response = await http.post(
+        Uri.parse('$apiUrl/auth/create-device-token'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'device_token': fcmToken,
+          'device_type': Platform.isAndroid ? 'android' : 'ios'
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('Device token saved successfully');
+      } else {
+        print('Failed to save device token: ${response.body}');
+      }
+    }
+
+    // Listen for foreground messages
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('Foreground message: ${message.notification?.title}');
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('Opened from notification');
+    });
+  }
+
   Future<void> saveAfterLogin(Map<String, dynamic> responseData) async {
     await saveAccessToken(responseData['access_token']);
     await saveRefreshToken(responseData['refresh_token']);
     await saveLogin();
+    await setupFCM(responseData['access_token']);
   }
 
   Future<void> callLoginAPI(String phoneNumber, String password) async {
@@ -152,7 +193,7 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
         if (roles.contains('patient')) {
           showSuccessDialog(
               context, Dashboard(), "Xác nhận thành công", "Tới trang chủ");
-          ResetProvider();
+          resetProvider();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
