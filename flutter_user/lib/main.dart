@@ -1,6 +1,8 @@
 import 'package:anyen_clinic/appointment/appointment_screen.dart';
 import 'package:anyen_clinic/doctor/list_doctor_screen.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:anyen_clinic/storage.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -10,6 +12,7 @@ void main() async {
   await dotenv.load(fileName: "assets/config/.env");
 
   final bool isLoggedIn = await getLogin();
+  await Firebase.initializeApp();
   runApp(ProviderScope(child: MainApp(isLoggedIn: isLoggedIn)));
 }
 

@@ -72,8 +72,6 @@ class _ReviewListState extends State<ReviewList> {
             itemBuilder: (context, index) {
               final review = reviews[index];
               return ReviewCardDetail(
-                isReport: review['is_report'],
-                isHelpful: review['is_helpful'],
                 reviewId: review['id'],
                 username: review['anonymous_name'] ?? "Ẩn danh",
                 date: formatDate(review['createdAt']),
