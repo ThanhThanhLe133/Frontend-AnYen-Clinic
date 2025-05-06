@@ -49,7 +49,7 @@ class _InputPrescriptionDialogState extends State<InputPrescriptionDialog> {
           }).toList();
       final response = await makeRequest(
         url: '$apiUrl/doctor/create-prescription',
-        method: 'PATCH',
+        method: 'POST',
         body: {"appointment_id": widget.appointment_id, "details": details},
       );
 

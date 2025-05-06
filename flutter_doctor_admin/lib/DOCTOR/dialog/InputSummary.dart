@@ -33,7 +33,7 @@ class _InputSummaryDialogState extends State<InputSummaryDialog> {
     String noteForAdmin = noteAdminController.text.trim();
     try {
       final response = await makeRequest(
-        url: '$apiUrl/doctor/confirm-appointment',
+        url: '$apiUrl/doctor/complete-appointment',
         method: 'PATCH',
         body: {
           "appointment_id": widget.appointment_id,

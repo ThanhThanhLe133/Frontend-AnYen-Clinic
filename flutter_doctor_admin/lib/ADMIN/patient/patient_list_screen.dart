@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:ayclinic_doctor_admin/ADMIN/patient/patient_detail_screen.dart';
+import 'package:ayclinic_doctor_admin/dialog/patient_detail_screen.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/widget/menu_admin.dart';
 import 'package:ayclinic_doctor_admin/makeRequest.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';

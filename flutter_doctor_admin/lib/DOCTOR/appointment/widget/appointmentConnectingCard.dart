@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:math';
-import 'package:ayclinic_doctor_admin/ADMIN/patient/patient_detail_screen.dart';
+import 'package:ayclinic_doctor_admin/dialog/patient_detail_screen.dart';
+import 'package:ayclinic_doctor_admin/DOCTOR/appointment/appointment_screen.dart';
+import 'package:ayclinic_doctor_admin/dialog/SuccessDialog.dart';
 import 'package:ayclinic_doctor_admin/dialog/option_dialog.dart';
 import 'package:ayclinic_doctor_admin/makeRequest.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
@@ -33,6 +35,29 @@ class AppointmentConnectingCard extends ConsumerStatefulWidget {
 class AppointmentConnectingCardState
     extends ConsumerState<AppointmentConnectingCard> {
   Map<String, dynamic> patientProfile = {};
+  Future<void> confirmAppointment() async {
+    String appointmentId = widget.appointment_id;
+    final response = await makeRequest(
+      url: '$apiUrl/doctor/confirm-appointment',
+      method: 'PATCH',
+      body: {"appointment_id": appointmentId},
+    );
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi lưu dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      showSuccessDialog(
+        context,
+        AppointmentScreen(),
+        "Xác nhận thành công",
+        "Tới lịch hẹn",
+      );
+    }
+  }
+
   Future<void> fetchPatient() async {
     String patientId = widget.patient_id;
     final response = await makeRequest(
@@ -276,7 +301,7 @@ class AppointmentConnectingCardState
                                     "Bạn muốn xác nhận thực hiện ca tư vấn này?",
                                     "HUỶ",
                                     "ĐỒNG Ý",
-                                    null,
+                                    () => confirmAppointment,
                                   ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Color(0xFF119CF0), //

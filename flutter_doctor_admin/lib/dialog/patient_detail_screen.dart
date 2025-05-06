@@ -41,7 +41,6 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
     );
 
     if (response.statusCode != 200) {
-      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
