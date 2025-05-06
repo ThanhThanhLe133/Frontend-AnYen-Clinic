@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:anyen_clinic/widget/BuildToggleOption.dart';
 import 'package:flutter/material.dart';
 
 class NotificationScreen extends StatefulWidget {
@@ -69,56 +70,45 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   SizedBox(height: screenHeight * 0.03),
-                  _buildToggleOption(
-                      screenWidth, Icons.article, "Nhật ký", toggle1, (value) {
-                    setState(() => toggle1 = value);
-                  }),
-                  _buildToggleOption(
-                      screenWidth, Icons.lock, "Lịch hẹn", toggle2, (value) {
-                    setState(() => toggle2 = value);
-                  }),
-                  _buildToggleOption(
-                      screenWidth, Icons.notifications, "Tin nhắn", toggle3,
-                      (value) {
-                    setState(() => toggle3 = value);
-                  }),
-                  _buildToggleOption(
-                      screenWidth, Icons.payment, "Thanh toán", toggle4,
-                      (value) {
-                    setState(() => toggle4 = value);
-                  }),
+                  BuildToggleOption(
+                    screenWidth: screenWidth,
+                    icon: Icons.article,
+                    title: "Nhật ký",
+                    value: toggle1,
+                    onChanged: (value) {
+                      setState(() => toggle1 = value);
+                    },
+                  ),
+                  BuildToggleOption(
+                    screenWidth: screenWidth,
+                    icon: Icons.people_alt_rounded,
+                    title: "Lịch hẹn",
+                    value: toggle2,
+                    onChanged: (value) {
+                      setState(() => toggle2 = value);
+                    },
+                  ),
+                  BuildToggleOption(
+                    screenWidth: screenWidth,
+                    icon: Icons.notifications,
+                    title: "Tin nhắn",
+                    value: toggle3,
+                    onChanged: (value) {
+                      setState(() => toggle3 = value);
+                    },
+                  ),
+                  BuildToggleOption(
+                    screenWidth: screenWidth,
+                    icon: Icons.payment,
+                    title: "Thanh toán",
+                    value: toggle4,
+                    onChanged: (value) {
+                      setState(() => toggle4 = value);
+                    },
+                  ),
                   SizedBox(height: screenHeight * 0.03),
                 ],
               ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildToggleOption(double screenWidth, IconData icon, String title,
-      bool value, Function(bool) onChanged) {
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: Colors.blue,
-        size: screenWidth * 0.06,
-      ),
-      title: Text(title,
-          style: TextStyle(
-              color: Color(0xFF40494F),
-              fontSize: screenWidth * 0.04,
-              fontWeight: FontWeight.w400)),
-      trailing: SizedBox(
-        width: 50,
-        child: Center(
-          child: Transform.scale(
-            scale: screenWidth / 600,
-            child: Switch(
-              value: value,
-              onChanged: onChanged,
-              activeColor: Colors.green,
             ),
           ),
         ),

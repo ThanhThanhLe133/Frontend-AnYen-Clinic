@@ -1,14 +1,105 @@
-import 'dart:math';
+import 'dart:async';
+import 'dart:convert';
 
+import 'package:anyen_clinic/dialog/SuccessDialog.dart';
+import 'package:anyen_clinic/dialog/option_dialog.dart';
+import 'package:anyen_clinic/function.dart';
+import 'package:anyen_clinic/makeRequest.dart';
 import 'package:anyen_clinic/settings/edit_account_screen.dart';
+import 'package:anyen_clinic/storage.dart';
+import 'package:anyen_clinic/widget/CustomBackButton.dart';
+import 'package:anyen_clinic/widget/MedicalRecord.dart';
 import 'package:anyen_clinic/widget/buildButton.dart';
 import 'package:anyen_clinic/widget/dateTimePicker.dart';
+import 'package:anyen_clinic/widget/infoWidget.dart';
+import 'package:anyen_clinic/widget/labelMedicalRecord.dart';
 import 'package:anyen_clinic/widget/sectionTitle.dart';
 import 'package:flutter/material.dart';
-// import 'package:an_yen_clinic/gen/assets.gen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
-class MedicalRecordsScreen extends StatelessWidget {
+class MedicalRecordsScreen extends ConsumerStatefulWidget {
   const MedicalRecordsScreen({super.key});
+
+  @override
+  ConsumerState<MedicalRecordsScreen> createState() =>
+      _MedicalRecordsScreenState();
+}
+
+class _MedicalRecordsScreenState extends ConsumerState<MedicalRecordsScreen> {
+  Map<String, dynamic> patientProfile = {};
+  Map<String, dynamic> healthRecords = {};
+  final TextEditingController controllerDateTime = TextEditingController();
+  final TextEditingController controllerHeight = TextEditingController();
+  final TextEditingController controllerWeight = TextEditingController();
+  Future<void> fetchProfile() async {
+    final response = await makeRequest(
+      url: '$apiUrl/get/get-patient-profile/',
+      method: 'GET',
+    );
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Lỗi tải dữ liệu.")),
+      );
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        patientProfile = data['data'];
+      });
+    }
+  }
+
+  Future<void> fetchHealthRecord() async {
+    final response = await makeRequest(
+      url: '$apiUrl/get/get-patient-health-records/',
+      method: 'GET',
+    );
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Lỗi tải dữ liệu.")),
+      );
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        healthRecords = data['data'];
+      });
+    }
+  }
+
+  Future<void> deleteHealthRecord(String id) async {
+    final body = {"id": id};
+    final response = await makeRequest(
+        url: '$apiUrl/patient/health-records', method: 'DELETE', body: body);
+    if (response.statusCode == 200) {
+      showSuccessDialog(
+          context, MedicalRecordsScreen(), "Xoá thành công", "OK");
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Lưu thất bại: ${response.body}")),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    controllerDateTime.dispose();
+    controllerHeight.dispose();
+    controllerWeight.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchProfile();
+      fetchHealthRecord();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,13 +110,7 @@ class MedicalRecordsScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.chevron_left, color: Color(0xFF9BA5AC)),
-          iconSize: screenWidth * 0.08,
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+        leading: CustomBackButton(),
         title: Text(
           "Hồ sơ y tế",
           style: TextStyle(
@@ -82,8 +167,6 @@ class MedicalRecordsScreen extends StatelessWidget {
               width: screenWidth * 0.9,
               padding: EdgeInsets.all(screenWidth * 0.02),
               height: screenHeight * 0.5,
-              // constraints:
-              //     BoxConstraints(minHeight: screenHeight * 0.4, maxHeight: 500),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(10),
@@ -100,22 +183,22 @@ class MedicalRecordsScreen extends StatelessWidget {
                   infoWidget(
                     screenWidth: screenWidth,
                     label: "Họ và tên",
-                    info: "Lê Thị Thanh Thanh",
+                    info: patientProfile['full_name'] ?? 'Không có tên',
                   ),
                   infoWidget(
                     screenWidth: screenWidth,
                     label: "Giới tính",
-                    info: "Nữ",
+                    info: patientProfile['gender'] ?? 'Unknown',
                   ),
                   infoWidget(
                     screenWidth: screenWidth,
                     label: "Ngày sinh",
-                    info: "13/03/2005",
+                    info: formatDate(patientProfile['date_of_birth']),
                   ),
                   infoWidget(
                     screenWidth: screenWidth,
                     label: "Tiền sử bệnh",
-                    info: "ssssssssssssssssssssssssssss",
+                    info: patientProfile['medical_history'] ?? '',
                   ),
                   infoWidget(
                     screenWidth: screenWidth,
@@ -139,7 +222,11 @@ class MedicalRecordsScreen extends StatelessWidget {
                     padding: EdgeInsets.only(
                         top: screenHeight * 0.02, bottom: screenHeight * 0.01),
                     child: GestureDetector(
-                      onTap: () => _showHealthDialog(context),
+                      onTap: () => _showHealthDialog(
+                          context,
+                          controllerDateTime,
+                          controllerHeight,
+                          controllerWeight),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -172,37 +259,78 @@ class MedicalRecordsScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  _labelMedicalRecord(
+                  LabelMedicalRecord(
                     screenWidth: screenWidth,
                     label: "Ngày đo",
                   ),
-                  _labelMedicalRecord(
+                  LabelMedicalRecord(
                     screenWidth: screenWidth,
                     label: "Tuổi",
                   ),
-                  _labelMedicalRecord(
+                  LabelMedicalRecord(
                     screenWidth: screenWidth,
                     label: "Chiều cao \n (cm)",
                   ),
-                  _labelMedicalRecord(
+                  LabelMedicalRecord(
                     screenWidth: screenWidth,
                     label: "Cân nặng \n (kg)",
                   ),
-                  _labelMedicalRecord(
+                  LabelMedicalRecord(
                     screenWidth: screenWidth,
                     label: "BMI",
                   ),
                 ],
               ),
             ),
-            _medicalRecord(
-              screenWidth: screenWidth,
-              screenHeight: screenHeight,
-              dateRecord: "05/03/2025",
-              age: 22,
-              height: 125,
-              weight: 60,
-              bmi: 30,
+            ListView.builder(
+              itemCount: healthRecords.length,
+              itemBuilder: (context, index) {
+                final record = healthRecords[index];
+                final double height = record['height']?.toDouble() ?? 0;
+                final double weight = record['weight']?.toDouble() ?? 0;
+                final String recordId = record['id'].toString();
+                return Dismissible(
+                  key: Key(recordId),
+                  direction: DismissDirection.endToStart,
+                  background: Container(
+                    color: Colors.white,
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 20.0),
+                      child: Icon(
+                        Icons.delete_outline,
+                        color: Colors.redAccent,
+                      ),
+                    ),
+                  ),
+                  confirmDismiss: (direction) async {
+                    Completer<bool> completer = Completer<bool>();
+                    showOptionDialog(
+                      context,
+                      "Xác nhận",
+                      "Bạn có chắc muốn xóa bản ghi không?",
+                      "Huỷ",
+                      "Xoá",
+                      () {
+                        completer.complete(true);
+                      },
+                    );
+                    return await completer.future ?? false;
+                  },
+                  onDismissed: (direction) async {
+                    deleteHealthRecord;
+                  },
+                  child: MedicalRecord(
+                    screenWidth: screenWidth,
+                    screenHeight: screenHeight,
+                    dateRecord: formatDate(record['record_date']),
+                    age: DateTime.now().year -
+                        DateTime.parse(patientProfile['date_of_birth']).year,
+                    height: height,
+                    weight: weight,
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -211,164 +339,62 @@ class MedicalRecordsScreen extends StatelessWidget {
   }
 }
 
-class _labelMedicalRecord extends StatelessWidget {
-  const _labelMedicalRecord({
-    required this.screenWidth,
-    required this.label,
-  });
-
-  final double screenWidth;
-  final String label;
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: screenWidth * 0.16,
-      child: Text(
-        label,
-        style:
-            TextStyle(fontSize: screenWidth * 0.035, color: Color(0xFF40494F)),
-        textAlign: TextAlign.center,
-      ),
-    );
-  }
-}
-
-class _medicalRecord extends StatelessWidget {
-  const _medicalRecord({
-    required this.screenWidth,
-    required this.screenHeight,
-    required this.dateRecord,
-    required this.age,
-    required this.height,
-    required this.weight,
-    required this.bmi,
-  });
-
-  final double screenWidth;
-  final double screenHeight;
-  final String dateRecord;
-  final int age;
-  final double height;
-  final double weight;
-  final double bmi;
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: screenWidth * 0.9,
-      padding: EdgeInsets.all(screenWidth * 0.02),
-      // constraints:
-      //     BoxConstraints(minHeight: screenHeight * 0.15, maxHeight: 500),
-      decoration: BoxDecoration(
-        color: Colors.white,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: screenWidth * 0.16,
-            child: Text(
-              dateRecord.toString(),
-              style: TextStyle(
-                  fontSize: screenWidth * 0.03, color: Color(0xFF40494F)),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          SizedBox(
-            width: screenWidth * 0.16,
-            child: Text(
-              age.toString(),
-              style: TextStyle(
-                  fontSize: screenWidth * 0.035, color: Color(0xFF40494F)),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          SizedBox(
-            width: screenWidth * 0.16,
-            child: Text(
-              height.toString(),
-              style: TextStyle(
-                  fontSize: screenWidth * 0.035, color: Color(0xFF40494F)),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          SizedBox(
-            width: screenWidth * 0.16,
-            child: Text(
-              weight.toString(),
-              style: TextStyle(
-                  fontSize: screenWidth * 0.035, color: Color(0xFF40494F)),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          SizedBox(
-            width: screenWidth * 0.16,
-            child: Text(
-              bmi.toString(),
-              style: TextStyle(
-                  fontSize: screenWidth * 0.035, color: Color(0xFF40494F)),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class infoWidget extends StatelessWidget {
-  const infoWidget(
-      {super.key,
-      required this.screenWidth,
-      required this.label,
-      required this.info});
-
-  final double screenWidth;
-  final String label;
-  final String info;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        SizedBox(
-          child: Text(
-            label,
-            style: TextStyle(fontSize: screenWidth * 0.035),
-            textAlign: TextAlign.left,
-          ),
-        ),
-        SizedBox(
-          width: screenWidth * 0.05,
-        ),
-        Flexible(
-          child: SizedBox(
-            child: Text(
-              info,
-              softWrap: true,
-              maxLines: null,
-              overflow: TextOverflow.visible,
-              style: TextStyle(
-                  fontSize: screenWidth * 0.035, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.right,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-void _showHealthDialog(BuildContext context) {
+void _showHealthDialog(
+    BuildContext context,
+    TextEditingController controllerDateTime,
+    TextEditingController controllerHeight,
+    TextEditingController controllerWeight) {
   double screenWidth = MediaQuery.of(context).size.width;
   double screenHeight = MediaQuery.of(context).size.height;
+
+  Future<void> saveHealthRecord() async {
+    final height = double.tryParse(controllerHeight.text);
+    final weight = double.tryParse(controllerWeight.text);
+
+    DateTime? selectedDate;
+    try {
+      selectedDate = DateFormat('dd/MM/yyyy').parse(controllerDateTime.text);
+    } catch (e) {
+      selectedDate = null;
+    }
+
+    if (height == null || weight == null || selectedDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Vui lòng nhập đầy đủ và hợp lệ các thông tin")),
+      );
+      return;
+    }
+    final formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
+    final body = {
+      "record_date": formattedDate,
+      "height": height,
+      "weight": weight,
+    };
+    final response = await makeRequest(
+      url: '$apiUrl/patient/health-records',
+      method: 'POST',
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      showSuccessDialog(
+          // ignore: use_build_context_synchronously
+          context,
+          MedicalRecordsScreen(),
+          "Lưu thành công",
+          "OK");
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Lưu thất bại: ${response.body}")),
+      );
+    }
+  }
 
   showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
         ),
@@ -413,10 +439,13 @@ void _showHealthDialog(BuildContext context) {
                         Expanded(
                           child: DatePickerField(
                             width: screenWidth * 0.85,
-                            initialDate: DateTime.now(),
+                            initialDate: controllerDateTime.text.isNotEmpty
+                                ? DateFormat('MM/dd/yyyy')
+                                    .parse(controllerDateTime.text)
+                                : DateTime.now(),
                             onDateSelected: (selectedDate) {
-                              print(
-                                  "Ngày được chọn: ${selectedDate.toString()}");
+                              controllerDateTime.text =
+                                  DateFormat('MM/dd/yyyy').format(selectedDate);
                             },
                           ),
                         ),
@@ -431,6 +460,7 @@ void _showHealthDialog(BuildContext context) {
                         SizedBox(
                           width: screenWidth * 0.3,
                           child: TextField(
+                            controller: controllerHeight,
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: Color(0xFFF3EFEF),
@@ -455,6 +485,7 @@ void _showHealthDialog(BuildContext context) {
                         SizedBox(
                           width: screenWidth * 0.3,
                           child: TextField(
+                            controller: controllerWeight,
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: Color(0xFFF3EFEF),
@@ -478,6 +509,7 @@ void _showHealthDialog(BuildContext context) {
                 text: "OK",
                 isPrimary: true,
                 screenWidth: screenWidth,
+                onPressed: saveHealthRecord,
               )
             ],
           ),

@@ -1,3 +1,4 @@
+import 'package:anyen_clinic/widget/CustomBackButton.dart';
 import 'package:flutter/material.dart';
 // import 'package:an_yen_clinic/gen/assets.gen.dart';
 
@@ -13,13 +14,7 @@ class AboutUsScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.chevron_left, color: Color(0xFF9BA5AC)),
-          iconSize: screenWidth * 0.08,
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+        leading: CustomBackButton(),
         title: Text(
           "Về chúng tôi",
           style: TextStyle(

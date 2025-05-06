@@ -1,15 +1,19 @@
+import 'dart:convert';
+
 import 'package:anyen_clinic/OTP_verification/otp_verification_screen.dart';
 import 'package:anyen_clinic/login/login_screen.dart';
+import 'package:anyen_clinic/provider/patient_provider.dart';
+import 'package:anyen_clinic/widget/buildPasswordField.dart';
 import 'package:anyen_clinic/widget/normalButton.dart';
 import 'package:anyen_clinic/widget/phoneCode_drop_down/country_code_provider.dart';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
 import '../widget/inputPhoneNumber.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-final supabase = Supabase.instance.client;
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -19,13 +23,14 @@ class RegisterScreen extends ConsumerStatefulWidget {
 }
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
+  String apiUrl = dotenv.env['API_URL'] ?? 'https://default-api.com';
   bool obscurePassword = true;
   bool isChecked = false;
   final phoneController = TextEditingController();
   final passController = TextEditingController();
   Future<void> sendOTP() async {
     final selectedCountryCode = ref.read(countryCodeProvider);
-
+    String code = selectedCountryCode.replaceAll("+", "");
     if (!isChecked) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Bạn phải đồng ý với điều khoản")),
@@ -39,8 +44,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         SnackBar(content: Text("Vui lòng nhập số điện thoại")),
       );
       return;
-    } else if (!phoneNumber.startsWith(selectedCountryCode)) {
-      phoneNumber = "$selectedCountryCode$phoneNumber";
+    } else if (phoneNumber.startsWith(code)) {
+      //nếu đã nhập mã vùng -> thêm +
+      phoneNumber = "+$phoneNumber";
+    } else {
+      //nếu chưa nhập mã vùng -> thêm mã vùng
+      phoneNumber = "+$code$phoneNumber";
     }
 
     String password = passController.text.trim();
@@ -50,25 +59,57 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       );
       return;
     }
+    ref.read(phoneNumberProvider.notifier).state = phoneNumber;
+    ref.read(passwordProvider.notifier).state = password;
     try {
-      await supabase.auth.signInWithOtp(phone: phoneNumber);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("OTP đã được gửi đến $phoneNumber")),
+      final response = await http.post(
+        Uri.parse('$apiUrl/otp/send-otp'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "phone_number": phoneNumber,
+        }),
       );
 
-      // Chuyển đến màn hình nhập OTP
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => OTPVerificationScreen(phone: phoneNumber),
-        ),
-      );
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OTPVerificationScreen(source: "register"),
+          ),
+        );
+      } else {
+        throw Exception(responseData["message"] ?? "Lỗi đăng ký");
+      }
     } catch (e) {
+      debugPrint("🔍$e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Lỗi: ${e.toString()}")),
+        SnackBar(content: Text("Lỗi đăng ký: ${e.toString()}")),
       );
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Chỉ cho phép màn hình dọc khi vào màn hình này
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  }
+
+  @override
+  void dispose() {
+    // Khôi phục cài đặt gốc khi thoát màn hình này
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+    super.dispose();
   }
 
   @override
@@ -106,47 +147,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             SizedBox(
               height: screenHeight * 0.02,
             ),
-            SizedBox(
-              width: screenWidth * 0.9,
-              height: screenHeight * 0.2,
-              child: TextField(
-                controller: passController,
-                onChanged: (value) {
-                  passController.text = value;
-                  passController.selection = TextSelection.fromPosition(
-                    TextPosition(offset: passController.text.length),
-                  );
-                },
-                obscureText: obscurePassword,
-                decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.lock, color: Colors.grey),
-                  hintText: "Nhập mật khẩu",
-                  hintStyle: TextStyle(
-                    fontSize: screenWidth * 0.05,
-                    color: Color(0xFF9AA5AC),
-                    fontWeight: FontWeight.w400,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(5),
-                    borderSide: BorderSide(color: Color(0xFF9AA5AC), width: 1),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(5),
-                    borderSide: BorderSide(color: Colors.blue, width: 2),
-                  ),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      obscurePassword ? Icons.visibility_off : Icons.visibility,
-                      color: Colors.grey,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        obscurePassword = !obscurePassword;
-                      });
-                    },
-                  ),
-                ),
-              ),
+            PasswordField(
+              screenWidth: screenWidth,
+              screenHeight: screenHeight,
+              hintText: "Nhập mật khẩu",
+              controller: passController,
             ),
             SizedBox(
               width: screenWidth * 0.9,

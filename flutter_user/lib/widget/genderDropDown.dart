@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 
 class GenderDropdown extends StatefulWidget {
-  const GenderDropdown({super.key});
+  final TextEditingController controller;
+  const GenderDropdown({super.key, required this.controller});
 
   @override
   _GenderDropdownState createState() => _GenderDropdownState();
@@ -11,6 +12,13 @@ class GenderDropdown extends StatefulWidget {
 class _GenderDropdownState extends State<GenderDropdown> {
   String? _selectedGender;
   final List<String> _genders = ["Nam", "Nữ", "Khác"];
+  @override
+  void initState() {
+    super.initState();
+    if (_genders.contains(widget.controller.text)) {
+      _selectedGender = widget.controller.text;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +35,7 @@ class _GenderDropdownState extends State<GenderDropdown> {
           vertical: screenWidth * 0.03, horizontal: screenWidth * 0.02),
       height: screenWidth * 0.13,
       child: DropdownButton<String>(
+        dropdownColor: Colors.white,
         value: _selectedGender,
         underline: SizedBox(),
         isExpanded: true,
@@ -34,6 +43,7 @@ class _GenderDropdownState extends State<GenderDropdown> {
         onChanged: (String? newValue) {
           setState(() {
             _selectedGender = newValue!;
+            widget.controller.text = newValue;
           });
         },
         items: _genders.map((String gender) {

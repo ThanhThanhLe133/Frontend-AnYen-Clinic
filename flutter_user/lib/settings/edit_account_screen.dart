@@ -1,17 +1,125 @@
+import 'dart:convert';
+
+import 'package:anyen_clinic/dialog/SuccessDialog.dart';
+import 'package:anyen_clinic/function.dart';
 import 'package:anyen_clinic/login/login_screen.dart';
+import 'package:anyen_clinic/makeRequest.dart';
+import 'package:anyen_clinic/settings/account_screen.dart';
+import 'package:anyen_clinic/storage.dart';
+import 'package:anyen_clinic/widget/CustomBackButton.dart';
 import 'package:anyen_clinic/widget/dateTimePicker.dart';
 import 'package:anyen_clinic/widget/genderDropDown.dart';
 import 'package:anyen_clinic/widget/normalButton.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
-class EditAccountScreen extends StatefulWidget {
+class EditAccountScreen extends ConsumerStatefulWidget {
   const EditAccountScreen({super.key});
 
   @override
-  _EditAccountScreenSate createState() => _EditAccountScreenSate();
+  ConsumerState<EditAccountScreen> createState() => _EditAccountScreenSate();
 }
 
-class _EditAccountScreenSate extends State<EditAccountScreen> {
+class _EditAccountScreenSate extends ConsumerState<EditAccountScreen> {
+  Map<String, dynamic> patientProfile = {};
+  final TextEditingController controllerName = TextEditingController();
+  final TextEditingController controllerDob = TextEditingController();
+  final TextEditingController controllerGender = TextEditingController();
+  final TextEditingController controllerMedicalHistory =
+      TextEditingController();
+  final TextEditingController controllerAllergies = TextEditingController();
+
+  Future<void> onSave() async {
+    final controllers = [
+      controllerName,
+      controllerDob,
+      controllerGender,
+      controllerMedicalHistory,
+      controllerAllergies,
+    ];
+
+    bool hasEmpty = controllers.any((c) => c.text.trim().isEmpty);
+    if (hasEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Vui lòng nhập đầy đủ thông tin")),
+      );
+      return;
+    }
+    DateTime? selectedDate;
+    try {
+      selectedDate = DateFormat('dd/MM/yyyy').parse(controllerDob.text);
+    } catch (e) {
+      selectedDate = null;
+    }
+
+    final formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate!);
+
+    final body = {
+      "fullName": controllerName.text,
+      "dateOfBirth": formattedDate,
+      "gender": controllerGender.text,
+      "medicalHistory": controllerMedicalHistory.text,
+      "allergies": controllerAllergies.text,
+    };
+    final response = await makeRequest(
+      url: '$apiUrl/patient/edit-profile',
+      method: 'PATCH',
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      showSuccessDialog(context, AccountScreen(), "Lưu thành công", "Quay lại");
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Lưu thất bại: ${response.body}")),
+      );
+    }
+  }
+
+  Future<void> fetchProfile() async {
+    final response = await makeRequest(
+      url: '$apiUrl/patient/get-profile',
+      method: 'GET',
+    );
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Lỗi tải dữ liệu.")),
+      );
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        patientProfile = data['data'];
+        controllerName.text = patientProfile['full_name'] ?? '';
+        controllerDob.text = formatDate(patientProfile['date_of_birth']);
+
+        controllerGender.text = patientProfile['gender'] ?? '';
+        controllerMedicalHistory.text = patientProfile['medical_history'] ?? '';
+        controllerAllergies.text = patientProfile['allergies'] ?? '';
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchProfile();
+    });
+  }
+
+  @override
+  void dispose() {
+    controllerName.dispose();
+    controllerDob.dispose();
+    controllerGender.dispose();
+    controllerMedicalHistory.dispose();
+    controllerAllergies.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -21,13 +129,7 @@ class _EditAccountScreenSate extends State<EditAccountScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.chevron_left, color: Color(0xFF9BA5AC)),
-          iconSize: screenWidth * 0.08,
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+        leading: CustomBackButton(),
         title: Text(
           "Sửa hồ sơ",
           style: TextStyle(
@@ -74,6 +176,7 @@ class _EditAccountScreenSate extends State<EditAccountScreen> {
                 height: screenWidth * 0.03,
               ),
               TextField(
+                controller: controllerName,
                 style: TextStyle(fontSize: screenWidth * 0.04),
                 decoration: InputDecoration(
                   isDense: true,
@@ -124,9 +227,12 @@ class _EditAccountScreenSate extends State<EditAccountScreen> {
                       ),
                       DatePickerField(
                         width: screenWidth,
-                        initialDate: DateTime.now(),
+                        initialDate: controllerDob.text.isNotEmpty
+                            ? DateFormat('MM/dd/yyyy').parse(controllerDob.text)
+                            : DateTime.now(),
                         onDateSelected: (selectedDate) {
-                          print("Ngày được chọn: ${selectedDate.toString()}");
+                          controllerDob.text =
+                              DateFormat('MM/dd/yyyy').format(selectedDate);
                         },
                       ),
                     ],
@@ -153,7 +259,9 @@ class _EditAccountScreenSate extends State<EditAccountScreen> {
                       SizedBox(
                         height: screenWidth * 0.03,
                       ),
-                      GenderDropdown(),
+                      GenderDropdown(
+                        controller: controllerGender,
+                      ),
                     ],
                   ),
                 ],
@@ -173,6 +281,7 @@ class _EditAccountScreenSate extends State<EditAccountScreen> {
                 height: screenWidth * 0.03,
               ),
               TextField(
+                controller: controllerMedicalHistory,
                 style: TextStyle(fontSize: screenWidth * 0.04),
                 maxLines: null,
                 decoration: InputDecoration(
@@ -209,6 +318,7 @@ class _EditAccountScreenSate extends State<EditAccountScreen> {
                 height: screenWidth * 0.03,
               ),
               TextField(
+                controller: controllerAllergies,
                 style: TextStyle(fontSize: screenWidth * 0.04),
                 maxLines: null,
                 decoration: InputDecoration(
@@ -238,7 +348,7 @@ class _EditAccountScreenSate extends State<EditAccountScreen> {
                 screenHeight: screenHeight,
                 label: "Lưu",
                 nextScreen: LoginScreen(),
-                action: null,
+                action: onSave,
               )
             ],
           ),

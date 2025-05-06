@@ -1,102 +1,142 @@
+import 'dart:convert';
+
+import 'package:anyen_clinic/function.dart';
+import 'package:anyen_clinic/makeRequest.dart';
+import 'package:anyen_clinic/storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 
-void showPaymentHistoryDialog(BuildContext context, String paymentMethod,
-    bool isSuccess, int money, DateTime time) {
+void showPaymentHistoryDialog(BuildContext context, String appointmentId) {
   showDialog(
     context: context,
     barrierDismissible: true,
     builder: (BuildContext context) {
-      return PaymentHistoryDialog(
-        paymentMethod: paymentMethod,
-        isSuccess: isSuccess,
-        money: money,
-        time: time,
-      );
+      return PaymentHistoryDialog(appointment_id: appointmentId);
     },
   );
 }
 
-class PaymentHistoryDialog extends StatelessWidget {
-  final String paymentMethod;
-  final bool isSuccess;
-  final int money;
-  final DateTime time;
+class PaymentHistoryDialog extends StatefulWidget {
+  final String appointment_id;
 
   const PaymentHistoryDialog({
     super.key,
-    required this.paymentMethod,
-    required this.isSuccess,
-    required this.money,
-    required this.time,
+    required this.appointment_id,
   });
 
   @override
+  State<PaymentHistoryDialog> createState() => _PaymentHistoryDialogState();
+}
+
+class _PaymentHistoryDialogState extends State<PaymentHistoryDialog> {
+  Map<String, dynamic> payment = {};
+  Future<void> fetchPayment() async {
+    String appointmentId = widget.appointment_id;
+    final response = await makeRequest(
+        url: '$apiUrl/payment/get-payment/?appointment_id=$appointmentId',
+        method: 'GET');
+
+    if (response.statusCode != 200) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      debugPrint(response.body);
+      final data = jsonDecode(response.body);
+
+      setState(() {
+        payment = data['payment'];
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchPayment();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final formatCurrency = NumberFormat("#,###", "vi_VN");
-    final formatDate = DateFormat("dd/MM/yyyy, HH:mm");
     double screenWidth = MediaQuery.of(context).size.width;
     return Dialog(
+      backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Padding(
-        padding: EdgeInsets.all(screenWidth * 0.04),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                "Lịch sử thanh toán",
-                style: TextStyle(
-                    fontSize: screenWidth * 0.055,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue),
+      child: payment.isEmpty
+          ? Center(
+              child: SpinKitWaveSpinner(
+                color: Colors.blue, // Bạn đổi màu tùy ý
+                size: 50.0, // Size cũng chỉnh theo ý
               ),
-              const SizedBox(height: 16),
-              _buildInfoRow(
-                  "Hình thức thanh toán",
-                  paymentMethod,
-                  boldValue: true,
-                  screenWidth),
-              _buildInfoRow(
-                "Trạng thái",
-                isSuccess ? "Thành công" : "Thất bại",
-                screenWidth,
-                colorValue: isSuccess ? Colors.green : Colors.red,
-              ),
-              _buildInfoRow(
-                "Số tiền",
-                "${money < 0 ? '' : '-'}${formatCurrency.format(money)} đ",
-                screenWidth,
-                boldValue: true,
-              ),
-              _buildInfoRow(
-                "Thời gian",
-                formatDate.format(time),
-                screenWidth,
-                boldValue: true,
-              ),
-              SizedBox(height: 20),
-              Divider(height: 1),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                  padding: EdgeInsets.symmetric(
-                      horizontal: screenWidth * 0.08,
-                      vertical: screenWidth * 0.02),
+            )
+          : Padding(
+              padding: EdgeInsets.all(screenWidth * 0.04),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "Lịch sử thanh toán",
+                      style: TextStyle(
+                          fontSize: screenWidth * 0.055,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildInfoRow(
+                        "Hình thức thanh toán",
+                        payment['payment_method'] == 'Momo'
+                            ? "Momo"
+                            : "Ngân hàng",
+                        boldValue: true,
+                        screenWidth),
+                    _buildInfoRow(
+                      "Trạng thái",
+                      payment['payment_status'] == 'Paid'
+                          ? "Thành công"
+                          : "Thất bại",
+                      screenWidth,
+                      colorValue: payment['payment_status'] == 'Paid'
+                          ? Colors.green
+                          : Colors.red,
+                    ),
+                    _buildInfoRow(
+                      "Số tiền",
+                      formatCurrency(payment['total_paid']),
+                      screenWidth,
+                      boldValue: true,
+                    ),
+                    _buildInfoRow(
+                      "Thời gian",
+                      formatDate(payment['paid_at']),
+                      screenWidth,
+                      boldValue: true,
+                    ),
+                    SizedBox(height: 20),
+                    Divider(height: 1),
+                    SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: screenWidth * 0.08,
+                            vertical: screenWidth * 0.02),
+                      ),
+                      child: Text("OK",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: screenWidth * 0.04)),
+                    ),
+                  ],
                 ),
-                child: Text("OK",
-                    style: TextStyle(
-                        color: Colors.white, fontSize: screenWidth * 0.04)),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 

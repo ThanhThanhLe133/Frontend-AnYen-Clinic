@@ -7,13 +7,13 @@ class circleButton extends StatelessWidget {
     required this.screenWidth,
     required this.screenHeight,
     this.action,
-    required this.nextScreen,
+    this.nextScreen,
   });
 
   final double screenWidth;
   final double screenHeight;
   final String label;
-  final Widget nextScreen;
+  final Widget? nextScreen;
   final Function? action;
 
   @override
@@ -21,10 +21,12 @@ class circleButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: () {
         action?.call();
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => nextScreen),
-        );
+        if (nextScreen != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => nextScreen!),
+          );
+        }
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.blue,

@@ -1,5 +1,10 @@
+import 'dart:math';
+
+import 'package:anyen_clinic/function.dart';
+import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/circleButton.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class ConsultationBottomBar extends StatelessWidget {
   final double screenWidth;
@@ -7,7 +12,8 @@ class ConsultationBottomBar extends StatelessWidget {
   final String content;
   final String totalMoney;
   final String nameButton;
-  final Widget nextScreen;
+  final Function? action;
+  final Widget? nextScreen;
   const ConsultationBottomBar({
     super.key,
     required this.screenHeight,
@@ -15,13 +21,14 @@ class ConsultationBottomBar extends StatelessWidget {
     required this.content,
     required this.totalMoney,
     required this.nameButton,
-    required this.nextScreen,
+    this.nextScreen,
+    this.action,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: screenHeight * 0.15,
+      height: max(screenHeight * 0.15, screenWidth * 0.2),
       padding: EdgeInsets.symmetric(
           vertical: screenWidth * 0.02, horizontal: screenHeight * 0.04),
       decoration: const BoxDecoration(
@@ -52,21 +59,25 @@ class ConsultationBottomBar extends StatelessWidget {
                         fontSize: screenWidth * 0.05),
                   ),
                 ),
-                Text(totalMoney,
-                    style: TextStyle(
-                        fontSize: screenWidth * 0.07,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.blue)),
+                Text(
+                  formatCurrency(totalMoney),
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.07,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.blue,
+                  ),
+                ),
               ],
             ),
             SizedBox(
-              height: screenWidth * 0.04,
+              height: screenHeight * 0.02,
             ),
             circleButton(
-              nextScreen: nextScreen,
               label: nameButton,
               screenWidth: screenWidth,
               screenHeight: screenHeight,
+              action: action,
+              nextScreen: nextScreen,
             ),
           ],
         ),

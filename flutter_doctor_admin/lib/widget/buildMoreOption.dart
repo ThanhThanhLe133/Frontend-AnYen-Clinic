@@ -16,6 +16,11 @@ class MoreOptionsMenu extends StatelessWidget {
     return PopupMenuButton<String>(
       icon: Icon(Icons.more_horiz_rounded, color: Colors.grey[600], size: 20),
       onSelected: onSelected,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      elevation: 4,
+      color: Colors.white,
       itemBuilder: (BuildContext context) => options
           .map((option) => PopupMenuItem<String>(
                 value: option,

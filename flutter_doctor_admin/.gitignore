@@ -43,3 +43,20 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# 👇 Bổ sung cho các thư mục bạn gặp lúc `git add .`:
+
+# Android NDK build
+/android/app/.cxx/
+
+# Generated plugin registrants (Flutter Desktop)
+/linux/flutter/
+/macos/Flutter/ephemeral/
+/windows/flutter/
+
+# Các file cmake tự sinh
+**/generated_plugins.cmake
+**/generated_plugin_registrant.*
+
+# Các thư mục cấu hình cache khác (nếu có)
+.cxx/

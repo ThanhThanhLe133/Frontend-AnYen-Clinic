@@ -1,23 +1,32 @@
+import 'package:ayclinic_doctor_admin/ADMIN/dashboard_admin/dashboard.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/doctor_list_screen.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/patient/patient_list_screen.dart';
+import 'package:ayclinic_doctor_admin/DOCTOR/dashboard_doctor/dashboard.dart';
+import 'package:ayclinic_doctor_admin/login/login_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:ayclinic_doctor_admin/storage.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'ADMIN/admin_review/admin_review_screen.dart';
+import 'package:ayclinic_doctor_admin/DOCTOR/psychological_test/psychological_test_home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Supabase.initialize(
-    url: 'https://jqbpguplezywjemitmna.supabase.co',
-    anonKey:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxYnBndXBsZXp5d2plbWl0bW5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA0NDgxNTksImV4cCI6MjA1NjAyNDE1OX0.zbE38vdeJg-10mZoH7zd4EiwkS_ZhWdisYiMseDK5mM',
-  );
-  runApp(ProviderScope(child: const MainApp()));
+  await dotenv.load(fileName: "assets/config/.env");
+  final bool isLoggedIn = await getLogin();
+  await Firebase.initializeApp();
+  runApp(ProviderScope(child: MainApp(isLoggedIn: isLoggedIn)));
 }
 
 class MainApp extends StatelessWidget {
-  const MainApp({super.key});
-
+  const MainApp({super.key, required this.isLoggedIn});
+  final bool isLoggedIn;
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'My App',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         fontFamily: 'Inter-Medium',
         textTheme: const TextTheme(
@@ -26,7 +35,7 @@ class MainApp extends StatelessWidget {
           bodySmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
         ),
       ),
-      // home: Dashboard(),
+      home: PsychologicalTestHomeScreen(),
     );
   }
 }

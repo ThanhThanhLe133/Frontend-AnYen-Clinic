@@ -13,14 +13,22 @@ void showUpdateInfoDialog(BuildContext context) {
   );
 }
 
-class UpdateInfoDialog extends StatelessWidget {
+class UpdateInfoDialog extends StatefulWidget {
   const UpdateInfoDialog({super.key});
+
+  @override
+  State<UpdateInfoDialog> createState() => _UpdateInfoDialogState();
+}
+
+class _UpdateInfoDialogState extends State<UpdateInfoDialog> {
+  final TextEditingController controllerGender = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
 
     return Dialog(
+      backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: SingleChildScrollView(
         child: Padding(
@@ -82,7 +90,9 @@ class UpdateInfoDialog extends StatelessWidget {
                       children: [
                         _buildLabel("Giới tính"),
                         SizedBox(height: screenWidth * 0.03),
-                        GenderDropdown(),
+                        GenderDropdown(
+                          controller: controllerGender,
+                        ),
                       ],
                     ),
                   ),

@@ -45,6 +45,7 @@ class PhoneCodeDropdown extends ConsumerWidget {
       child: DropdownButton<String>(
         value: selectedCode,
         icon: Icon(Icons.arrow_drop_down, color: Colors.grey),
+        dropdownColor: Colors.white,
         items:
             countryCodes.map((country) {
               return DropdownMenuItem<String>(

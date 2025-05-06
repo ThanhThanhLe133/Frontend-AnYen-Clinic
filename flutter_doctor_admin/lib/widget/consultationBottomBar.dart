@@ -1,5 +1,7 @@
+import 'package:ayclinic_doctor_admin/function.dart';
 import 'package:ayclinic_doctor_admin/widget/circleButton.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class ConsultationBottomBar extends StatelessWidget {
   final double screenWidth;
@@ -56,7 +58,7 @@ class ConsultationBottomBar extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  totalMoney,
+                  formatCurrency(totalMoney),
                   style: TextStyle(
                     fontSize: screenWidth * 0.07,
                     fontWeight: FontWeight.w700,
@@ -70,6 +72,7 @@ class ConsultationBottomBar extends StatelessWidget {
               nextScreen: nextScreen,
               label: nameButton,
               screenWidth: screenWidth,
+
               screenHeight: screenHeight,
             ),
           ],
