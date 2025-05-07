@@ -1,5 +1,8 @@
+import 'dart:convert';
 import 'dart:math';
 
+import 'package:anyen_clinic/makeRequest.dart';
+import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/BuildToggleOption.dart';
 import 'package:flutter/material.dart';
 
@@ -11,10 +14,59 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
-  bool toggle1 = true;
-  bool toggle2 = true;
-  bool toggle3 = true;
-  bool toggle4 = true;
+  bool isDiaries = true;
+  bool isAppointments = true;
+  bool isMessages = true;
+  bool isPayments = true;
+  Map<String, dynamic> notiSetting = {};
+
+  Future<void> changeNotiSetting(String type, bool value) async {
+    final response = await makeRequest(
+        url: '$apiUrl/notification/settings',
+        method: 'PUT',
+        body: {"notification_type": type, "is_enabled": value});
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Cài đặt đã được cập nhật!")));
+    } else {
+      throw Exception('Không thể thay đổi cài đặt');
+    }
+  }
+
+  Future<void> fetchSettingNoti() async {
+    final response =
+        await makeRequest(url: '$apiUrl/notification/settings', method: 'GET');
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      final settings = data['data'] as List<dynamic>;
+
+      setState(() {
+        notiSetting = {
+          for (var setting in settings) setting['type']: setting['is_enabled']
+        };
+        isDiaries = notiSetting['diaries'];
+        isAppointments = notiSetting['appointments'];
+        isMessages = notiSetting['messages'];
+        isPayments = notiSetting['payments'];
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchSettingNoti();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -74,36 +126,40 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     screenWidth: screenWidth,
                     icon: Icons.article,
                     title: "Nhật ký",
-                    value: toggle1,
-                    onChanged: (value) {
-                      setState(() => toggle1 = value);
+                    value: isDiaries,
+                    onChanged: (value) async {
+                      setState(() => isDiaries = value);
+                      await changeNotiSetting("diaries", value);
                     },
                   ),
                   BuildToggleOption(
                     screenWidth: screenWidth,
                     icon: Icons.people_alt_rounded,
                     title: "Lịch hẹn",
-                    value: toggle2,
-                    onChanged: (value) {
-                      setState(() => toggle2 = value);
+                    value: isAppointments,
+                    onChanged: (value) async {
+                      setState(() => isAppointments = value);
+                      await changeNotiSetting("appointments", value);
                     },
                   ),
                   BuildToggleOption(
                     screenWidth: screenWidth,
                     icon: Icons.notifications,
                     title: "Tin nhắn",
-                    value: toggle3,
-                    onChanged: (value) {
-                      setState(() => toggle3 = value);
+                    value: isMessages,
+                    onChanged: (value) async {
+                      setState(() => isMessages = value);
+                      await changeNotiSetting("messages", value);
                     },
                   ),
                   BuildToggleOption(
                     screenWidth: screenWidth,
                     icon: Icons.payment,
                     title: "Thanh toán",
-                    value: toggle4,
-                    onChanged: (value) {
-                      setState(() => toggle4 = value);
+                    value: isPayments,
+                    onChanged: (value) async {
+                      setState(() => isPayments = value);
+                      await changeNotiSetting("payments", value);
                     },
                   ),
                   SizedBox(height: screenHeight * 0.03),

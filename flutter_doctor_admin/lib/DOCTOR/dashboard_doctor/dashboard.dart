@@ -4,7 +4,6 @@ import 'package:ayclinic_doctor_admin/ADMIN/appointment/appointment_screen.dart'
 import 'package:ayclinic_doctor_admin/ADMIN/message/message_screen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/dialog/InputPrescription.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/menu_doctor.dart';
-import 'package:ayclinic_doctor_admin/dialog/Prescription.dart';
 import 'package:ayclinic_doctor_admin/makeRequest.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:ayclinic_doctor_admin/widget/radialBarChart.dart';
@@ -144,14 +143,10 @@ class _DashboardState extends ConsumerState<DashboardDoctor> {
                                 child: Switch(
                                   value: isOnline,
                                   onChanged: (value) async {
-                                    showInputPrescriptionDialog(
-                                      context,
-                                      "ssssssssss",
-                                    );
-                                    // setState(() {
-                                    //   isOnline = value;
-                                    // });
-                                    // await changeStatus(value);
+                                    setState(() {
+                                      isOnline = value;
+                                    });
+                                    await changeStatus(value);
                                   },
                                   activeColor: Colors.green,
                                 ),

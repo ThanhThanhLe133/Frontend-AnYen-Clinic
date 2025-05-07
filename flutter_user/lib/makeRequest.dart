@@ -12,10 +12,8 @@ Future<http.Response> makeRequest({
   File? file,
   String? fileFieldName,
 }) async {
-  String? accessToken =
-      "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjkxYjcwZDMzLTI4OWEtNDU2MS1iMTIxLTI3MWYzY2M3YmNhZSIsInBob25lX251bWJlciI6Iis4NDM5NzgxMzM5OCIsInJvbGVzIjpbInBhdGllbnQiLCJhZG1pbiJdLCJpYXQiOjE3NDU4NDQyMzMsImV4cCI6MTc0NTg0NzgzM30.mxMmuSAoYMKj3eLu0FF_jh_8lRlki6RVuAxMg4GiIjQ";
-  String? refreshToken =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjkxYjcwZDMzLTI4OWEtNDU2MS1iMTIxLTI3MWYzY2M3YmNhZSIsImlhdCI6MTc0NTgxNDA2NiwiZXhwIjoxNzQ2NDE4ODY2fQ.LoUpe30v_CBIaNP_XOB12Uz9n13HQRM64u6x86BOmJ4";
+  String? accessToken = "";
+  String? refreshToken = "";
 
   Map<String, String> requestHeaders = headers ?? {};
 

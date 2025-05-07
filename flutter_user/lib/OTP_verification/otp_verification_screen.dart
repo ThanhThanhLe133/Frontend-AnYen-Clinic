@@ -63,30 +63,25 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
     });
   }
 
-  @override
-  void dispose() {
-    timer.cancel();
-    for (var controller in otpControllers) {
-      controller.dispose();
-    }
-    for (var focusNode in otpFocusNodes) {
-      focusNode.dispose();
-    }
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
-    for (var controller in otpControllers) {
-      controller.dispose();
-    }
-    for (var focusNode in otpFocusNodes) {
-      focusNode.dispose();
-    }
-    otpFocusNode.dispose();
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   timer.cancel();
+  //   for (var controller in otpControllers) {
+  //     controller.dispose();
+  //   }
+  //   for (var focusNode in otpFocusNodes) {
+  //     focusNode.dispose();
+  //   }
+  //   otpFocusNode.dispose();
+  //   SystemChrome.setPreferredOrientations([
+  //     DeviceOrientation.portraitUp,
+  //     DeviceOrientation.portraitDown,
+  //     DeviceOrientation.landscapeLeft,
+  //     DeviceOrientation.landscapeRight,
+  //   ]);
+
+  //   super.dispose();
+  // }
 
   void resetProvider() {
     ref.read(phoneNumberProvider.notifier).state = '';
@@ -97,7 +92,7 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
   Future<void> callRegisterAPI(String phoneNumber, String password) async {
     try {
       final response = await http.post(
-        Uri.parse('$apiUrl/auth/register'),
+        Uri.parse('$apiUrl/auth-patient/register'),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "phone_number": phoneNumber,
@@ -174,6 +169,8 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
   }
 
   Future<void> callLoginAPI(String phoneNumber, String password) async {
+    debugPrint('DDDDDDDDDD $phoneNumber');
+    debugPrint('DDDDDDDDDD $password');
     try {
       final response = await http.post(
         Uri.parse('$apiUrl/auth/login'),
@@ -238,7 +235,9 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
   }
 
   Future<void> verifyOTP(String phoneNumber, String password) async {
-    String otpCode = ref.read(otpProvider);
+    String otpCode = ref.read(otpProvider) ?? "";
+
+    debugPrint("⚠️ Error message from API: $otpCode");
     try {
       final response = await http.post(
         Uri.parse('$apiUrl/otp/verify-otp'),
