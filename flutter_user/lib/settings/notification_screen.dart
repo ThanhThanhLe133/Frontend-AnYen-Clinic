@@ -107,7 +107,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
           padding: EdgeInsets.symmetric(
               horizontal: screenWidth * 0.08, vertical: screenHeight * 0.1),
           child: Container(
-            height: max(screenHeight * 0.5, 250),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(10),

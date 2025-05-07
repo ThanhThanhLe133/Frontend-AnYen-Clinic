@@ -171,6 +171,7 @@ class _AddDoctorScreenState extends ConsumerState<AddDoctorScreen> {
           context,
         ).showSnackBar(SnackBar(content: Text("Lưu thành công!")));
       } else {
+        print('xxxxxxxxxxxxxx ${response.statusCode}');
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text("Lỗi thay đổi avatar!")));

@@ -12,12 +12,14 @@ Future<http.Response> makeRequest({
   File? file,
   String? fileFieldName,
 }) async {
-  String? accessToken = "";
-  String? refreshToken = "";
+  String? accessToken = await getAccessToken();
+  String? refreshToken = await getRefreshToken();
 
   Map<String, String> requestHeaders = headers ?? {};
 
-  requestHeaders['Authorization'] = accessToken;
+  if (accessToken != null && accessToken.isNotEmpty) {
+    requestHeaders['Authorization'] = accessToken;
+  }
 
   final Uri uri = Uri.parse(url);
 

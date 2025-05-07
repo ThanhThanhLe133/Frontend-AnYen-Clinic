@@ -79,6 +79,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
       );
     } else {
       if (!mounted) return;
+      debugPrint("⚠️ Error message from API: $response");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Lỗi thay đổi avatar!")),
       );
@@ -131,7 +132,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
 
   Future<void> fetchProfile() async {
     final response = await makeRequest(
-      url: '$apiUrl/patient/get-profile',
+      url: '$apiUrl/get/get-patient-profile/?patientId=',
       method: 'GET',
     );
 

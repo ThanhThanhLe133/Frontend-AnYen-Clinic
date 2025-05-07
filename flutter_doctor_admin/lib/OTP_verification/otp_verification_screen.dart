@@ -105,7 +105,7 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
     final response = await http.post(
       Uri.parse('$apiUrl/auth/create-device-token'),
       headers: {
-        'Authorization': 'Bearer $accessToken',
+        'Authorization': accessToken,
         'Content-Type': 'application/json',
       },
       body: jsonEncode({

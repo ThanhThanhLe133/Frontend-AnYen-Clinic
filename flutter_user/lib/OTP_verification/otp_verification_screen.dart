@@ -89,88 +89,7 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
     ref.read(otpProvider.notifier).resetOTP();
   }
 
-  Future<void> callRegisterAPI(String phoneNumber, String password) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$apiUrl/auth-patient/register'),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "phone_number": phoneNumber,
-          "password": password,
-        }),
-      );
-
-      final responseData = jsonDecode(response.body);
-
-      if (response.statusCode == 200) {
-        showSuccessDialog(
-            context, LoginScreen(), "Xác nhận thành công", "Đăng nhập");
-        resetProvider();
-      } else {
-        throw Exception(responseData["message"] ?? "Lỗi đăng ký");
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Lỗi đăng ký: ${e.toString()}")),
-      );
-
-      Navigator.pop(context);
-    }
-  }
-
-  Future<void> navigateToForgotPass() async {
-    showSuccessDialog(
-        context, ForgotPassScreen(), "Xác nhận thành công", "Tạo mật khẩu mới");
-  }
-
-  Future<void> setupFCM(String accessToken) async {
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
-
-    // Lấy device token
-    String? fcmToken = await messaging.getToken();
-    print('FCM Token: $fcmToken');
-
-    // Gửi token lên server
-    if (fcmToken != null) {
-      final response = await http.post(
-        Uri.parse('$apiUrl/auth/create-device-token'),
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'device_token': fcmToken,
-          'device_type': Platform.isAndroid ? 'android' : 'ios'
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        print('Device token saved successfully');
-      } else {
-        print('Failed to save device token: ${response.body}');
-      }
-    }
-
-    // Listen for foreground messages
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('Foreground message: ${message.notification?.title}');
-    });
-
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('Opened from notification');
-    });
-  }
-
-  Future<void> saveAfterLogin(Map<String, dynamic> responseData) async {
-    await saveAccessToken(responseData['access_token']);
-    await saveRefreshToken(responseData['refresh_token']);
-    await saveLogin();
-    await setupFCM(responseData['access_token']);
-  }
-
   Future<void> callLoginAPI(String phoneNumber, String password) async {
-    debugPrint('DDDDDDDDDD $phoneNumber');
-    debugPrint('DDDDDDDDDD $password');
     try {
       final response = await http.post(
         Uri.parse('$apiUrl/auth/login'),
@@ -182,11 +101,15 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
       );
 
       final responseData = jsonDecode(response.body);
-      debugPrint("⚠️ Error message from API: $responseData");
-      if (response.statusCode == 200) {
-        await saveAfterLogin(responseData);
 
+      if (response.statusCode == 200) {
+        await saveAccessToken(responseData['access_token']);
+        await saveRefreshToken(responseData['refresh_token']);
+        await saveLogin();
+        await setupFCM(responseData['access_token']);
+        debugPrint('DDDDDDDDDD $password $responseData');
         List<String> roles = List<String>.from(responseData['roles']);
+
         if (roles.contains('patient')) {
           showSuccessDialog(
               context, Dashboard(), "Xác nhận thành công", "Tới trang chủ");
@@ -234,6 +157,85 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
     }
   }
 
+  Future<void> callRegisterAPI(String phoneNumber, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$apiUrl/auth-patient/register'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "phone_number": phoneNumber,
+          "password": password,
+        }),
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        showSuccessDialog(
+            context, LoginScreen(), "Xác nhận thành công", "Đăng nhập");
+        resetProvider();
+      } else {
+        throw Exception(responseData["message"] ?? "Lỗi đăng ký");
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Lỗi đăng ký: ${e.toString()}")),
+      );
+
+      Navigator.pop(context);
+    }
+  }
+
+  Future<void> navigateToForgotPass() async {
+    showSuccessDialog(
+        context, ForgotPassScreen(), "Xác nhận thành công", "Tạo mật khẩu mới");
+  }
+
+  Future<void> setupFCM(String accessToken) async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+    // Lấy device token
+    String? fcmToken = await messaging.getToken();
+    print('FCM Token: $fcmToken');
+
+    // Gửi token lên server
+    if (fcmToken != null) {
+      final response = await http.post(
+        Uri.parse('$apiUrl/auth/create-device-token'),
+        headers: {
+          'Authorization': accessToken,
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'device_token': fcmToken,
+          'device_type': Platform.isAndroid ? 'android' : 'ios'
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('Device token saved successfully');
+      } else {
+        print('Failed to save device token: ${response.body}');
+      }
+    }
+
+    // Listen for foreground messages
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('Foreground message: ${message.notification?.title}');
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('Opened from notification');
+    });
+  }
+
+  Future<void> saveAfterLogin(Map<String, dynamic> responseData) async {
+    await saveAccessToken(responseData['access_token']);
+    await saveRefreshToken(responseData['refresh_token']);
+    await saveLogin();
+    await setupFCM(responseData['access_token']);
+  }
+
   Future<void> verifyOTP(String phoneNumber, String password) async {
     String otpCode = ref.read(otpProvider) ?? "";
 
@@ -256,6 +258,7 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
         } else if (widget.source == "forgot") {
           await navigateToForgotPass();
         } else {
+          debugPrint('DDDDDDDDDD $phoneNumber');
           await callLoginAPI(phoneNumber, password);
         }
       } else {

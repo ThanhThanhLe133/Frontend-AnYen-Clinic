@@ -59,7 +59,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           "phone_number": phoneNumber,
         }),
       );
-
       final responseData = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
@@ -98,8 +97,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
-    phoneController.dispose();
-    passController.dispose();
+    // phoneController.dispose();
+    // passController.dispose();
     super.dispose();
   }
 
