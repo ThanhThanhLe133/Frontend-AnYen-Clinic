@@ -14,16 +14,22 @@ Future<http.Response> makeRequest({
 }) async {
   String? accessToken = await getAccessToken();
   String? refreshToken = await getRefreshToken();
-  Map<String, String> requestHeaders = headers ?? {};
-
-  if (accessToken != null && accessToken.isNotEmpty) {
-    requestHeaders['Authorization'] = accessToken;
+  Map<String, String> createHeaders([String? token]) {
+    final updatedHeaders = <String, String>{
+      'Content-Type': 'application/json',
+      ...?headers,
+    };
+    if (token != null && token.isNotEmpty) {
+      updatedHeaders['Authorization'] = token;
+    }
+    return updatedHeaders;
   }
 
   final Uri uri = Uri.parse(url);
 
   // Hàm gửi request
-  Future<http.Response> sendRequest() async {
+  Future<http.Response> sendRequest({String? token}) async {
+    final requestHeaders = createHeaders(token);
     if (file != null && fileFieldName != null) {
       if (method.toUpperCase() != 'POST') {
         throw Exception('File upload only supports POST method');
@@ -41,8 +47,6 @@ Future<http.Response> makeRequest({
       final streamedResponse = await request.send();
       return await http.Response.fromStream(streamedResponse);
     } else {
-      requestHeaders['Content-Type'] = 'application/json';
-
       switch (method.toUpperCase()) {
         case 'GET':
           if (url.contains('get-patient-profile') ||
@@ -95,11 +99,8 @@ Future<http.Response> makeRequest({
         await saveAccessToken(newAccessToken);
         if (newRefreshToken != null) await saveRefreshToken(newRefreshToken);
 
-        // Cập nhật header với token mới
-        requestHeaders['Authorization'] = '$newAccessToken';
-
         // Thử lại request
-        res = await sendRequest();
+        res = await sendRequest(token: newAccessToken);
       } else {
         throw Exception('Failed to refresh token: ${refreshRes.body}');
       }

@@ -37,6 +37,9 @@ class AppointmentConnectingCardState
   Map<String, dynamic> patientProfile = {};
   Future<void> confirmAppointment() async {
     String appointmentId = widget.appointment_id;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Lỗi lưu dữ liệu $appointmentId.')));
     final response = await makeRequest(
       url: '$apiUrl/doctor/confirm-appointment',
       method: 'PATCH',
@@ -301,7 +304,7 @@ class AppointmentConnectingCardState
                                     "Bạn muốn xác nhận thực hiện ca tư vấn này?",
                                     "HUỶ",
                                     "ĐỒNG Ý",
-                                    () => confirmAppointment,
+                                    confirmAppointment,
                                   ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Color(0xFF119CF0), //

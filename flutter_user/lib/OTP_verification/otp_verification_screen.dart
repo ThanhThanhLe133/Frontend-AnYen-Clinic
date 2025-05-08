@@ -14,6 +14,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -107,7 +108,7 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
         await saveRefreshToken(responseData['refresh_token']);
         await saveLogin();
         await setupFCM(responseData['access_token']);
-        debugPrint('DDDDDDDDDD $password $responseData');
+
         List<String> roles = List<String>.from(responseData['roles']);
 
         if (roles.contains('patient')) {
@@ -147,11 +148,14 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
           );
         }
       } else {
-        throw Exception(responseData["message"] ?? "Lỗi đăng nhập");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(responseData['mes'] ?? "Lỗi đăng nhập")),
+        );
+        Navigator.pop(context);
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Lỗi đăng nhập: ${e.toString()}")),
+        SnackBar(content: Text('Lỗi kết nối: $e')),
       );
       Navigator.pop(context);
     }
@@ -218,15 +222,6 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
         print('Failed to save device token: ${response.body}');
       }
     }
-
-    // Listen for foreground messages
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('Foreground message: ${message.notification?.title}');
-    });
-
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('Opened from notification');
-    });
   }
 
   Future<void> saveAfterLogin(Map<String, dynamic> responseData) async {

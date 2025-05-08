@@ -25,24 +25,24 @@ class MedicalRecord extends StatelessWidget {
       bmi = weight / ((height / 100) * (height / 100));
     }
     return Container(
-      width: screenWidth * 0.9,
-      padding: EdgeInsets.all(screenWidth * 0.02),
-      // constraints:
-      //     BoxConstraints(minHeight: screenHeight * 0.15, maxHeight: 500),
-      decoration: BoxDecoration(
-        color: Colors.white,
-      ),
+      width: screenWidth,
+      padding: EdgeInsets.all(screenWidth * 0.05),
+      constraints:
+          BoxConstraints(minHeight: screenHeight * 0.15, maxHeight: 500),
+      decoration: BoxDecoration(color: Colors.white),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(
-            width: screenWidth * 0.16,
+            width: screenWidth * 0.17,
             child: Text(
               dateRecord.toString(),
               style: TextStyle(
-                  fontSize: screenWidth * 0.03, color: Color(0xFF40494F)),
+                fontSize: screenWidth * 0.03,
+                color: Color(0xFF40494F),
+              ),
               textAlign: TextAlign.center,
             ),
           ),
@@ -51,7 +51,9 @@ class MedicalRecord extends StatelessWidget {
             child: Text(
               age.toString(),
               style: TextStyle(
-                  fontSize: screenWidth * 0.035, color: Color(0xFF40494F)),
+                fontSize: screenWidth * 0.035,
+                color: Color(0xFF40494F),
+              ),
               textAlign: TextAlign.center,
             ),
           ),
@@ -60,7 +62,9 @@ class MedicalRecord extends StatelessWidget {
             child: Text(
               height.toString(),
               style: TextStyle(
-                  fontSize: screenWidth * 0.035, color: Color(0xFF40494F)),
+                fontSize: screenWidth * 0.035,
+                color: Color(0xFF40494F),
+              ),
               textAlign: TextAlign.center,
             ),
           ),
@@ -69,16 +73,20 @@ class MedicalRecord extends StatelessWidget {
             child: Text(
               weight.toString(),
               style: TextStyle(
-                  fontSize: screenWidth * 0.035, color: Color(0xFF40494F)),
+                fontSize: screenWidth * 0.035,
+                color: Color(0xFF40494F),
+              ),
               textAlign: TextAlign.center,
             ),
           ),
           SizedBox(
             width: screenWidth * 0.16,
             child: Text(
-              bmi.toString(),
+              bmi.toStringAsFixed(2),
               style: TextStyle(
-                  fontSize: screenWidth * 0.035, color: Color(0xFF40494F)),
+                fontSize: screenWidth * 0.035,
+                color: Color(0xFF40494F),
+              ),
               textAlign: TextAlign.center,
             ),
           ),

@@ -295,14 +295,13 @@ class _ReviewDoctorScreenState extends State<ReviewDoctorScreen> {
                     ),
                     SizedBox(height: screenHeight * 0.2),
                     normalButton(
-                        screenWidth: screenWidth,
-                        screenHeight: screenHeight,
-                        label: widget.reviewId != ""
-                            ? "Sửa đánh giá"
-                            : "Gửi đánh giá",
-                        action:
-                            widget.reviewId != "" ? editReview : createReview,
-                        nextScreen: LoginScreen())
+                      screenWidth: screenWidth,
+                      screenHeight: screenHeight,
+                      label: widget.reviewId != ""
+                          ? "Sửa đánh giá"
+                          : "Gửi đánh giá",
+                      action: widget.reviewId != "" ? editReview : createReview,
+                    )
                   ],
                 ),
               ),

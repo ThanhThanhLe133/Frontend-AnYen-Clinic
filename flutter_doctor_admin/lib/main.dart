@@ -3,6 +3,7 @@ import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/doctor_list_screen.dar
 import 'package:ayclinic_doctor_admin/ADMIN/patient/patient_list_screen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/dashboard_doctor/dashboard.dart';
 import 'package:ayclinic_doctor_admin/login/login_screen.dart';
+import 'package:ayclinic_doctor_admin/splash/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
@@ -35,7 +36,7 @@ class MainApp extends StatelessWidget {
           bodySmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
         ),
       ),
-      home: DashboardAdmin(),
+      home: SplashScreen(),
     );
   }
 }

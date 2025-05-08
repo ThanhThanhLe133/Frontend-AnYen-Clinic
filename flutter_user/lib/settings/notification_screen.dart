@@ -2,22 +2,26 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:anyen_clinic/makeRequest.dart';
+import 'package:anyen_clinic/settings/account_screen.dart';
 import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/BuildToggleOption.dart';
+import 'package:anyen_clinic/widget/menu.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
-class NotificationScreen extends StatefulWidget {
+class NotificationScreen extends ConsumerStatefulWidget {
   const NotificationScreen({super.key});
 
   @override
   _NotificationScreenState createState() => _NotificationScreenState();
 }
 
-class _NotificationScreenState extends State<NotificationScreen> {
-  bool isDiaries = true;
-  bool isAppointments = true;
-  bool isMessages = true;
-  bool isPayments = true;
+class _NotificationScreenState extends ConsumerState<NotificationScreen> {
+  late bool isDiaries;
+  late bool isAppointments;
+  late bool isMessages;
+  late bool isPayments;
   Map<String, dynamic> notiSetting = {};
 
   Future<void> changeNotiSetting(String type, bool value) async {
@@ -49,7 +53,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
       setState(() {
         notiSetting = {
-          for (var setting in settings) setting['type']: setting['is_enabled']
+          for (var setting in settings)
+            setting['notification_type']: setting['is_enabled']
         };
         isDiaries = notiSetting['diaries'];
         isAppointments = notiSetting['appointments'];
@@ -78,9 +83,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.chevron_left, color: Color(0xFF9BA5AC)),
-          iconSize: screenWidth * 0.08,
-          onPressed: () {
-            Navigator.pop(context);
+          iconSize: 40,
+          onPressed: () async {
+            ref.read(menuOpenProvider.notifier).state = false;
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AccountScreen()),
+            );
           },
         ),
         title: Text(
@@ -101,73 +110,81 @@ class _NotificationScreenState extends State<NotificationScreen> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-              horizontal: screenWidth * 0.08, vertical: screenHeight * 0.1),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: Color(0xFFD9D9D9),
-                width: 1,
+      body: notiSetting.isEmpty
+          ? Center(
+              child: SpinKitWaveSpinner(
+                color: Colors.blue,
+                size: 75.0,
+              ),
+            )
+          : SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                    horizontal: screenWidth * 0.08,
+                    vertical: screenHeight * 0.1),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: Color(0xFFD9D9D9),
+                      width: 1,
+                    ),
+                  ),
+                  child: Center(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        SizedBox(height: screenHeight * 0.03),
+                        BuildToggleOption(
+                          screenWidth: screenWidth,
+                          icon: Icons.article,
+                          title: "Nhật ký",
+                          value: isDiaries,
+                          onChanged: (value) async {
+                            setState(() => isDiaries = value);
+                            await changeNotiSetting("diaries", value);
+                          },
+                        ),
+                        BuildToggleOption(
+                          screenWidth: screenWidth,
+                          icon: Icons.people_alt_rounded,
+                          title: "Lịch hẹn",
+                          value: isAppointments,
+                          onChanged: (value) async {
+                            setState(() => isAppointments = value);
+                            await changeNotiSetting("appointments", value);
+                          },
+                        ),
+                        BuildToggleOption(
+                          screenWidth: screenWidth,
+                          icon: Icons.notifications,
+                          title: "Tin nhắn",
+                          value: isMessages,
+                          onChanged: (value) async {
+                            setState(() => isMessages = value);
+                            await changeNotiSetting("messages", value);
+                          },
+                        ),
+                        BuildToggleOption(
+                          screenWidth: screenWidth,
+                          icon: Icons.payment,
+                          title: "Thanh toán",
+                          value: isPayments,
+                          onChanged: (value) async {
+                            setState(() => isPayments = value);
+                            await changeNotiSetting("payments", value);
+                          },
+                        ),
+                        SizedBox(height: screenHeight * 0.03),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
-            child: Center(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  SizedBox(height: screenHeight * 0.03),
-                  BuildToggleOption(
-                    screenWidth: screenWidth,
-                    icon: Icons.article,
-                    title: "Nhật ký",
-                    value: isDiaries,
-                    onChanged: (value) async {
-                      setState(() => isDiaries = value);
-                      await changeNotiSetting("diaries", value);
-                    },
-                  ),
-                  BuildToggleOption(
-                    screenWidth: screenWidth,
-                    icon: Icons.people_alt_rounded,
-                    title: "Lịch hẹn",
-                    value: isAppointments,
-                    onChanged: (value) async {
-                      setState(() => isAppointments = value);
-                      await changeNotiSetting("appointments", value);
-                    },
-                  ),
-                  BuildToggleOption(
-                    screenWidth: screenWidth,
-                    icon: Icons.notifications,
-                    title: "Tin nhắn",
-                    value: isMessages,
-                    onChanged: (value) async {
-                      setState(() => isMessages = value);
-                      await changeNotiSetting("messages", value);
-                    },
-                  ),
-                  BuildToggleOption(
-                    screenWidth: screenWidth,
-                    icon: Icons.payment,
-                    title: "Thanh toán",
-                    value: isPayments,
-                    onChanged: (value) async {
-                      setState(() => isPayments = value);
-                      await changeNotiSetting("payments", value);
-                    },
-                  ),
-                  SizedBox(height: screenHeight * 0.03),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

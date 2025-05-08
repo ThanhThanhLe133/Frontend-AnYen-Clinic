@@ -206,7 +206,7 @@ class _AddDoctorScreenState extends ConsumerState<AddDoctorScreen> {
           phoneController.text = doctorProfile['phoneNumber'];
           nameController.text = doctorProfile['name'];
           genderController.text =
-              doctorProfile['gender'] == "Male" ? "Nam" : "Nữ";
+              doctorProfile['gender'] == "male" ? "Nam" : "Nữ";
           specializationController.text = doctorProfile['specialization'];
           workplaceController.text = doctorProfile['workplace'];
           yearExperienceController.text =

@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'package:anyen_clinic/dialog/SuccessDialog.dart';
 import 'package:anyen_clinic/login/login_screen.dart';
 import 'package:anyen_clinic/makeRequest.dart';
+import 'package:anyen_clinic/settings/account_screen.dart';
 import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/CustomBackButton.dart';
 import 'package:anyen_clinic/widget/buildPasswordField.dart';
+import 'package:anyen_clinic/widget/menu.dart';
 import 'package:anyen_clinic/widget/normalButton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -81,7 +83,17 @@ class _ChangePassScreenState extends ConsumerState<ChangePassScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
-        leading: CustomBackButton(),
+        leading: IconButton(
+          icon: Icon(Icons.chevron_left, color: Color(0xFF9BA5AC)),
+          iconSize: 40,
+          onPressed: () async {
+            ref.read(menuOpenProvider.notifier).state = false;
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AccountScreen()),
+            );
+          },
+        ),
         title: Text(
           "Đổi mật khẩu",
           style: TextStyle(

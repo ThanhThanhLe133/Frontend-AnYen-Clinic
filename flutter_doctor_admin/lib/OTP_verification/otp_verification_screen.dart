@@ -170,11 +170,14 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
         } else {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(SnackBar(content: Text("Lỗi đăng nhập")));
+          ).showSnackBar(SnackBar(content: Text("Không có quyền truy cập!")));
           Navigator.pop(context);
         }
       } else {
-        throw Exception(responseData["message"] ?? "Lỗi đăng nhập");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(responseData['mes'] ?? "Lỗi đăng nhập")),
+        );
+        Navigator.pop(context);
       }
     } catch (e) {
       ScaffoldMessenger.of(

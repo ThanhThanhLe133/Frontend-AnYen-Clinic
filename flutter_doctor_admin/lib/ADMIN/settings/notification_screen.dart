@@ -1,5 +1,8 @@
+import 'dart:convert';
 import 'dart:math';
 
+import 'package:ayclinic_doctor_admin/makeRequest.dart';
+import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:ayclinic_doctor_admin/widget/BuildToggleOption.dart';
 import 'package:ayclinic_doctor_admin/widget/sectionTitle.dart';
 import 'package:flutter/material.dart';
@@ -12,10 +15,62 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
-  bool toggle1 = true;
-  bool toggle2 = true;
-  bool toggle3 = true;
-  bool toggle4 = true;
+  late bool isAppointments;
+  late bool isMessages;
+  late bool isReviews;
+
+  Map<String, dynamic> notiSetting = {};
+
+  Future<void> changeNotiSetting(String type, bool value) async {
+    final response = await makeRequest(
+      url: '$apiUrl/notification/settings',
+      method: 'PUT',
+      body: {"notification_type": type, "is_enabled": value},
+    );
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Cài đặt đã được cập nhật!")));
+    } else {
+      throw Exception('Không thể thay đổi cài đặt');
+    }
+  }
+
+  Future<void> fetchSettingNoti() async {
+    final response = await makeRequest(
+      url: '$apiUrl/notification/settings',
+      method: 'GET',
+    );
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      final settings = data['data'] as List<dynamic>;
+
+      setState(() {
+        notiSetting = {
+          for (var setting in settings)
+            setting['notification_type']: setting['is_enabled'],
+        };
+        isAppointments = notiSetting['appointments'];
+        isMessages = notiSetting['messages'];
+        isReviews = notiSetting['payments'];
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchSettingNoti();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -76,27 +131,30 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     screenWidth: screenWidth,
                     icon: Icons.lock,
                     title: "Lịch hẹn",
-                    value: toggle2,
-                    onChanged: (value) {
-                      setState(() => toggle2 = value);
+                    value: isAppointments,
+                    onChanged: (value) async {
+                      setState(() => isAppointments = value);
+                      await changeNotiSetting("appointments", value);
                     },
                   ),
                   BuildToggleOption(
                     screenWidth: screenWidth,
                     icon: Icons.notifications,
                     title: "Tin nhắn",
-                    value: toggle3,
-                    onChanged: (value) {
-                      setState(() => toggle3 = value);
+                    value: isMessages,
+                    onChanged: (value) async {
+                      setState(() => isMessages = value);
+                      await changeNotiSetting("messages", value);
                     },
                   ),
                   BuildToggleOption(
                     screenWidth: screenWidth,
                     icon: Icons.reviews,
                     title: "Đánh giá",
-                    value: toggle3,
-                    onChanged: (value) {
-                      setState(() => toggle3 = value);
+                    value: isReviews,
+                    onChanged: (value) async {
+                      setState(() => isReviews = value);
+                      await changeNotiSetting("payments", value);
                     },
                   ),
                   SizedBox(height: screenHeight * 0.03),
