@@ -205,16 +205,43 @@ class _ReviewCardDetailState extends State<ReviewCardDetail> {
                       ),
                     ],
                   ),
+                ],
+              ),
+              SizedBox(height: widget.screenWidth * 0.02),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        widget.emoji,
+                        style: TextStyle(fontSize: widget.screenWidth * 0.04),
+                      ),
+                      SizedBox(width: widget.screenWidth * 0.01),
+                      Text(
+                        widget.satisfactionText,
+                        style: TextStyle(
+                          color: Colors.orange[800],
+                          fontWeight: FontWeight.bold,
+                          fontSize: widget.screenWidth * 0.04,
+                        ),
+                      ),
+                    ],
+                  ),
                   SizedBox(width: widget.screenWidth * 0.01),
                   Container(
                     padding: EdgeInsets.symmetric(
                       horizontal: widget.screenWidth * 0.03,
-                      vertical: widget.screenWidth * 0.015,
+                      vertical: widget.screenWidth * 0.01,
                     ),
                     decoration: BoxDecoration(
-                      color: status == 'Approved' ? Colors.green : Colors.grey,
-                      borderRadius: BorderRadius.circular(5),
+                      color:
+                          status == 'Approved'
+                              ? const Color.fromARGB(255, 48, 218, 54)
+                              : Colors.grey,
+                      borderRadius: BorderRadius.circular(20),
                     ),
+
                     child: Text(
                       status == 'Approved' ? 'Hiển thị' : 'Đã ẩn',
                       style: TextStyle(
@@ -222,24 +249,6 @@ class _ReviewCardDetailState extends State<ReviewCardDetail> {
                         fontSize: widget.screenWidth * 0.03,
                         fontWeight: FontWeight.bold,
                       ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: widget.screenWidth * 0.02),
-              Row(
-                children: [
-                  Text(
-                    widget.emoji,
-                    style: TextStyle(fontSize: widget.screenWidth * 0.04),
-                  ),
-                  SizedBox(width: widget.screenWidth * 0.01),
-                  Text(
-                    widget.satisfactionText,
-                    style: TextStyle(
-                      color: Colors.orange[800],
-                      fontWeight: FontWeight.bold,
-                      fontSize: widget.screenWidth * 0.04,
                     ),
                   ),
                 ],
