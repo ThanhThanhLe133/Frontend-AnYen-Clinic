@@ -184,7 +184,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                         ],
                       ),
                     ),
-
+                    SizedBox(height: screenHeight * 0.05),
                     Container(
                       width: screenWidth * 0.9,
                       decoration: BoxDecoration(

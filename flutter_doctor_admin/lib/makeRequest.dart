@@ -14,6 +14,7 @@ Future<http.Response> makeRequest({
 }) async {
   String? accessToken = await getAccessToken();
   String? refreshToken = await getRefreshToken();
+
   Map<String, String> createHeaders([String? token]) {
     final updatedHeaders = <String, String>{
       'Content-Type': 'application/json',
@@ -36,11 +37,6 @@ Future<http.Response> makeRequest({
       }
 
       var request = http.MultipartRequest('POST', uri);
-      if (body != null) {
-        body.forEach((key, value) {
-          request.fields[key] = value.toString();
-        });
-      }
       var pic = await http.MultipartFile.fromPath(fileFieldName, file.path);
       request.files.add(pic);
       request.headers.addAll(requestHeaders);
@@ -80,23 +76,23 @@ Future<http.Response> makeRequest({
 
   try {
     // Gửi request lần đầu
-    http.Response res = await sendRequest();
+    http.Response res = await sendRequest(token: accessToken);
     final body = jsonDecode(res.body);
 
-    if (body['err'] == 2 && body['mes'] == 'Access token expired') {
+    if (body['err'] == 2 && refreshToken != null) {
       final refreshRes = await http.post(
         Uri.parse('$apiUrl/auth/refresh-token'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'refresh_token': refreshToken}),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"refresh_token": refreshToken}),
       );
 
       if (refreshRes.statusCode == 200) {
         final respond = jsonDecode(refreshRes.body);
         final newAccessToken = respond['access_token'];
         final newRefreshToken = respond['refresh_token'];
-        debugPrint("ddd $newAccessToken");
+
         // Lưu token mới
-        await saveAccessToken(newAccessToken);
+        if (newAccessToken != null) await saveAccessToken(newAccessToken);
         if (newRefreshToken != null) await saveRefreshToken(newRefreshToken);
 
         // Thử lại request

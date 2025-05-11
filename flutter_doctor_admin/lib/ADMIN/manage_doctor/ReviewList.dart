@@ -28,21 +28,21 @@ class _ReviewListState extends State<ReviewList> {
   Future<void> fetchReview() async {
     String doctorId = widget.doctorId;
     final response = await makeRequest(
-      url: '$apiUrl/get/get-all-reviews/?doctorId=$doctorId',
+      url: '$apiUrl/admin/get-all-reviews',
       method: 'GET',
     );
     if (response.statusCode != 200) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
-      Navigator.pop(context);
     } else {
       final data = jsonDecode(response.body);
       setState(() {
         reviews =
-            List<Map<String, dynamic>>.from(
-              data['data'],
-            ).where((review) => review['status'] != 'Pending').toList();
+            List<Map<String, dynamic>>.from(data['data']).where((review) {
+              return review['status'] != 'Pending' &&
+                  review['doctorId'] == doctorId;
+            }).toList();
       });
     }
   }
@@ -71,26 +71,30 @@ class _ReviewListState extends State<ReviewList> {
             ),
           ),
         )
-        : ListView.builder(
-          physics: BouncingScrollPhysics(),
-          scrollDirection: Axis.horizontal,
-          itemCount: reviews.length,
-          itemBuilder: (context, index) {
-            final review = reviews[index];
-            return ReviewCardDetail(
-              status: review['status'],
-              countReport: review['report_count'],
-              countHelpful: review['helpful_count'],
-              reviewId: review['id'],
-              username: review['full_name'] ?? "Ẩn danh",
-              date: formatDate(review['createdAt']),
-              reviewText: review['comment'] ?? '',
-              emoji: getEmojiFromRating(review['rating']),
-              satisfactionText: getSatisfactionText(review['rating']),
-              screenHeight: widget.screenHeight,
-              screenWidth: widget.screenWidth,
-            );
-          },
+        : SizedBox(
+          height: 600,
+          child: ListView.builder(
+            physics: BouncingScrollPhysics(),
+            itemCount: reviews.length,
+            itemBuilder: (context, index) {
+              final review = reviews[index];
+              return ReviewCardDetail(
+                status: review['status'] ?? '',
+                countReport: review['report_count'] ?? 0,
+                countHelpful: review['helpful_count'] ?? 0,
+                reviewId: review['id'] ?? '',
+                username: review['full_name'] ?? 'Ẩn danh',
+                date: formatDate(review['createdAt']),
+                reviewText: review['comment'] ?? '',
+                emoji: getEmojiFromRating(review['rating'] ?? 'Unknown'),
+                satisfactionText: getSatisfactionText(
+                  review['rating'] ?? 'Unknown',
+                ),
+                screenHeight: widget.screenHeight,
+                screenWidth: widget.screenWidth,
+              );
+            },
+          ),
         );
   }
 }
@@ -201,6 +205,25 @@ class _ReviewCardDetailState extends State<ReviewCardDetail> {
                       ),
                     ],
                   ),
+                  SizedBox(width: widget.screenWidth * 0.01),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: widget.screenWidth * 0.03,
+                      vertical: widget.screenWidth * 0.015,
+                    ),
+                    decoration: BoxDecoration(
+                      color: status == 'Approved' ? Colors.green : Colors.grey,
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Text(
+                      status == 'Approved' ? 'Hiển thị' : 'Đã ẩn',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: widget.screenWidth * 0.03,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ],
               ),
               SizedBox(height: widget.screenWidth * 0.02),
@@ -248,26 +271,6 @@ class _ReviewCardDetailState extends State<ReviewCardDetail> {
                       screenHeight: widget.screenHeight,
                     ),
                     SizedBox(width: widget.screenWidth * 0.05),
-                    if (status == 'Approved' || status == 'Hidden')
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: widget.screenWidth * 0.03,
-                          vertical: widget.screenWidth * 0.015,
-                        ),
-                        decoration: BoxDecoration(
-                          color:
-                              status == 'Approved' ? Colors.green : Colors.grey,
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Text(
-                          status == 'Approved' ? 'Hiển thị' : 'Đã ẩn',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: widget.screenWidth * 0.03,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
                   ],
                 ),
               ),

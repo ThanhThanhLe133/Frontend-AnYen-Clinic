@@ -240,7 +240,7 @@ class _ListReviewDoctorScreenState extends State<ListReviewDoctorScreen> {
                               fontWeight: FontWeight.bold,
                               fontSize: screenWidth * 0.055,
                               color: Colors.blue)),
-                      Text('/${reviews.length} lượt đánh giá',
+                      Text(' /${doctorProfile['totalReviews']} lượt đánh giá',
                           style: TextStyle(fontSize: screenWidth * 0.04)),
                     ],
                   ),

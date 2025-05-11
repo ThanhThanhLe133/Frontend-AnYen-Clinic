@@ -37,11 +37,12 @@ class _DashboardState extends ConsumerState<DashboardAdmin> {
 
   Future<void> fetchProfile() async {
     final response = await makeRequest(url: '$apiUrl/get/user', method: 'GET');
+    final responseData = jsonDecode(response.body);
     if (response.statusCode != 200) {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      ).showSnackBar(SnackBar(content: Text(responseData['mes'])));
       Navigator.pop(context);
     } else {
       final data = jsonDecode(response.body);

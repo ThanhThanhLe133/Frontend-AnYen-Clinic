@@ -23,7 +23,7 @@ class ReviewList extends StatefulWidget {
 
 class _ReviewListState extends State<ReviewList> {
   List<Map<String, dynamic>> reviews = [];
-
+  late ScrollController _scrollController;
   Future<void> fetchReview() async {
     String doctorId = widget.doctorId;
     final response = await makeRequest(
@@ -33,10 +33,11 @@ class _ReviewListState extends State<ReviewList> {
     if (response.statusCode != 200) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      ).showSnackBar(SnackBar(content: Text(response.body)));
       Navigator.pop(context);
     } else {
       final data = jsonDecode(response.body);
+
       setState(() {
         reviews = List<Map<String, dynamic>>.from(data['data']);
       });
@@ -47,8 +48,9 @@ class _ReviewListState extends State<ReviewList> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await fetchReview();
+      fetchReview();
     });
+    _scrollController = ScrollController();
   }
 
   @override
@@ -65,22 +67,25 @@ class _ReviewListState extends State<ReviewList> {
               ),
             ),
           )
-        : ListView.builder(
-            physics: BouncingScrollPhysics(),
-            scrollDirection: Axis.horizontal,
-            itemCount: reviews.length,
-            itemBuilder: (context, index) {
-              final review = reviews[index];
-              return ReviewCardDetail(
-                reviewId: review['id'],
-                username: review['anonymous_name'] ?? "Ẩn danh",
-                date: formatDate(review['createdAt']),
-                reviewText: review['comment'] ?? '',
-                emoji: getEmojiFromRating(review['rating']),
-                satisfactionText: getSatisfactionText(review['rating']),
-                screenHeight: widget.screenHeight,
-                screenWidth: widget.screenWidth,
-              );
-            });
+        : SizedBox(
+            height: 600,
+            child: ListView.builder(
+                controller: _scrollController,
+                physics: BouncingScrollPhysics(),
+                itemCount: reviews.length,
+                itemBuilder: (context, index) {
+                  final review = reviews[index];
+                  return ReviewCardDetail(
+                    reviewId: review['id'],
+                    username: review['anonymous_name'] ?? "Ẩn danh",
+                    date: formatDate(review['createdAt']),
+                    reviewText: review['comment'] ?? '',
+                    emoji: getEmojiFromRating(review['rating']),
+                    satisfactionText: getSatisfactionText(review['rating']),
+                    screenHeight: widget.screenHeight,
+                    screenWidth: widget.screenWidth,
+                  );
+                }),
+          );
   }
 }

@@ -163,9 +163,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      fetchProfile();
-    });
+    fetchProfile();
   }
 
   @override

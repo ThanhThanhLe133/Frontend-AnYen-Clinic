@@ -1,21 +1,25 @@
 import 'package:flutter/material.dart';
 
 void showSuccessDialog(
-    BuildContext context, Widget? nextScreen, String text, String label) {
+  BuildContext context,
+  Widget? nextScreen,
+  String text,
+  String label,
+) {
   double screenWidth = MediaQuery.of(context).size.width;
   double screenHeight = MediaQuery.of(context).size.height;
 
-  Future.delayed(Duration(seconds: 2), () {
-    if (Navigator.of(context).canPop()) {
-      Navigator.of(context).pop(); // Đóng dialog
-      if (nextScreen != null && context.mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => nextScreen),
-        );
-      }
-    }
-  });
+  // Future.delayed(Duration(seconds: 2), () {
+  //   if (Navigator.of(context).canPop()) {
+  //     Navigator.of(context).pop(); // Đóng dialog
+  //     if (nextScreen != null && context.mounted) {
+  //       Navigator.push(
+  //         context,
+  //         MaterialPageRoute(builder: (context) => nextScreen),
+  //       );
+  //     }
+  //   }
+  // });
   showDialog(
     context: context,
     barrierDismissible: false,
@@ -27,8 +31,11 @@ void showSuccessDialog(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.check_circle,
-                  size: screenWidth * 0.2, color: Colors.blue),
+              Icon(
+                Icons.check_circle,
+                size: screenWidth * 0.2,
+                color: Colors.blue,
+              ),
               SizedBox(height: 20),
               Text(
                 text,
@@ -58,9 +65,10 @@ void showSuccessDialog(
                     borderRadius: BorderRadius.circular(5), // Bo góc
                   ),
                   textStyle: TextStyle(
-                      fontSize: screenWidth * 0.065,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'Inter-Medium'),
+                    fontSize: screenWidth * 0.065,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Inter-Medium',
+                  ),
                 ),
                 child: Text(label),
               ),

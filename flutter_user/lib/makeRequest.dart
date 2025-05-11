@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:anyen_clinic/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart';
 
 Future<http.Response> makeRequest({
   required String url,
@@ -45,10 +46,11 @@ Future<http.Response> makeRequest({
     } else {
       switch (method.toUpperCase()) {
         case 'GET':
-          return await http.get(
-            uri,
-            headers: requestHeaders,
-          );
+          if (url.contains('get-patient-profile') ||
+              url.contains('get-patient-health-records')) {
+            return await http.get(uri);
+          }
+          return await http.get(uri, headers: requestHeaders);
         case 'POST':
           return await http.post(
             uri,
@@ -61,12 +63,6 @@ Future<http.Response> makeRequest({
             headers: requestHeaders,
             body: body != null ? json.encode(body) : null,
           );
-        case 'PUT':
-          return await http.put(
-            uri,
-            headers: requestHeaders,
-            body: body != null ? json.encode(body) : null,
-          );
         case 'DELETE':
           return await http.delete(
             uri,
@@ -74,7 +70,6 @@ Future<http.Response> makeRequest({
             body: body != null ? json.encode(body) : null,
           );
         default:
-          debugPrint('Got response!');
           throw Exception('Unsupported method');
       }
     }
@@ -91,6 +86,7 @@ Future<http.Response> makeRequest({
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({"refresh_token": refreshToken}),
       );
+
       if (refreshRes.statusCode == 200) {
         final respond = jsonDecode(refreshRes.body);
         final newAccessToken = respond['access_token'];

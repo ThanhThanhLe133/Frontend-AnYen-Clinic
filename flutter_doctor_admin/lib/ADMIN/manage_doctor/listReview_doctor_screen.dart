@@ -249,7 +249,7 @@ class _ListReviewDoctorScreenState extends State<ListReviewDoctorScreen> {
                           ),
                         ),
                         Text(
-                          '/${reviews.length} lượt đánh giá',
+                          ' /${doctorProfile['totalReviews']} lượt đánh giá',
                           style: TextStyle(fontSize: screenWidth * 0.04),
                         ),
                       ],

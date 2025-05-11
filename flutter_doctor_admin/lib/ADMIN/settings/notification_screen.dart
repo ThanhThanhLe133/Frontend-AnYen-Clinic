@@ -109,58 +109,67 @@ class _NotificationScreenState extends State<NotificationScreen> {
             horizontal: screenWidth * 0.08,
             vertical: screenHeight * 0.1,
           ),
-          child: Container(
-            height: max(screenHeight * 0.5, 250),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Color(0xFFD9D9D9), width: 1),
-            ),
-            child: Center(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  SizedBox(height: screenHeight * 0.03),
-                  sectionTitle(
-                    title: "Cài đặt để nhận thông báo khi ngoại tuyến",
-                    screenHeight: screenHeight,
-                    screenWidth: screenWidth,
-                  ),
-                  BuildToggleOption(
-                    screenWidth: screenWidth,
-                    icon: Icons.lock,
-                    title: "Lịch hẹn",
-                    value: isAppointments,
-                    onChanged: (value) async {
-                      setState(() => isAppointments = value);
-                      await changeNotiSetting("appointments", value);
-                    },
-                  ),
-                  BuildToggleOption(
-                    screenWidth: screenWidth,
-                    icon: Icons.notifications,
-                    title: "Tin nhắn",
-                    value: isMessages,
-                    onChanged: (value) async {
-                      setState(() => isMessages = value);
-                      await changeNotiSetting("messages", value);
-                    },
-                  ),
-                  BuildToggleOption(
-                    screenWidth: screenWidth,
-                    icon: Icons.reviews,
-                    title: "Đánh giá",
-                    value: isReviews,
-                    onChanged: (value) async {
-                      setState(() => isReviews = value);
-                      await changeNotiSetting("payments", value);
-                    },
-                  ),
-                  SizedBox(height: screenHeight * 0.03),
-                ],
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Text(
+                  "Cài đặt để nhận thông báo khi ngoại tuyến",
+                  maxLines: null,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: screenWidth * 0.04),
+                ),
               ),
-            ),
+              Container(
+                height: max(screenHeight * 0.5, 250),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Color(0xFFD9D9D9), width: 1),
+                ),
+                child: Center(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      SizedBox(height: screenHeight * 0.03),
+
+                      BuildToggleOption(
+                        screenWidth: screenWidth,
+                        icon: Icons.lock,
+                        title: "Lịch hẹn",
+                        value: isAppointments,
+                        onChanged: (value) async {
+                          setState(() => isAppointments = value);
+                          await changeNotiSetting("appointments", value);
+                        },
+                      ),
+                      BuildToggleOption(
+                        screenWidth: screenWidth,
+                        icon: Icons.notifications,
+                        title: "Tin nhắn",
+                        value: isMessages,
+                        onChanged: (value) async {
+                          setState(() => isMessages = value);
+                          await changeNotiSetting("messages", value);
+                        },
+                      ),
+                      BuildToggleOption(
+                        screenWidth: screenWidth,
+                        icon: Icons.reviews,
+                        title: "Đánh giá",
+                        value: isReviews,
+                        onChanged: (value) async {
+                          setState(() => isReviews = value);
+                          await changeNotiSetting("payments", value);
+                        },
+                      ),
+                      SizedBox(height: screenHeight * 0.03),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

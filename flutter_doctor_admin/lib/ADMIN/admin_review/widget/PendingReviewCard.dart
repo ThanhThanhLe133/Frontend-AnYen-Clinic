@@ -52,7 +52,7 @@ class _PendingReviewCardState extends State<PendingReviewCard> {
           context,
           AdminReviewScreen(),
           "Thay đổi thành công",
-          "QUay lại",
+          "Quay lại",
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -81,7 +81,7 @@ class _PendingReviewCardState extends State<PendingReviewCard> {
           context,
           AdminReviewScreen(),
           "Thay đổi thành công",
-          "QUay lại",
+          "Quay lại",
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

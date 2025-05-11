@@ -61,23 +61,23 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
     });
   }
 
-  @override
-  void dispose() {
-    timer.cancel();
-    for (var controller in otpControllers) {
-      controller.dispose();
-    }
-    for (var focusNode in otpFocusNodes) {
-      focusNode.dispose();
-    }
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   timer.cancel();
+  //   for (var controller in otpControllers) {
+  //     controller.dispose();
+  //   }
+  //   for (var focusNode in otpFocusNodes) {
+  //     focusNode.dispose();
+  //   }
+  //   SystemChrome.setPreferredOrientations([
+  //     DeviceOrientation.portraitUp,
+  //     DeviceOrientation.portraitDown,
+  //     DeviceOrientation.landscapeLeft,
+  //     DeviceOrientation.landscapeRight,
+  //   ]);
+  //   super.dispose();
+  // }
 
   void ResetProvider() {
     ref.read(phoneNumberProvider.notifier).state = '';
@@ -119,22 +119,6 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
     } else {
       print('Failed to save device token: ${response.body}');
     }
-
-    // Listen for foreground messages
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('Foreground message: ${message.notification?.title}');
-    });
-
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('Opened from notification');
-    });
-  }
-
-  Future<void> saveAfterLogin(Map<String, dynamic> responseData) async {
-    await saveAccessToken(responseData['access_token']);
-    await saveRefreshToken(responseData['refresh_token']);
-    await saveLogin();
-    await setupFCM(responseData['access_token']);
   }
 
   Future<void> callLoginAPI(String phoneNumber, String password) async {
@@ -148,7 +132,10 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
       final responseData = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        await saveAfterLogin(responseData);
+        await saveAccessToken(responseData['access_token']);
+        await saveRefreshToken(responseData['refresh_token']);
+        await saveLogin();
+        await setupFCM(responseData['access_token']);
 
         List<String> roles = List<String>.from(responseData['roles']);
         if (roles.contains('admin')) {
@@ -203,7 +190,7 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
           await callLoginAPI(phoneNumber, password);
         }
       } else {
-        throw Exception(responseData["message"] ?? "Xác nhận OTP thất bại");
+        throw Exception(responseData["mes"] ?? "Xác nhận OTP thất bại");
       }
     } catch (e) {
       ScaffoldMessenger.of(
@@ -230,9 +217,9 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
           context,
         ).showSnackBar(SnackBar(content: Text("Mã OTP đã được gửi lại!")));
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Lỗi: ${responseData['message']}")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Lỗi: ${responseData['mes']}")));
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

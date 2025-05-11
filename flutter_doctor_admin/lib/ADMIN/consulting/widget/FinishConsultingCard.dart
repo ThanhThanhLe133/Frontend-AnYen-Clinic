@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:ayclinic_doctor_admin/ADMIN/review/review_doctor_screen.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/admin_review/review_doctor_screen.dart';
 import 'package:ayclinic_doctor_admin/dialog/Prescription.dart';
 import 'package:ayclinic_doctor_admin/dialog/Summary_doctor.dart';
 import 'package:ayclinic_doctor_admin/widget/buildMoreOption.dart';

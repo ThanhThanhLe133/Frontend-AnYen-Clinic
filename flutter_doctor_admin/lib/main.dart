@@ -3,6 +3,7 @@ import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/doctor_list_screen.dar
 import 'package:ayclinic_doctor_admin/ADMIN/patient/patient_list_screen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/dashboard_doctor/dashboard.dart';
 import 'package:ayclinic_doctor_admin/login/login_screen.dart';
+import 'package:ayclinic_doctor_admin/notification_service.dart';
 import 'package:ayclinic_doctor_admin/splash/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -15,8 +16,9 @@ import 'package:ayclinic_doctor_admin/DOCTOR/psychological_test/psychological_te
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: "assets/config/.env");
-  final bool isLoggedIn = await getLogin();
   await Firebase.initializeApp();
+  await NotificationService.instance.initialize();
+  final bool isLoggedIn = await getLogin();
   runApp(ProviderScope(child: MainApp(isLoggedIn: isLoggedIn)));
 }
 

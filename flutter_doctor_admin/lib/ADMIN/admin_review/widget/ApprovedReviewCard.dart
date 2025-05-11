@@ -144,9 +144,8 @@ class _ApprovedReviewCardState extends State<ApprovedReviewCard> {
               ),
             ],
           ),
-
           Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
                 width: widget.screenWidth * 0.2,
@@ -170,29 +169,46 @@ class _ApprovedReviewCardState extends State<ApprovedReviewCard> {
                   ),
                 ),
               ),
-              ElevatedButton(
-                onPressed: () {
-                  showOptionDialog(
-                    context,
-                    "Ẩn đánh giá",
-                    "Bạn có chắc chắn muốn ẩn đánh giá này",
-                    "HUỶ",
-                    "ĐỒNG Ý",
-                    hideReview,
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 255, 89, 153),
-                  foregroundColor: Colors.black,
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  textStyle: TextStyle(fontSize: widget.screenWidth * 0.035),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
+              if (widget.status == "Approved")
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        showOptionDialog(
+                          context,
+                          "Ẩn đánh giá",
+                          "Bạn có chắc chắn muốn ẩn đánh giá này",
+                          "HUỶ",
+                          "ĐỒNG Ý",
+                          hideReview,
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(
+                          255,
+                          255,
+                          89,
+                          153,
+                        ),
+                        foregroundColor: Colors.black,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        textStyle: TextStyle(
+                          fontSize: widget.screenWidth * 0.035,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                      child: Text('Ẩn'),
+                    ),
+                    SizedBox(width: 8),
+                  ],
                 ),
-                child: Text('Ẩn'),
-              ),
-              SizedBox(width: 8),
             ],
           ),
         ],
