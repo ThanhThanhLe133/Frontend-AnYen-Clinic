@@ -4,6 +4,7 @@ import 'package:ayclinic_doctor_admin/ADMIN/appointment/appointment_screen.dart'
 import 'package:ayclinic_doctor_admin/ADMIN/message/message_screen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/dialog/InputPrescription.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/menu_doctor.dart';
+import 'package:ayclinic_doctor_admin/login/login_screen.dart';
 import 'package:ayclinic_doctor_admin/makeRequest.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:ayclinic_doctor_admin/widget/radialBarChart.dart';
@@ -22,6 +23,7 @@ class DashboardDoctor extends ConsumerStatefulWidget {
 class _DashboardState extends ConsumerState<DashboardDoctor> {
   bool isOnline = true;
   Map<String, dynamic> doctor = {};
+  DateTime? _lastBackPressed;
 
   Future<void> changeStatus(bool value) async {
     final response = await makeRequest(
@@ -70,16 +72,24 @@ class _DashboardState extends ConsumerState<DashboardDoctor> {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
 
-    return PopScope(
-      onPopInvoked: (didPop) {
-        if (didPop) {
-          setState(() {});
-        } else {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text("Nhấn back lần nữa để thoát")));
-          SystemNavigator.pop();
+    return WillPopScope(
+      onWillPop: () async {
+        final now = DateTime.now();
+        if (_lastBackPressed == null ||
+            now.difference(_lastBackPressed!) > Duration(seconds: 5)) {
+          _lastBackPressed = now;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Nhấn back lần nữa để trở về đăng nhập")),
+          );
+          return false; // CHẶN pop
         }
+
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+          (route) => false,
+        );
+        return false; // Trả false để không pop tiếp Dashboard
       },
       child:
           doctor.isEmpty

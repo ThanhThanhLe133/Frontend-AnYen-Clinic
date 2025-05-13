@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:ayclinic_doctor_admin/OTP_verification/otp_verification_screen.dart';
+import 'package:ayclinic_doctor_admin/login/login_screen.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:ayclinic_doctor_admin/Provider/UserProvider.dart';
 import 'package:ayclinic_doctor_admin/widget/inputPhoneNumber.dart';
@@ -30,10 +31,10 @@ class _ForgotPassScreenState extends ConsumerState<ForgotPassScreen> {
       ).showSnackBar(SnackBar(content: Text("Vui lòng nhập số điện thoại")));
       return;
     } else if (phoneNumber.startsWith(code)) {
-      //nếu đã nhập mã vùng -> thêm +
       phoneNumber = "+$phoneNumber";
+    } else if (phoneNumber.startsWith("0")) {
+      phoneNumber = "+$code${phoneNumber.substring(1)}";
     } else {
-      //nếu chưa nhập mã vùng -> thêm mã vùng
       phoneNumber = "+$code$phoneNumber";
     }
 
@@ -68,7 +69,7 @@ class _ForgotPassScreenState extends ConsumerState<ForgotPassScreen> {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.width;
-    final phoneController = TextEditingController();
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -77,7 +78,10 @@ class _ForgotPassScreenState extends ConsumerState<ForgotPassScreen> {
           icon: Icon(Icons.chevron_left, color: Color(0xFF9BA5AC)),
           iconSize: screenWidth * 0.08,
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => LoginScreen()),
+            );
           },
         ),
         title: Text(

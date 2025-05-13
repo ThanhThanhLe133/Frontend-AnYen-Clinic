@@ -5,7 +5,9 @@ import 'package:ayclinic_doctor_admin/ADMIN/dashboard_admin/dashboard.dart';
 import 'package:ayclinic_doctor_admin/Provider/otp_provider.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/dashboard_doctor/dashboard.dart';
 import 'package:ayclinic_doctor_admin/dialog/SuccessDialog.dart';
+import 'package:ayclinic_doctor_admin/dialog/showSuccess.dart';
 import 'package:ayclinic_doctor_admin/forgotPass/forgot_pass_screen.dart';
+import 'package:ayclinic_doctor_admin/login/login_screen.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:ayclinic_doctor_admin/Provider/UserProvider.dart';
 import 'package:ayclinic_doctor_admin/widget/normalButton.dart';
@@ -139,20 +141,10 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
 
         List<String> roles = List<String>.from(responseData['roles']);
         if (roles.contains('admin')) {
-          showSuccessDialog(
-            context,
-            DashboardAdmin(),
-            "Xác nhận Admin thành công",
-            "Tới trang chủ",
-          );
+          showSuccess(context, DashboardAdmin(), "Tới trang chủ");
           ResetProvider();
         } else if (roles.contains('doctor')) {
-          showSuccessDialog(
-            context,
-            DashboardDoctor(),
-            "Xác nhận Doctor thành công",
-            "Tới trang chủ",
-          );
+          showSuccess(context, DashboardDoctor(), "Tới trang chủ");
           ResetProvider();
         } else {
           ScaffoldMessenger.of(
@@ -243,7 +235,16 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
           icon: Icon(Icons.chevron_left, color: Color(0xFF9BA5AC)),
           iconSize: screenWidth * 0.08,
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder:
+                    (context) =>
+                        widget.source == "forgot"
+                            ? ForgotPassScreen()
+                            : LoginScreen(),
+              ),
+            );
           },
         ),
         title: Text(

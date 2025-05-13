@@ -78,7 +78,7 @@ class _EditAccountScreenSate extends ConsumerState<EditAccountScreen> {
     );
 
     if (response.statusCode == 200) {
-      showSuccessScreen(context, MedicalRecordsScreen());
+      showSuccess(context, MedicalRecordsScreen(), "Quay lại");
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Lưu thất bại: ${response.body}")),

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:anyen_clinic/dialog/SuccessScreen.dart';
 import 'package:anyen_clinic/forgotPass/forgot_pass_screen.dart';
 import 'package:anyen_clinic/login/login_screen.dart';
 import 'package:anyen_clinic/provider/otp_provider.dart';
@@ -112,8 +113,7 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
         List<String> roles = List<String>.from(responseData['roles']);
 
         if (roles.contains('patient')) {
-          showSuccessDialog(
-              context, Dashboard(), "Xác nhận thành công", "Tới trang chủ");
+          showSuccess(context, Dashboard(), "Tới trang chủ");
           resetProvider();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -175,8 +175,7 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
       final responseData = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        showSuccessDialog(
-            context, LoginScreen(), "Xác nhận thành công", "Đăng nhập");
+        showSuccess(context, LoginScreen(), "Đăng nhập");
         resetProvider();
       } else {
         throw Exception(responseData["message"] ?? "Lỗi đăng ký");
@@ -191,8 +190,7 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
   }
 
   Future<void> navigateToForgotPass() async {
-    showSuccessDialog(
-        context, ForgotPassScreen(), "Xác nhận thành công", "Tạo mật khẩu mới");
+    showSuccess(context, ForgotPassScreen(), "Tạo mật khẩu mới");
   }
 
   Future<void> setupFCM(String accessToken) async {
@@ -307,12 +305,19 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
       appBar: AppBar(
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.chevron_left, color: Color(0xFF9BA5AC)),
-          iconSize: screenWidth * 0.08,
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+            icon: Icon(Icons.chevron_left, color: Color(0xFF9BA5AC)),
+            iconSize: screenWidth * 0.08,
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => widget.source == "forgot"
+                        ? ForgotPassScreen()
+                        : widget.source == "register"
+                            ? RegisterScreen()
+                            : LoginScreen()),
+              );
+            }),
         title: Text(
           "Xác nhận số điện thoại",
           style: TextStyle(

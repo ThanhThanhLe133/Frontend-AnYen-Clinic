@@ -1,6 +1,7 @@
 import 'package:anyen_clinic/dashboard/DoctorList.dart';
 import 'package:anyen_clinic/diary/EmotionHistory.dart';
 import 'package:anyen_clinic/doctor/list_doctor_screen.dart';
+import 'package:anyen_clinic/login/login_screen.dart';
 import 'package:anyen_clinic/widget/circleButton.dart';
 import 'package:anyen_clinic/widget/menu.dart';
 import 'package:anyen_clinic/widget/radialBarChart.dart';
@@ -17,6 +18,7 @@ class Dashboard extends ConsumerStatefulWidget {
 }
 
 class _DashboardState extends ConsumerState<Dashboard> {
+  DateTime? _lastBackPressed;
   String getGreetingMessage() {
     int hour = DateTime.now().hour;
     if (hour >= 5 && hour < 12) {
@@ -33,16 +35,24 @@ class _DashboardState extends ConsumerState<Dashboard> {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
 
-    return PopScope(
-      onPopInvoked: (didPop) {
-        if (didPop) {
-          setState(() {});
-        } else {
+    return WillPopScope(
+      onWillPop: () async {
+        final now = DateTime.now();
+        if (_lastBackPressed == null ||
+            now.difference(_lastBackPressed!) > Duration(seconds: 5)) {
+          _lastBackPressed = now;
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Nhấn back lần nữa để thoát")),
+            SnackBar(content: Text("Nhấn back lần nữa để trở về đăng nhập")),
           );
-          SystemNavigator.pop();
+          return false; // CHẶN pop
         }
+
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+          (route) => false,
+        );
+        return false; // Trả false để không pop tiếp Dashboard
       },
       child: Scaffold(
         backgroundColor: Colors.white,

@@ -71,7 +71,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         );
       } else {
         debugPrint("⚠️ Error message from API: ${responseData['message']}");
-        throw Exception(responseData["message"] ?? "Lỗi đăng nhập");
+        throw Exception(responseData['mes'] ?? "Lỗi đăng nhập");
       }
     } catch (e) {
       debugPrint("❌ Exception caught: ${e.toString()}");

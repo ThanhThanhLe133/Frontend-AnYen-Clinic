@@ -1,4 +1,3 @@
-import 'package:anyen_clinic/widget/normalButton.dart';
 import 'package:flutter/material.dart';
 
 void showSuccess(BuildContext rootContext, Widget? nextScreen, String label) {
@@ -50,9 +49,10 @@ void showSuccess(BuildContext rootContext, Widget? nextScreen, String label) {
                     borderRadius: BorderRadius.circular(5), // Bo góc
                   ),
                   textStyle: TextStyle(
-                      fontSize: screenWidth * 0.065,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'Inter-Medium'),
+                    fontSize: screenWidth * 0.065,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Inter-Medium',
+                  ),
                 ),
                 child: Text(label),
               ),
