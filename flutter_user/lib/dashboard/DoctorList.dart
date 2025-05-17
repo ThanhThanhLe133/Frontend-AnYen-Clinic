@@ -1,35 +1,13 @@
+import 'dart:convert';
+
+import 'package:anyen_clinic/makeRequest.dart';
+import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/DoctorCardInListRow.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class DoctorList extends StatefulWidget {
   const DoctorList({super.key});
-
-  static const List<Map<String, String>> doctors = [
-    {
-      'name': 'BS.CKI Marcus Horizon',
-      'specialty': 'Tâm lý - Nội tổng quát',
-      'workplace': 'Bệnh viện ĐH Y Dược',
-      'image': 'https://i.imgur.com/Y6W5JhB.png'
-    },
-    {
-      'name': 'BS.CKI Anna Smith',
-      'specialty': 'Da liễu - Thẩm mỹ',
-      'workplace': 'Bệnh viện Chợ Rẫy',
-      'image': 'https://i.imgur.com/Y6W5JhB.png'
-    },
-    {
-      'name': 'BS.CKI Michael Tran',
-      'specialty': 'Nội khoa - Tim mạch',
-      'workplace': 'Bệnh viện Bình Dân',
-      'image': 'https://i.imgur.com/Y6W5JhB.png'
-    },
-    {
-      'name': 'BS.CKI Emily Johnson',
-      'specialty': 'Nhi khoa - Hô hấp',
-      'workplace': 'Bệnh viện Nhi Đồng',
-      'image': 'https://i.imgur.com/Y6W5JhB.png'
-    },
-  ];
 
   @override
   State<DoctorList> createState() => _DoctorListState();
@@ -37,17 +15,41 @@ class DoctorList extends StatefulWidget {
 
 class _DoctorListState extends State<DoctorList> {
   late ScrollController _scrollController;
-  final List<Map<String, String>> _displayedDoctors = [];
+  final List<Map<String, dynamic>> _displayedDoctors = [];
   int _currentPage = 1;
   final int _itemsPerPage = 4;
   bool _isLoading = false;
+  List<Map<String, dynamic>> doctors = [];
+  Future<void> fetchDoctors() async {
+    final response = await makeRequest(
+      url: '$apiUrl/get/get-all-doctors',
+      method: 'GET',
+    );
+
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        doctors = List<Map<String, dynamic>>.from(data['data'])
+            .where((doctor) => doctor['averageSatisfaction'] >= 80)
+            .toList();
+      });
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
-    _loadMoreDoctors();
+    fetchDoctors().then((_) {
+      _loadMoreDoctors();
+    });
   }
 
   @override
@@ -65,8 +67,8 @@ class _DoctorListState extends State<DoctorList> {
   }
 
   void _loadMoreDoctors() {
-    if (_isLoading || _displayedDoctors.length >= DoctorList.doctors.length) {
-      return;
+    if (_isLoading || _displayedDoctors.length >= doctors.length) {
+      return; // Không tải thêm nếu đang loading hoặc đã hết dữ liệu
     }
 
     setState(() {
@@ -75,14 +77,16 @@ class _DoctorListState extends State<DoctorList> {
 
     int startIndex = (_currentPage - 1) * _itemsPerPage;
     int endIndex = startIndex + _itemsPerPage;
-    if (endIndex > DoctorList.doctors.length) {
-      endIndex = DoctorList.doctors.length;
+    if (endIndex > doctors.length) {
+      endIndex = doctors.length;
     }
 
-    List<Map<String, String>> newDoctors =
-        DoctorList.doctors.sublist(startIndex, endIndex);
+    List<Map<String, dynamic>> newDoctors = doctors.sublist(
+      startIndex,
+      endIndex,
+    );
 
-    Future.delayed(Duration(milliseconds: 500), () {
+    Future.delayed(Duration(seconds: 1), () {
       setState(() {
         _displayedDoctors.addAll(newDoctors);
         _currentPage++;
@@ -97,7 +101,7 @@ class _DoctorListState extends State<DoctorList> {
     double screenHeight = MediaQuery.of(context).size.height;
 
     return SizedBox(
-      height: screenHeight * 0.5, // Giới hạn chiều cao để tránh lỗi layout
+      height: screenHeight * 0.5,
       child: GridView.builder(
         controller: _scrollController,
         padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
@@ -111,7 +115,12 @@ class _DoctorListState extends State<DoctorList> {
         itemCount: _displayedDoctors.length + (_isLoading ? 1 : 0),
         itemBuilder: (context, index) {
           if (index == _displayedDoctors.length) {
-            return Center(child: CircularProgressIndicator());
+            return Center(
+              child: SpinKitWaveSpinner(
+                color: const Color.fromARGB(255, 72, 166, 243),
+                size: 36.0,
+              ),
+            );
           }
           return DoctorCardInListRow(
             screenWidth: screenWidth,
