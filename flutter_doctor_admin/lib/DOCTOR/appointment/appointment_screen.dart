@@ -5,14 +5,20 @@ import 'package:ayclinic_doctor_admin/widget/statusWidget.dart';
 import 'package:flutter/material.dart';
 
 class AppointmentScreen extends StatefulWidget {
-  const AppointmentScreen({super.key});
-
+  const AppointmentScreen({super.key, required this.isConnecting});
+  final bool isConnecting;
   @override
   State<AppointmentScreen> createState() => _AppointmentScreenState();
 }
 
 class _AppointmentScreenState extends State<AppointmentScreen> {
-  bool isConnecting = true;
+  late bool isConnecting;
+
+  @override
+  void initState() {
+    super.initState();
+    isConnecting = widget.isConnecting;
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -58,7 +58,7 @@ class _InputPrescriptionDialogState extends State<InputPrescriptionDialog> {
       if (response.statusCode == 200) {
         showSuccessDialog(
           context,
-          AppointmentScreen(),
+          AppointmentScreen(isConnecting: true),
           "Lưu thành công",
           "Quay lại",
         );

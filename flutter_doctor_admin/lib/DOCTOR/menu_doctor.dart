@@ -59,7 +59,11 @@ class _MenuDoctorState extends ConsumerState<MenuDoctor> {
       children: [
         buildMenuItem(Icons.home, "Trang chủ", DashboardDoctor()),
         buildMenuItem(Icons.history, "Lịch sử tư vấn", HistoryConsulting()),
-        buildMenuItem(Icons.event, "Lịch hẹn", AppointmentScreen()),
+        buildMenuItem(
+          Icons.event,
+          "Lịch hẹn",
+          AppointmentScreen(isConnecting: true),
+        ),
         buildMenuItem(Icons.message, "Tin nhắn", MessageScreen()),
         buildMenuItem(Icons.settings, "Cài đặt", AccountScreen()),
         buildMenuItem(Icons.support_agent, "Liên hệ CSKH", ChatScreen()),

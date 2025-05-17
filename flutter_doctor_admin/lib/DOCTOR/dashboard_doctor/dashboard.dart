@@ -1,15 +1,13 @@
 import 'dart:convert';
 
-import 'package:ayclinic_doctor_admin/ADMIN/appointment/appointment_screen.dart';
-import 'package:ayclinic_doctor_admin/ADMIN/message/message_screen.dart';
-import 'package:ayclinic_doctor_admin/DOCTOR/dialog/InputPrescription.dart';
+import 'package:ayclinic_doctor_admin/DOCTOR/appointment/appointment_screen.dart';
+
 import 'package:ayclinic_doctor_admin/DOCTOR/menu_doctor.dart';
 import 'package:ayclinic_doctor_admin/login/login_screen.dart';
 import 'package:ayclinic_doctor_admin/makeRequest.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:ayclinic_doctor_admin/widget/radialBarChart.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
@@ -24,6 +22,63 @@ class _DashboardState extends ConsumerState<DashboardDoctor> {
   bool isOnline = true;
   Map<String, dynamic> doctor = {};
   DateTime? _lastBackPressed;
+  late int totalAppointmentsThisMonth = 0;
+  late int connectingAppointment = 0;
+  late int waitingAppointment = 0;
+
+  List<Map<String, dynamic>> appointments = [];
+  Future<void> fetchAppointment() async {
+    final response = await makeRequest(
+      url: '$apiUrl/doctor/get-all-appointments',
+      method: 'GET',
+    );
+
+    if (response.statusCode != 200) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        appointments =
+            List<Map<String, dynamic>>.from(data['data']).where((appointment) {
+              return appointment['status'] == 'Pending' ||
+                  appointment['status'] == 'Confirmed';
+            }).toList();
+
+        final now = DateTime.now();
+
+        //tổng số ca tư vấn trong tháng
+        final currentMonthAppointments =
+            appointments.where((appointment) {
+              final time = appointment['appointment_time'];
+              if (time is DateTime) {
+                return time.month == now.month && time.year == now.year;
+              }
+              return false;
+            }).toList();
+
+        totalAppointmentsThisMonth = currentMonthAppointments.length;
+
+        //số ca tư vấn đang kết nối
+        final currentConnectingAppointments =
+            appointments.where((appointment) {
+              return appointment['status'] == 'Pending';
+            }).toList();
+
+        connectingAppointment = currentConnectingAppointments.length;
+
+        //số ca tư vấn đang chờ
+        final currentWaitingAppointments =
+            appointments.where((appointment) {
+              return appointment['status'] == 'Confirmed';
+            }).toList();
+
+        waitingAppointment = currentWaitingAppointments.length;
+      });
+    }
+  }
 
   Future<void> changeStatus(bool value) async {
     final response = await makeRequest(
@@ -193,7 +248,7 @@ class _DashboardState extends ConsumerState<DashboardDoctor> {
                             ),
                             SizedBox(width: screenWidth * 0.02),
                             Text(
-                              "15",
+                              '$totalAppointmentsThisMonth',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: screenWidth * 0.045,
@@ -232,7 +287,7 @@ class _DashboardState extends ConsumerState<DashboardDoctor> {
                                       ),
                                     ),
                                     Text(
-                                      "02 ",
+                                      '$connectingAppointment',
                                       style: TextStyle(
                                         fontSize: screenWidth * 0.045,
                                         color: Color(0xFF119CF0),
@@ -255,7 +310,10 @@ class _DashboardState extends ConsumerState<DashboardDoctor> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => AppointmentScreen(),
+                                      builder:
+                                          (context) => AppointmentScreen(
+                                            isConnecting: true,
+                                          ),
                                     ),
                                   );
                                 },
@@ -267,14 +325,14 @@ class _DashboardState extends ConsumerState<DashboardDoctor> {
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      "Tin nhắn chưa kết thúc: ",
+                                      "Lịch hẹn sắp tới: ",
                                       style: TextStyle(
                                         fontSize: screenWidth * 0.04,
                                         color: Color(0xFF40494F),
                                       ),
                                     ),
                                     Text(
-                                      "02 ",
+                                      '$waitingAppointment',
                                       style: TextStyle(
                                         fontSize: screenWidth * 0.045,
                                         color: Color(0xFF119CF0),
@@ -297,7 +355,10 @@ class _DashboardState extends ConsumerState<DashboardDoctor> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => MessageScreen(),
+                                      builder:
+                                          (context) => AppointmentScreen(
+                                            isConnecting: false,
+                                          ),
                                     ),
                                   );
                                 },

@@ -54,7 +54,7 @@ class AppointmentConnectingCardState
     } else {
       showSuccessDialog(
         context,
-        AppointmentScreen(),
+        AppointmentScreen(isConnecting: true),
         "Xác nhận thành công",
         "Tới lịch hẹn",
       );
