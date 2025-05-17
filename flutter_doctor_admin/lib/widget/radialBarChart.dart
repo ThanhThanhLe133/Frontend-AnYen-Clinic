@@ -4,18 +4,57 @@ import 'package:syncfusion_flutter_gauges/gauges.dart';
 const Color secondaryColor = Colors.grey;
 const double defaultPadding = 16.0;
 
-class RadialBarChart extends StatelessWidget {
-  const RadialBarChart({super.key, required this.screenWidth});
+class RadialBarChart extends StatefulWidget {
+  const RadialBarChart({
+    super.key,
+    required this.screenWidth,
+    required this.connectingAppointment,
+    required this.waitingAppointment,
+    required this.month,
+    required this.year,
+  });
   final double screenWidth;
+  final int connectingAppointment;
+  final int waitingAppointment;
+  final int month;
+  final int year;
+
+  @override
+  State<RadialBarChart> createState() => _RadialBarChartState();
+}
+
+class _RadialBarChartState extends State<RadialBarChart> {
   @override
   Widget build(BuildContext context) {
     final Map<String, Color> labels = {
       'Online': Color(0xFF119CF0),
       'Trực tiếp': Color(0xFFDB5B8B),
     };
+    final today = DateTime.now();
+
+    // Tổng số ngày của tháng được truyền vào
+    final totalDaysInMonth = DateTime(widget.year, widget.month + 1, 0).day;
+
+    // Nếu là tháng hiện tại => tính theo số ngày thực sự đã qua
+    final daysPassed =
+        (today.month == widget.month && today.year == widget.year)
+            ? today.day
+            : totalDaysInMonth;
+
+    final percentDaysPassed = (daysPassed / totalDaysInMonth * 100).round();
+
+    final total =
+        (widget.connectingAppointment + widget.waitingAppointment).toDouble();
+    final connectingPercent =
+        (total > 0 ? (widget.connectingAppointment / total) : 0).toDouble();
+    final waitingPercent =
+        (total > 0 ? (widget.waitingAppointment / total) : 0).toDouble();
+
+    final connectingAngle = connectingPercent * 360;
+    final waitingAngle = waitingPercent * 360;
 
     return Padding(
-      padding: EdgeInsets.all(screenWidth * 0.05),
+      padding: EdgeInsets.all(widget.screenWidth * 0.05),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -23,7 +62,7 @@ class RadialBarChart extends StatelessWidget {
           Expanded(
             flex: 3,
             child: SizedBox(
-              height: screenWidth * 0.5,
+              height: widget.screenWidth * 0.5,
               child: SizedBox(
                 child: SfRadialGauge(
                   axes: <RadialAxis>[
@@ -33,11 +72,11 @@ class RadialBarChart extends StatelessWidget {
                         RangePointer(
                           value: 20,
                           cornerStyle: CornerStyle.bothCurve,
-                          width: screenWidth * 0.08,
+                          width: widget.screenWidth * 0.08,
                         ),
                       ],
                       axisLineStyle: AxisLineStyle(
-                        thickness: screenWidth * 0.08,
+                        thickness: widget.screenWidth * 0.08,
                       ),
                       startAngle: 0,
                       endAngle: 360,
@@ -46,10 +85,10 @@ class RadialBarChart extends StatelessWidget {
                       annotations: [
                         GaugeAnnotation(
                           widget: Text(
-                            '90%',
+                            '$percentDaysPassed%',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              fontSize: screenWidth * 0.04,
+                              fontSize: widget.screenWidth * 0.04,
                               color: Colors.grey,
                             ),
                           ),
@@ -62,11 +101,11 @@ class RadialBarChart extends StatelessWidget {
                         RangePointer(
                           value: 20,
                           color: Color(0xFF119CF0),
-                          width: screenWidth * 0.08,
+                          width: widget.screenWidth * 0.08,
                         ),
                       ],
                       startAngle: 0,
-                      endAngle: 0,
+                      endAngle: connectingAngle,
                       showAxisLine: false,
                       showTicks: false,
                       showLabels: false,
@@ -76,11 +115,11 @@ class RadialBarChart extends StatelessWidget {
                         RangePointer(
                           value: 30,
                           color: Color(0xFFDB5B8B),
-                          width: screenWidth * 0.08,
+                          width: widget.screenWidth * 0.08,
                         ),
                       ],
-                      startAngle: 72,
-                      endAngle: 72,
+                      startAngle: connectingAngle,
+                      endAngle: connectingAngle + waitingAngle,
                       showAxisLine: false,
                       showTicks: false,
                       showLabels: false,
@@ -94,7 +133,7 @@ class RadialBarChart extends StatelessWidget {
           Expanded(
             flex: 2,
             child: SizedBox(
-              height: screenWidth * 0.3,
+              height: widget.screenWidth * 0.3,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -103,8 +142,8 @@ class RadialBarChart extends StatelessWidget {
                       return Row(
                         children: [
                           Container(
-                            width: screenWidth * 0.04,
-                            height: screenWidth * 0.04,
+                            width: widget.screenWidth * 0.04,
+                            height: widget.screenWidth * 0.04,
                             decoration: BoxDecoration(
                               color: entry.value,
                               shape: BoxShape.circle,
@@ -114,7 +153,7 @@ class RadialBarChart extends StatelessWidget {
                           Text(
                             entry.key,
                             style: TextStyle(
-                              fontSize: screenWidth * 0.04,
+                              fontSize: widget.screenWidth * 0.04,
                               color: Colors.black,
                             ),
                           ),

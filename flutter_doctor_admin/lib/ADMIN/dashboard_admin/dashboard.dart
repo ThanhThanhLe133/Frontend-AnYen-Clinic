@@ -25,6 +25,7 @@ class _DashboardState extends ConsumerState<DashboardAdmin> {
   List<Map<String, dynamic>> appointments = [];
   late int totalAppointmentsThisMonth = 0;
   late int connectingAppointment = 0;
+  late int connectingMessage = 0;
 
   Future<void> fetchAppointment() async {
     final response = await makeRequest(
@@ -228,7 +229,15 @@ class _DashboardState extends ConsumerState<DashboardAdmin> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        Center(child: RadialBarChart(screenWidth: screenWidth)),
+                        Center(
+                          child: RadialBarChart(
+                            screenWidth: screenWidth,
+                            year: DateTime.now().year,
+                            month: DateTime.now().month,
+                            connectingAppointment: connectingAppointment,
+                            waitingAppointment: connectingMessage,
+                          ),
+                        ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [

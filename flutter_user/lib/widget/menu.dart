@@ -4,7 +4,6 @@ import 'package:anyen_clinic/appointment/appointment_screen.dart';
 import 'package:anyen_clinic/chat/chat_screen.dart';
 import 'package:anyen_clinic/dashboard/dashboard.dart';
 import 'package:anyen_clinic/doctor/list_doctor_screen.dart';
-import 'package:anyen_clinic/message/message_screen.dart';
 import 'package:anyen_clinic/psychological_test/psychological_test_home_screen.dart';
 import 'package:anyen_clinic/settings/account_screen.dart';
 import 'package:flutter/material.dart';
@@ -63,7 +62,6 @@ class _MenuState extends ConsumerState<Menu> {
         buildMenuItem(Icons.quiz, "Trắc nghiệm", PsychologicalTestHomeScreen()),
         buildMenuItem(Icons.book, "Nhật ký", AccountScreen()), //tạm thời
         buildMenuItem(Icons.event, "Lịch hẹn", AppointmentScreen()),
-        buildMenuItem(Icons.message, "Tin nhắn", MessageScreen()),
         buildMenuItem(Icons.settings, "Cài đặt", AccountScreen()),
         buildMenuItem(
             Icons.support_agent, "Liên hệ CSKH", ChatScreen()), //tạm thời

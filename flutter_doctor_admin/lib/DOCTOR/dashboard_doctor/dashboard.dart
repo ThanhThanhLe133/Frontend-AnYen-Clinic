@@ -119,6 +119,7 @@ class _DashboardState extends ConsumerState<DashboardDoctor> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       fetchProfile();
+      fetchAppointment();
     });
   }
 
@@ -234,7 +235,15 @@ class _DashboardState extends ConsumerState<DashboardDoctor> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        Center(child: RadialBarChart(screenWidth: screenWidth)),
+                        Center(
+                          child: RadialBarChart(
+                            screenWidth: screenWidth,
+                            year: DateTime.now().year,
+                            month: DateTime.now().month,
+                            connectingAppointment: connectingAppointment,
+                            waitingAppointment: waitingAppointment,
+                          ),
+                        ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [

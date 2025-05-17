@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:ayclinic_doctor_admin/DOCTOR/menu_doctor.dart';
+import 'package:ayclinic_doctor_admin/makeRequest.dart';
+import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:ayclinic_doctor_admin/widget/radialBarChart.dart';
 import 'package:flutter/material.dart';
 
@@ -12,6 +16,67 @@ class HistoryConsulting extends StatefulWidget {
 class _HistoryConsultingState extends State<HistoryConsulting> {
   int selectedMonth = DateTime.now().month;
   int selectedYear = DateTime.now().year;
+  List<Map<String, dynamic>> appointments = [];
+  late int totalAppointments = 0;
+  late int connectingAppointment = 0;
+  late int waitingAppointment = 0;
+  Future<void> fetchAppointment() async {
+    final response = await makeRequest(
+      url: '$apiUrl/doctor/get-all-appointments',
+      method: 'GET',
+    );
+
+    if (response.statusCode != 200) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        appointments =
+            List<Map<String, dynamic>>.from(data['data']).where((appointment) {
+              return appointment['status'] == 'Pending' ||
+                  appointment['status'] == 'Confirmed';
+            }).toList();
+
+        //tổng số ca tư vấn trong tháng
+        final filteredAppointments =
+            appointments.where((appointment) {
+              final time = DateTime.tryParse(appointment['appointment_time']);
+              return time != null &&
+                  time.month == selectedMonth &&
+                  time.year == selectedYear;
+            }).toList();
+
+        totalAppointments = filteredAppointments.length;
+
+        //số ca tư vấn đang kết nối
+        final currentConnectingAppointments =
+            appointments.where((appointment) {
+              return appointment['status'] == 'Pending';
+            }).toList();
+
+        connectingAppointment = currentConnectingAppointments.length;
+
+        //số ca tư vấn đang chờ
+        final currentWaitingAppointments =
+            appointments.where((appointment) {
+              return appointment['status'] == 'Confirmed';
+            }).toList();
+
+        waitingAppointment = currentWaitingAppointments.length;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchAppointment();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,6 +152,7 @@ class _HistoryConsultingState extends State<HistoryConsulting> {
                       setState(() {
                         selectedMonth = value!;
                       });
+                      fetchAppointment();
                     },
                   ),
                 ),
@@ -126,12 +192,19 @@ class _HistoryConsultingState extends State<HistoryConsulting> {
                       setState(() {
                         selectedYear = value!;
                       });
+                      fetchAppointment();
                     },
                   ),
                 ),
               ],
             ),
-            RadialBarChart(screenWidth: screenWidth),
+            RadialBarChart(
+              screenWidth: screenWidth,
+              year: selectedYear,
+              month: selectedMonth,
+              connectingAppointment: connectingAppointment,
+              waitingAppointment: waitingAppointment,
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

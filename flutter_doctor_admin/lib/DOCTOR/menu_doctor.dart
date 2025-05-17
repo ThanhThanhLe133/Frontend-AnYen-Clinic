@@ -4,7 +4,6 @@ import 'package:ayclinic_doctor_admin/DOCTOR/HistoryConsulting/HistoryConsulting
 import 'package:ayclinic_doctor_admin/DOCTOR/appointment/appointment_screen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/chat/chat_screen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/dashboard_doctor/dashboard.dart';
-import 'package:ayclinic_doctor_admin/DOCTOR/message/message_screen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/settings/account_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:fab_circular_menu_plus/fab_circular_menu_plus.dart';
@@ -64,7 +63,6 @@ class _MenuDoctorState extends ConsumerState<MenuDoctor> {
           "Lịch hẹn",
           AppointmentScreen(isConnecting: true),
         ),
-        buildMenuItem(Icons.message, "Tin nhắn", MessageScreen()),
         buildMenuItem(Icons.settings, "Cài đặt", AccountScreen()),
         buildMenuItem(Icons.support_agent, "Liên hệ CSKH", ChatScreen()),
       ],
