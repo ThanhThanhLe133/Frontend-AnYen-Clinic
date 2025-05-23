@@ -53,30 +53,50 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ref.read(phoneNumberProvider.notifier).state = phoneNumber;
     ref.read(passwordProvider.notifier).state = password;
     try {
-      final response = await http.post(
+      // Bước 1: Kiểm tra đăng nhập
+      final loginResponse = await http.post(
+        Uri.parse('$apiUrl/auth/check-login'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "phone_number": phoneNumber,
+          "password": password,
+        }),
+      );
+
+      final loginData = jsonDecode(loginResponse.body);
+
+      if (loginResponse.statusCode != 200) {
+        debugPrint("⚠️ Error from check-login: ${loginData['mes']}");
+        throw Exception(loginData['mes'] ?? "Lỗi đăng nhập");
+      }
+
+      // Bước 2: Gửi OTP nếu đăng nhập thành công
+      final otpResponse = await http.post(
         Uri.parse('$apiUrl/otp/send-otp'),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "phone_number": phoneNumber,
         }),
       );
-      final responseData = jsonDecode(response.body);
 
-      if (response.statusCode == 200) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => OTPVerificationScreen(source: "login"),
-          ),
-        );
-      } else {
-        debugPrint("⚠️ Error message from API: ${responseData['message']}");
-        throw Exception(responseData['mes'] ?? "Lỗi đăng nhập");
+      final otpData = jsonDecode(otpResponse.body);
+
+      if (otpResponse.statusCode != 200) {
+        debugPrint("⚠️ Error from send-otp: ${otpData['mes']}");
+        throw Exception(otpData['mes'] ?? "Không thể gửi OTP");
       }
+
+      // Thành công => điều hướng sang màn hình xác thực OTP
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => OTPVerificationScreen(source: "login"),
+        ),
+      );
     } catch (e) {
       debugPrint("❌ Exception caught: ${e.toString()}");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Lỗi đăng nhập: ${e.toString()}")),
+        SnackBar(content: Text("Lỗi: ${e.toString()}")),
       );
     }
   }

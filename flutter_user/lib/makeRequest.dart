@@ -46,10 +46,6 @@ Future<http.Response> makeRequest({
     } else {
       switch (method.toUpperCase()) {
         case 'GET':
-          if (url.contains('get-patient-profile') ||
-              url.contains('get-patient-health-records')) {
-            return await http.get(uri);
-          }
           return await http.get(uri, headers: requestHeaders);
         case 'POST':
           return await http.post(

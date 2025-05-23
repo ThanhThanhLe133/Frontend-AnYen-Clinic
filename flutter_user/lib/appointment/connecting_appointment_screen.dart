@@ -6,7 +6,8 @@ import 'package:anyen_clinic/provider/FilterOptionProvider.dart';
 import 'package:anyen_clinic/appointment/widget/appointmentConnectingCard.dart';
 import 'package:anyen_clinic/dialog/option_dialog.dart';
 import 'package:anyen_clinic/storage.dart';
-import 'package:anyen_clinic/widget/BottomFilterBar_appointment.dart';
+import 'package:anyen_clinic/widget/BottomFilterBarConnected.dart';
+import 'package:anyen_clinic/widget/BottomFilterBarConnecting.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -51,6 +52,40 @@ class _ConnectingAppointmentScreenState
     }
   }
 
+  List<Map<String, dynamic>> getFilteredSortedAppointments() {
+    final isOnline = ref.watch(isOnlineProvider);
+    final isNewest = ref.watch(isNewestProvider) ?? true;
+    final selectedDate = ref.watch(dateTimeProvider);
+
+    List<Map<String, dynamic>> filtered = appointments.where((a) {
+      // Lọc theo loại cuộc hẹn (online / offline)
+      if (isOnline != null) {
+        if (isOnline && a['appointment_type'] != 'Online') return false;
+        if (!isOnline && a['appointment_type'] == 'Online') return false;
+      }
+      if (selectedDate != null) {
+        final appointmentDate = DateTime.parse(a['appointment_time']).toLocal();
+
+        if (appointmentDate.year != selectedDate.year ||
+            appointmentDate.month != selectedDate.month ||
+            appointmentDate.day != selectedDate.day) {
+          return false;
+        }
+      }
+
+      return true;
+    }).toList();
+
+    // Sắp xếp theo ngày hẹn
+    filtered.sort((a, b) {
+      DateTime dateA = DateTime.parse(a['appointment_time']);
+      DateTime dateB = DateTime.parse(b['appointment_time']);
+      return isNewest ? dateB.compareTo(dateA) : dateA.compareTo(dateB);
+    });
+
+    return filtered;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -59,6 +94,7 @@ class _ConnectingAppointmentScreenState
       ref.read(isOnlineProvider.notifier).reset();
       ref.read(isCancelProvider.notifier).reset();
       ref.read(isNewestProvider.notifier).reset();
+      ref.read(dateTimeProvider.notifier).clear();
     });
     fetchAppointment();
   }
@@ -77,10 +113,10 @@ class _ConnectingAppointmentScreenState
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
-
+    final filteredAppointments = getFilteredSortedAppointments();
     return Scaffold(
       backgroundColor: Colors.white,
-      body: appointments.isEmpty
+      body: filteredAppointments.isEmpty
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -99,22 +135,23 @@ class _ConnectingAppointmentScreenState
               ),
             )
           : ListView.builder(
-              itemCount: appointments.length,
+              itemCount: filteredAppointments.length,
               itemBuilder: (context, index) {
                 return AppointmentConnectingCard(
-                  question: appointments[index]['question'],
-                  doctor_id: appointments[index]['doctor_id'],
-                  appointment_id: appointments[index]['id'],
-                  isOnline: appointments[index]['appointment_type'] == "Online",
+                  question: filteredAppointments[index]['question'],
+                  doctor_id: filteredAppointments[index]['doctor_id'],
+                  appointment_id: filteredAppointments[index]['id'],
+                  isOnline: filteredAppointments[index]['appointment_type'] ==
+                      "Online",
                   date: _getFormattedDate(
-                      appointments[index]['appointment_time']),
+                      filteredAppointments[index]['appointment_time']),
                   time: _getFormattedTime(
-                      appointments[index]['appointment_time']),
-                  total_paid: appointments[index]['total_paid'],
+                      filteredAppointments[index]['appointment_time']),
+                  total_paid: filteredAppointments[index]['total_paid'],
                 );
               },
             ),
-      bottomNavigationBar: BottomFilterBar(
+      bottomNavigationBar: BottomFilterBarConnecting(
         screenWidth: screenWidth,
       ),
     );

@@ -132,12 +132,8 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
   }
 
   Future<void> fetchProfile() async {
-    Object refreshToken = await getRefreshToken() ?? 'Không có refresh token';
-    Object accessToken = await getAccessToken() ?? 'Không có access token';
-    // print('newRefreshToken: $refreshToken');
-    // print('accessToken: $accessToken và $refreshToken');
     final response = await makeRequest(
-      url: '$apiUrl/get/get-patient-profile/?patientId=',
+      url: '$apiUrl/get/get-patient-profile/',
       method: 'GET',
     );
 

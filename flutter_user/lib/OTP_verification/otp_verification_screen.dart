@@ -178,7 +178,8 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
         showSuccess(context, LoginScreen(), "Đăng nhập");
         resetProvider();
       } else {
-        throw Exception(responseData["message"] ?? "Lỗi đăng ký");
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(responseData['mes'])));
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -230,9 +231,14 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
   }
 
   Future<void> verifyOTP(String phoneNumber, String password) async {
+    if (countdown <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("OTP hết hạn.")),
+      );
+      return;
+    }
     String otpCode = ref.read(otpProvider) ?? "";
 
-    debugPrint("⚠️ Error message from API: $otpCode");
     try {
       final response = await http.post(
         Uri.parse('$apiUrl/otp/verify-otp'),
@@ -400,7 +406,7 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
                           }
                         } else {
                           if (index > 0) {
-                            otpFocusNodes[index - 1].requestFocus();
+                            otpFocusNodes[index].requestFocus();
                           }
                         }
                       },
