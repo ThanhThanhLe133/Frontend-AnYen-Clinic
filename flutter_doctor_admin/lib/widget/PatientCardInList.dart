@@ -7,6 +7,7 @@ class PatientCardInList extends StatelessWidget {
   final String gender;
   final String age;
   final String imageUrl;
+  final String phone_number;
   final String reviewCount; // Số lượt đánh giá
   final String visitCount; // Số lượt khám
 
@@ -14,6 +15,7 @@ class PatientCardInList extends StatelessWidget {
     super.key,
     required this.screenWidth,
     required this.screenHeight,
+    required this.phone_number,
     required this.name,
     required this.gender,
     required this.age,
@@ -70,6 +72,7 @@ class PatientCardInList extends StatelessWidget {
                 ),
                 SizedBox(height: screenHeight * 0.005),
                 // Giới tính và tuổi
+
                 Row(
                   children: [
                     Icon(
@@ -77,15 +80,30 @@ class PatientCardInList extends StatelessWidget {
                       color: gender == 'female' ? Colors.pink : Colors.blue,
                       size: screenWidth * 0.05,
                     ),
-                    SizedBox(width: screenWidth * 0.02),
+                    SizedBox(width: screenWidth * 0.005),
                     Text(
                       'Tuổi: $age',
                       style: TextStyle(fontSize: screenWidth * 0.04),
                     ),
                   ],
                 ),
+
                 SizedBox(height: screenHeight * 0.005),
-                // Số lượt đánh giá
+                Row(
+                  children: [
+                    Icon(
+                      Icons.phone_android,
+                      color: Colors.blue,
+                      size: screenWidth * 0.04,
+                    ),
+                    SizedBox(width: screenWidth * 0.005),
+                    Text(
+                      'SĐT: $phone_number',
+                      style: TextStyle(fontSize: screenWidth * 0.035),
+                    ),
+                  ],
+                ),
+                SizedBox(height: screenHeight * 0.005),
                 Text(
                   'Số lượt đánh giá: $reviewCount',
                   style: TextStyle(fontSize: screenWidth * 0.03),

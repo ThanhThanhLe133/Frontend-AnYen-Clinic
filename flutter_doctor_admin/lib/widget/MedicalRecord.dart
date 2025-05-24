@@ -36,7 +36,7 @@ class MedicalRecord extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(
-            width: screenWidth * 0.16,
+            width: screenWidth * 0.18,
             child: Text(
               dateRecord.toString(),
               style: TextStyle(

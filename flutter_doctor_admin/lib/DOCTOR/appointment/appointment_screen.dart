@@ -1,4 +1,4 @@
-import 'package:ayclinic_doctor_admin/DOCTOR/appointment/connected_appointment_screen%20copy.dart';
+import 'package:ayclinic_doctor_admin/DOCTOR/appointment/connected_appointment_screen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/appointment/connecting_appointment_screen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/menu_doctor.dart';
 import 'package:ayclinic_doctor_admin/widget/statusWidget.dart';
@@ -69,10 +69,9 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
             ),
             SizedBox(height: screenHeight * 0.05),
             Expanded(
-              child:
-                  isConnecting
-                      ? ConnectingAppointmentScreen()
-                      : ConnectedAppointmentScreen(),
+              child: isConnecting
+                  ? ConnectingAppointmentScreen()
+                  : ConnectedAppointmentScreen(),
             ),
           ],
         ),
