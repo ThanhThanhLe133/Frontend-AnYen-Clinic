@@ -1,6 +1,8 @@
 import 'package:anyen_clinic/appointment/appointment_screen.dart';
-import 'package:anyen_clinic/doctor/list_doctor_screen.dart';
+// import 'package:anyen_clinic/doctor/list_doctor_screen.dart';
+import 'package:anyen_clinic/posts/list_post_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:anyen_clinic/login/login_screen.dart';
 import 'package:anyen_clinic/storage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -32,7 +34,7 @@ class MainApp extends StatelessWidget {
           bodySmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
         ),
       ),
-      home: AppointmentScreen(),
+      home: ListPostScreen(),
     );
   }
 }
