@@ -1,53 +1,34 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:anyen_clinic/widget/CustomBackButton.dart';
 
-class PostDetailScreen extends StatefulWidget {
-  final String postId;
+class PostDetailScreen extends StatelessWidget {
+  final Map<String, dynamic> postDetail;
 
-  const PostDetailScreen({super.key, required this.postId});
-
-  @override
-  State<PostDetailScreen> createState() => _PostDetailScreenState();
-}
-
-class _PostDetailScreenState extends State<PostDetailScreen> {
-  Map<String, dynamic> postDetail = {};
-
-  Future<void> fetchPostDetail() async {
-    // DỮ LIỆU MẪU - KHÔNG GỌI API
-    await Future.delayed(Duration(seconds: 1)); // Giả lập delay
-
-    setState(() {
-      postDetail = {
-        'title': 'Cách chăm sóc da mùa hè',
-        'author': 'Bác sĩ An Yên',
-        'postedTime': '22/05/2025 - 10:00',
-        'content': '''
-Mùa hè đến mang theo ánh nắng gay gắt, khiến làn da dễ bị tổn thương. 
-Dưới đây là một số cách đơn giản để bảo vệ làn da của bạn:
-
-- Luôn sử dụng kem chống nắng có SPF từ 30 trở lên.
-- Uống đủ nước mỗi ngày (tối thiểu 2 lít).
-- Hạn chế ra ngoài từ 10h sáng đến 4h chiều.
-- Làm sạch da mặt 2 lần/ngày và dưỡng ẩm thường xuyên.
-
-Hãy bắt đầu chăm sóc da ngay hôm nay để luôn rạng rỡ trong mùa hè này nhé!
-        ''',
-      };
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    fetchPostDetail();
-  }
+  const PostDetailScreen({super.key, required this.postDetail});
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
+
+    // 🔹 Danh sách bình luận mẫu
+    final List<Map<String, String>> comments = [
+      {
+        'name': 'Nguyễn Thị Mai',
+        'content': 'Bài viết rất hữu ích, cảm ơn bác sĩ!',
+        'time': '22/05/2025 - 12:45',
+      },
+      {
+        'name': 'Lê Văn Nam',
+        'content': 'Mình sẽ áp dụng thử các mẹo này xem sao.',
+        'time': '22/05/2025 - 13:10',
+      },
+      {
+        'name': 'Trần Hồng',
+        'content': 'Bài viết hay quá, mong có thêm nhiều nội dung như vậy!',
+        'time': '22/05/2025 - 14:20',
+      },
+    ];
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -65,69 +46,132 @@ Hãy bắt đầu chăm sóc da ngay hôm nay để luôn rạng rỡ trong mùa
         centerTitle: true,
         backgroundColor: Colors.white,
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(1.0),
+          preferredSize: const Size.fromHeight(1.0),
           child: Container(
-            color: Color(0xFF9BA5AC),
+            color: const Color(0xFF9BA5AC),
             height: 1.0,
           ),
         ),
       ),
-      body: postDetail.isEmpty
-          ? Center(
-              child: SpinKitWaveSpinner(
-                color: Colors.blue,
-                size: 60,
-              ),
-            )
-          : SingleChildScrollView(
-              padding: EdgeInsets.all(screenWidth * 0.05),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    postDetail['title'] ?? '',
-                    style: TextStyle(
-                      fontSize: screenWidth * 0.06,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: screenHeight * 0.01),
-                  Row(
-                    children: [
-                      Icon(Icons.person, size: 20, color: Colors.grey[700]),
-                      SizedBox(width: 6),
-                      Text(
-                        postDetail['author'] ?? '',
-                        style: TextStyle(fontSize: screenWidth * 0.04),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: screenHeight * 0.005),
-                  Row(
-                    children: [
-                      Icon(Icons.access_time, size: 20, color: Colors.grey[700]),
-                      SizedBox(width: 6),
-                      Text(
-                        postDetail['postedTime'] ?? '',
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.04,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: screenHeight * 0.03),
-                  Text(
-                    postDetail['content'] ?? '',
-                    style: TextStyle(
-                      fontSize: screenWidth * 0.045,
-                      height: 1.6,
-                    ),
-                  ),
-                  SizedBox(height: screenHeight * 0.05),
-                ],
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(screenWidth * 0.05),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            /// --- Thông tin bài viết ---
+            Text(
+              postDetail['title'] ?? '',
+              style: TextStyle(
+                fontSize: screenWidth * 0.06,
+                fontWeight: FontWeight.bold,
               ),
             ),
+            SizedBox(height: screenHeight * 0.01),
+            Row(
+              children: [
+                Icon(Icons.person, size: 20, color: Colors.grey[700]),
+                SizedBox(width: 6),
+                Text(
+                  postDetail['author'] ?? '',
+                  style: TextStyle(fontSize: screenWidth * 0.04),
+                ),
+              ],
+            ),
+            SizedBox(height: screenHeight * 0.005),
+            Row(
+              children: [
+                Icon(Icons.access_time, size: 20, color: Colors.grey[700]),
+                SizedBox(width: 6),
+                Text(
+                  postDetail['postedTime'] ?? '',
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.04,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: screenHeight * 0.03),
+            Text(
+              postDetail['content'] ?? '',
+              style: TextStyle(
+                fontSize: screenWidth * 0.045,
+                height: 1.6,
+              ),
+            ),
+
+            /// --- Phần bình luận ---
+            SizedBox(height: screenHeight * 0.05),
+            Divider(color: Colors.grey[400]),
+Text(
+  'Bình luận',
+  style: TextStyle(
+    fontSize: screenWidth * 0.05,
+    fontWeight: FontWeight.bold,
+    color: Colors.black87,
+  ),
+),
+SizedBox(height: screenHeight * 0.02),
+
+// Ô nhập bình luận
+TextField(
+  decoration: InputDecoration(
+    hintText: 'Nhập bình luận của bạn...',
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+    ),
+    contentPadding: EdgeInsets.symmetric(
+      vertical: screenHeight * 0.015,
+      horizontal: screenWidth * 0.04,
+    ),
+    suffixIcon: Icon(Icons.send, color: Colors.blue),
+  ),
+  maxLines: null,
+),
+SizedBox(height: screenHeight * 0.03),
+            SizedBox(height: screenHeight * 0.02),
+            ...comments.map((comment) => Padding(
+              padding: EdgeInsets.only(bottom: screenHeight * 0.02),
+              child: Container(
+                padding: EdgeInsets.all(screenWidth * 0.035),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      comment['name'] ?? '',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: screenWidth * 0.042,
+                        color: Colors.blue[700],
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      comment['content'] ?? '',
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.04,
+                      ),
+                    ),
+                    SizedBox(height: 6),
+                    Text(
+                      comment['time'] ?? '',
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.035,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )),
+          ],
+        ),
+      ),
     );
   }
 }
