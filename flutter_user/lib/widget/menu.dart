@@ -63,8 +63,8 @@ class _MenuState extends ConsumerState<Menu> {
         buildMenuItem(Icons.book, "Nhật ký", AccountScreen()), //tạm thời
         buildMenuItem(Icons.event, "Lịch hẹn", AppointmentScreen()),
         buildMenuItem(Icons.settings, "Cài đặt", AccountScreen()),
-        buildMenuItem(
-            Icons.support_agent, "Liên hệ CSKH", ChatScreen()), //tạm thời
+        // buildMenuItem(
+        //     Icons.support_agent, "Liên hệ CSKH", ChatScreen()), //tạm thời
       ],
     );
   }

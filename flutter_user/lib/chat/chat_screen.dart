@@ -1,31 +1,32 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:anyen_clinic/chat/CallScreen.dart';
 import 'package:anyen_clinic/chat/widget/AudioPreview.dart';
 import 'package:anyen_clinic/chat/widget/buildCameraButton.dart';
 import 'package:anyen_clinic/chat/widget/buildMessageContent.dart';
 import 'package:anyen_clinic/chat/widget/buildMicButton.dart';
 import 'package:anyen_clinic/chat/widget/buildQuestionBubble.dart';
-import 'package:anyen_clinic/dialog/option_dialog.dart';
 import 'package:anyen_clinic/widget/CustomBackButton.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:anyen_clinic/chat/CameraScreen.dart';
 import 'package:record/record.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:anyen_clinic/chat/websocket_service.dart';
+import 'package:anyen_clinic/storage.dart';
+import 'package:anyen_clinic/utils/jwt_utils.dart';
 
-class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key, this.appointment_id});
-  final String? appointment_id;
+class ChatScreen extends ConsumerStatefulWidget {
+  const ChatScreen({super.key, required this.conversationId});
+  final String conversationId;
   @override
-  _ChatScreenState createState() => _ChatScreenState();
+  ConsumerState<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
-//image
+class _ChatScreenState extends ConsumerState<ChatScreen> {
+  //image
   final List<XFile> sentImages = [];
   XFile? image;
 
@@ -42,45 +43,197 @@ class _ChatScreenState extends State<ChatScreen> {
   final Map<String, Duration> audioDurations = {};
 
   final TextEditingController controller = TextEditingController();
-  final List<Map<String, dynamic>> messages = [
-    {'text': 'Chào em', 'isMe': false},
-    {'text': 'Dạ em chào bác sĩ', 'isMe': true},
-    {'text': 'Chào em', 'isMe': false},
-  ];
-
-  bool isOnline = true;
+  final List<Map<String, dynamic>> messages = [];
+  bool isOnline = false;
   final ScrollController scrollController = ScrollController();
+  late WebSocketService webSocketService;
+  String? currentRoom;
+  String? currentUserId;
+
+  String getConversationId() {
+    return widget.conversationId;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    webSocketService = ref.read(webSocketServiceProvider);
+    _initializeChat();
+  }
+
+  Future<void> _initializeChat() async {
+    try {
+      // Get access token
+      final accessToken = await getAccessToken();
+      if (accessToken == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Please login to continue')),
+        );
+        return;
+      }
+
+      // Get user ID
+      currentUserId = await JwtUtils.getUserId();
+      if (currentUserId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to get user information')),
+        );
+        return;
+      }
+
+      _setupWebSocket(accessToken);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error initializing chat: $e')),
+      );
+    }
+  }
+
+  void _setupWebSocket(String accessToken) {
+    // Connect to WebSocket with your token
+    webSocketService.connect(
+      accessToken,
+      onConnect: () {
+        setState(() {
+          isOnline = true;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Connected to chat server')),
+        );
+        // Join the room
+        _joinRoom(getConversationId());
+      },
+      onError: (error) {
+        setState(() {
+          isOnline = false;
+        });
+        String errorMessage = 'Connection error';
+        if (error is SocketException) {
+          errorMessage =
+              'Cannot connect to server. Please check if the server is running.';
+        } else {
+          errorMessage = error.toString();
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            action: SnackBarAction(
+              label: 'Retry',
+              onPressed: () {
+                _initializeChat();
+              },
+            ),
+          ),
+        );
+      },
+    );
+
+    // Listen for incoming messages
+    webSocketService.onChatMessage((data) {
+      setState(() {
+        if (data['sender'] != currentUserId) {
+          messages.add({
+            'text': data['message'],
+            'isMe': false,
+            'timestamp': data['timestamp'],
+            'sender': data['sender'],
+          });
+        }
+      });
+      scrollToBottom();
+    });
+
+    // Listen for user joined events
+    webSocketService.onUserJoined((data) {
+      if (data['userId'] != currentUserId) {
+        // Don't show notification for self
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${data['sender']} joined the chat')),
+        );
+      }
+    });
+
+    // Listen for user left events
+    webSocketService.onUserLeft((data) {
+      if (data['userId'] != currentUserId) {
+        // Don't show notification for self
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${data['sender']} left the chat')),
+        );
+      }
+    });
+  }
+
+  void _joinRoom(String roomId) {
+    currentRoom = roomId;
+    webSocketService.subscribeToConversation(
+      roomId,
+      ack: (response) {
+        if (response != null && response['error'] != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error joining room: ${response['error']}')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Joined room: $roomId')),
+          );
+        }
+      },
+    );
+  }
 
   void sendMessage() {
     if (controller.text.trim().isNotEmpty ||
         image != null ||
         recordedFilePath != null) {
-      setState(() {
-        if (controller.text.isNotEmpty) {
-          messages.add({'text': controller.text.trim(), 'isMe': true});
-        }
-        if (image != null) {
+      if (currentRoom == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Please join a room first')),
+        );
+        return;
+      }
+
+      if (controller.text.isNotEmpty) {
+        webSocketService.sendMessage(currentRoom!, controller.text.trim());
+        setState(() {
+          messages.add({
+            'text': controller.text.trim(),
+            'isMe': true,
+            'timestamp': DateTime.now().toIso8601String(),
+            'sender': currentUserId,
+          });
+        });
+      }
+
+      if (image != null) {
+        // Handle image sending
+        setState(() {
           messages.add({
             "text": null,
             "isMe": true,
             "imagePath": image!.path,
+            "timestamp": DateTime.now().toIso8601String(),
+            "sender": currentUserId,
           });
+          image = null;
+        });
+      }
 
-          image = null; // Xóa ảnh sau khi gửi
-        }
-        if (recordedFilePath != null) {
+      if (recordedFilePath != null) {
+        // Handle audio sending
+        setState(() {
           messages.add({
             "text": null,
             "isMe": true,
             "audioPath": recordedFilePath,
+            "timestamp": DateTime.now().toIso8601String(),
+            "sender": currentUserId,
           });
-          print('FILE PATH $recordedFilePath');
           recordedFilePath = null;
-        }
+        });
+      }
 
-        controller.clear();
-      });
-
+      controller.clear();
       scrollToBottom();
     }
   }
@@ -246,6 +399,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
+    if (currentRoom != null) {
+      webSocketService.unsubscribeFromConversation(currentRoom!);
+    }
+    webSocketService.dispose();
     scrollController.dispose();
     audioRecorder.dispose();
     super.dispose();
