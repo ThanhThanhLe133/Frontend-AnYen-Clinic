@@ -125,10 +125,11 @@ class _DoctorListState extends State<DoctorList> {
           return DoctorCardInListRow(
             screenWidth: screenWidth,
             screenHeight: screenHeight,
+            percentage: _displayedDoctors[index]['averageSatisfaction']!,
             name: _displayedDoctors[index]['name']!,
-            specialty: _displayedDoctors[index]['specialty']!,
+            specialty: _displayedDoctors[index]['specialization']!,
             workplace: _displayedDoctors[index]['workplace']!,
-            imageUrl: _displayedDoctors[index]['image']!,
+            imageUrl: _displayedDoctors[index]['avatar_url']!,
           );
         },
       ),

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:ayclinic_doctor_admin/ADMIN/appointment/appointment_screen.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/message/message_screen.dart';
 import 'package:ayclinic_doctor_admin/login/login_screen.dart';
 import 'package:ayclinic_doctor_admin/makeRequest.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
@@ -43,30 +44,28 @@ class _DashboardState extends ConsumerState<DashboardAdmin> {
       setState(() {
         appointments =
             List<Map<String, dynamic>>.from(data['data']).where((appointment) {
-              return appointment['status'] != 'Canceled' &&
-                  appointment['status'] != 'Unpaid';
-            }).toList();
+          return appointment['status'] != 'Canceled' &&
+              appointment['status'] != 'Unpaid';
+        }).toList();
 
         final now = DateTime.now();
 
         //tổng số ca tư vấn trong tháng
-        final currentMonthAppointments =
-            appointments.where((appointment) {
-              final time = appointment['appointment_time'];
-              if (time is DateTime) {
-                return time.month == now.month && time.year == now.year;
-              }
-              return false;
-            }).toList();
+        final currentMonthAppointments = appointments.where((appointment) {
+          final time = appointment['appointment_time'];
+          if (time is DateTime) {
+            return time.month == now.month && time.year == now.year;
+          }
+          return false;
+        }).toList();
 
         totalAppointmentsThisMonth = currentMonthAppointments.length;
 
         //số ca tư vấn đang kết nối
-        final currentConnectingAppointments =
-            appointments.where((appointment) {
-              return appointment['status'] == 'Pending' ||
-                  appointment['status'] == 'Unpaid';
-            }).toList();
+        final currentConnectingAppointments = appointments.where((appointment) {
+          return appointment['status'] == 'Pending' ||
+              appointment['status'] == 'Unpaid';
+        }).toList();
 
         connectingAppointment = currentConnectingAppointments.length;
 
@@ -140,234 +139,232 @@ class _DashboardState extends ConsumerState<DashboardAdmin> {
         );
         return false; // Trả false để không pop tiếp Dashboard
       },
-      child:
-          admin.isEmpty
-              ? Center(
-                child: SpinKitWaveSpinner(color: Colors.blue, size: 75.0),
-              )
-              : Scaffold(
-                backgroundColor: Colors.white,
-                appBar: AppBar(
-                  elevation: 0,
-                  title: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Xin chào",
-                            style: TextStyle(
-                              color: Color(0xFF9BA5AC),
-                              fontSize: screenWidth * 0.04,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(width: screenWidth * 0.02),
-                          Text(
-                            admin['name'],
-                            style: TextStyle(
-                              color: Color(0xFF119CF0),
-                              fontSize: screenWidth * 0.04,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(width: screenWidth * 0.02),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.fiber_manual_record,
-                            color: isOnline ? Colors.green : Color(0xFF40494F),
-                            size: screenWidth * 0.04,
-                          ),
-                          Text(
-                            isOnline ? "Trực tuyến" : "Ngoại tuyến",
-                            style: TextStyle(
-                              color:
-                                  isOnline
-                                      ? Colors.green
-                                      : Color(
-                                        0xFF40494F,
-                                      ), // Đổi màu dựa trên isOnline
-                              fontSize: screenWidth * 0.04,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                          SizedBox(
-                            child: Center(
-                              child: Transform.scale(
-                                scale: screenWidth / 600,
-                                child: Switch(
-                                  value: isOnline,
-                                  onChanged: (value) async {
-                                    setState(() {
-                                      isOnline = value;
-                                    });
-                                    await changeStatus(value);
-                                  },
-                                  activeColor: Colors.green,
-                                  inactiveThumbColor: Colors.grey,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  centerTitle: true,
-                  automaticallyImplyLeading: false,
-                  backgroundColor: Colors.white,
-                ),
-                floatingActionButton: MenuAdmin(),
-                body: SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: Padding(
-                    padding: EdgeInsets.all(screenWidth * 0.05),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      child: admin.isEmpty
+          ? Center(
+              child: SpinKitWaveSpinner(color: Colors.blue, size: 75.0),
+            )
+          : Scaffold(
+              backgroundColor: Colors.white,
+              appBar: AppBar(
+                elevation: 0,
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Center(
-                          child: RadialBarChart(
-                            screenWidth: screenWidth,
-                            year: DateTime.now().year,
-                            month: DateTime.now().month,
-                            connectingAppointment: connectingAppointment,
-                            waitingAppointment: connectingMessage,
+                        Text(
+                          "Xin chào",
+                          style: TextStyle(
+                            color: Color(0xFF9BA5AC),
+                            fontSize: screenWidth * 0.04,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "Tổng số ca tư vấn trong tháng:",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: screenWidth * 0.04,
-                                color: Color(0xFF949FA6),
-                              ),
-                            ),
-                            SizedBox(width: screenWidth * 0.02),
-                            Text(
-                              totalAppointmentsThisMonth.toString(),
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: screenWidth * 0.045,
-                                color: Color(0xFF119CF0),
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: screenWidth * 0.05),
-                        Container(
-                          width: screenWidth * 0.9,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: Color(0xFFD9D9D9),
-                              width: 1,
-                            ),
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              ListTile(
-                                leading: null,
-                                title: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      "Lịch hẹn đang kết nối: ",
-                                      style: TextStyle(
-                                        fontSize: screenWidth * 0.04,
-                                        color: Color(0xFF40494F),
-                                      ),
-                                    ),
-                                    Text(
-                                      '$connectingAppointment',
-                                      style: TextStyle(
-                                        fontSize: screenWidth * 0.045,
-                                        color: Color(0xFF119CF0),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                trailing: SizedBox(
-                                  width: 10,
-                                  child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: Icon(
-                                      Icons.chevron_right,
-                                      color: Color(0xFF9BA5AC),
-                                      size: screenWidth * 0.08,
-                                    ),
-                                  ),
-                                ),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => AppointmentScreen(),
-                                    ),
-                                  );
-                                },
-                              ),
-                              ListTile(
-                                leading: null,
-                                title: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      "Tin nhắn chưa kết thúc: ",
-                                      style: TextStyle(
-                                        fontSize: screenWidth * 0.04,
-                                        color: Color(0xFF40494F),
-                                      ),
-                                    ),
-                                    Text(
-                                      "02 ",
-                                      style: TextStyle(
-                                        fontSize: screenWidth * 0.045,
-                                        color: Color(0xFF119CF0),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                trailing: SizedBox(
-                                  width: 10,
-                                  child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: Icon(
-                                      Icons.chevron_right,
-                                      color: Color(0xFF9BA5AC),
-                                      size: screenWidth * 0.08,
-                                    ),
-                                  ),
-                                ),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => LoginScreen(),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ],
+                        SizedBox(width: screenWidth * 0.02),
+                        Text(
+                          admin['name'],
+                          style: TextStyle(
+                            color: Color(0xFF119CF0),
+                            fontSize: screenWidth * 0.04,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
                     ),
+                    SizedBox(width: screenWidth * 0.02),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.fiber_manual_record,
+                          color: isOnline ? Colors.green : Color(0xFF40494F),
+                          size: screenWidth * 0.04,
+                        ),
+                        Text(
+                          isOnline ? "Trực tuyến" : "Ngoại tuyến",
+                          style: TextStyle(
+                            color: isOnline
+                                ? Colors.green
+                                : Color(
+                                    0xFF40494F,
+                                  ), // Đổi màu dựa trên isOnline
+                            fontSize: screenWidth * 0.04,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        SizedBox(
+                          child: Center(
+                            child: Transform.scale(
+                              scale: screenWidth / 600,
+                              child: Switch(
+                                value: isOnline,
+                                onChanged: (value) async {
+                                  setState(() {
+                                    isOnline = value;
+                                  });
+                                  await changeStatus(value);
+                                },
+                                activeColor: Colors.green,
+                                inactiveThumbColor: Colors.grey,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                centerTitle: true,
+                automaticallyImplyLeading: false,
+                backgroundColor: Colors.white,
+              ),
+              floatingActionButton: MenuAdmin(),
+              body: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: Padding(
+                  padding: EdgeInsets.all(screenWidth * 0.05),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Center(
+                        child: RadialBarChart(
+                          screenWidth: screenWidth,
+                          year: DateTime.now().year,
+                          month: DateTime.now().month,
+                          connectingAppointment: connectingAppointment,
+                          waitingAppointment: connectingMessage,
+                        ),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Tổng số ca tư vấn trong tháng:",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: screenWidth * 0.04,
+                              color: Color(0xFF949FA6),
+                            ),
+                          ),
+                          SizedBox(width: screenWidth * 0.02),
+                          Text(
+                            totalAppointmentsThisMonth.toString(),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: screenWidth * 0.045,
+                              color: Color(0xFF119CF0),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: screenWidth * 0.05),
+                      Container(
+                        width: screenWidth * 0.9,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: Color(0xFFD9D9D9),
+                            width: 1,
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            ListTile(
+                              leading: null,
+                              title: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "Lịch hẹn đang kết nối: ",
+                                    style: TextStyle(
+                                      fontSize: screenWidth * 0.04,
+                                      color: Color(0xFF40494F),
+                                    ),
+                                  ),
+                                  Text(
+                                    '$connectingAppointment',
+                                    style: TextStyle(
+                                      fontSize: screenWidth * 0.045,
+                                      color: Color(0xFF119CF0),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              trailing: SizedBox(
+                                width: 10,
+                                child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Icon(
+                                    Icons.chevron_right,
+                                    color: Color(0xFF9BA5AC),
+                                    size: screenWidth * 0.08,
+                                  ),
+                                ),
+                              ),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => AppointmentScreen(),
+                                  ),
+                                );
+                              },
+                            ),
+                            ListTile(
+                              leading: null,
+                              title: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "Tin nhắn chưa kết thúc: ",
+                                    style: TextStyle(
+                                      fontSize: screenWidth * 0.04,
+                                      color: Color(0xFF40494F),
+                                    ),
+                                  ),
+                                  Text(
+                                    "02 ",
+                                    style: TextStyle(
+                                      fontSize: screenWidth * 0.045,
+                                      color: Color(0xFF119CF0),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              trailing: SizedBox(
+                                width: 10,
+                                child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Icon(
+                                    Icons.chevron_right,
+                                    color: Color(0xFF9BA5AC),
+                                    size: screenWidth * 0.08,
+                                  ),
+                                ),
+                              ),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => MessageScreen(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
+            ),
     );
   }
 }

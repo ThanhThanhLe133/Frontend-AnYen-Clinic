@@ -3,17 +3,22 @@ import 'package:ayclinic_doctor_admin/widget/FilterItemWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class BottomFilterBar extends ConsumerStatefulWidget {
-  const BottomFilterBar({super.key, required this.screenWidth});
+class BottomFilterBarConnecting extends ConsumerStatefulWidget {
+  const BottomFilterBarConnecting({
+    super.key,
+    required this.screenWidth,
+  });
 
   final double screenWidth;
 
   @override
-  _BottomFilterBarState createState() => _BottomFilterBarState();
+  _BottomFilterBarConnectingState createState() =>
+      _BottomFilterBarConnectingState();
 }
 
-class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
-  late DateTime selectedDate;
+class _BottomFilterBarConnectingState
+    extends ConsumerState<BottomFilterBarConnecting> {
+  late DateTime? selectedDate;
 
   bool isComplete = false;
   bool isOnline = false;
@@ -22,7 +27,6 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
   @override
   void initState() {
     super.initState();
-    selectedDate = DateTime.now();
   }
 
   @override
@@ -30,9 +34,8 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
     return Container(
       margin: EdgeInsets.all(widget.screenWidth * 0.05),
       padding: EdgeInsets.symmetric(
-        horizontal: widget.screenWidth * 0.05,
-        vertical: widget.screenWidth * 0.03,
-      ),
+          horizontal: widget.screenWidth * 0.05,
+          vertical: widget.screenWidth * 0.03),
       decoration: BoxDecoration(
         color: Colors.blue.shade50,
         borderRadius: BorderRadius.circular(20),
@@ -41,25 +44,13 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _buildFilterOption(
-            context,
-            Icons.tune,
-            "Lọc",
-            () => showFilterMenu(context),
-          ),
+              context, Icons.tune, "Lọc", () => showFilterMenu(context)),
+          _buildDivider(),
+          _buildFilterOption(context, Icons.calendar_month, "Thời gian",
+              () => _showDatePicker(context)),
           _buildDivider(),
           _buildFilterOption(
-            context,
-            Icons.calendar_month,
-            "Thời gian",
-            () => _showDatePicker(context),
-          ),
-          _buildDivider(),
-          _buildFilterOption(
-            context,
-            Icons.sort,
-            "Sắp xếp",
-            () => showSortMenu(context),
-          ),
+              context, Icons.sort, "Sắp xếp", () => showSortMenu(context)),
         ],
       ),
     );
@@ -68,7 +59,7 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
   Future<void> _showDatePicker(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: selectedDate,
+      initialDate: selectedDate ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
@@ -76,6 +67,7 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
+        ref.read(dateTimeProvider.notifier).setDate(picked);
       });
     }
   }
@@ -99,7 +91,9 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
                 isTitle1: ref.watch(isNewestProvider),
                 onSelected: (selectedValue) {
                   ref.read(isNewestProvider.notifier).state =
-                      (selectedValue == 'Mới nhất');
+                      selectedValue == null
+                          ? null
+                          : (selectedValue == 'Mới nhất');
                 },
               ),
             ],
@@ -123,31 +117,14 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
             mainAxisSize: MainAxisSize.min,
             children: [
               FilterItemWidget(
-                title1: 'Đã hoàn thành',
-                title2: 'Sắp tới',
-                isTitle1: ref.watch(isCompleteProvider),
-                onSelected: (selectedValue) {
-                  ref.read(isCompleteProvider.notifier).state =
-                      (selectedValue == 'Đã hoàn thành');
-                },
-              ),
-              FilterItemWidget(
                 title1: 'Tư vấn online',
                 title2: 'Tư vấn trực tiếp',
                 isTitle1: ref.watch(isOnlineProvider),
                 onSelected: (selectedValue) {
                   ref.read(isOnlineProvider.notifier).state =
-                      (selectedValue == 'Tư vấn online');
-                },
-              ),
-              FilterItemWidget(
-                title1: 'Đã huỷ',
-                isTitle1: ref.watch(isCancelProvider),
-                onSelected: (selectedValue) {
-                  setState(() {
-                    ref.read(isOnlineProvider.notifier).state =
-                        selectedValue == 'Đã huỷ';
-                  });
+                      selectedValue == null
+                          ? null
+                          : (selectedValue == 'Tư vấn online');
                 },
               ),
             ],
@@ -157,32 +134,29 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
     );
   }
 
-  Widget _buildFilterOption(
-    BuildContext context,
-    IconData icon,
-    String text,
-    VoidCallback onTapAction,
-  ) {
+  Widget _buildFilterOption(BuildContext context, IconData icon, String text,
+      VoidCallback onTapAction) {
     return GestureDetector(
       onTap: onTapAction,
       child: Row(
         children: [
           Icon(icon, color: Colors.blue, size: widget.screenWidth * 0.05),
           const SizedBox(width: 6),
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: widget.screenWidth * 0.04,
-              color: Colors.blue,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
+          Text(text,
+              style: TextStyle(
+                  fontSize: widget.screenWidth * 0.04,
+                  color: Colors.blue,
+                  fontWeight: FontWeight.w400)),
         ],
       ),
     );
   }
 
   Widget _buildDivider() {
-    return Container(height: 20, width: 1.5, color: Colors.blue.shade200);
+    return Container(
+      height: 20,
+      width: 1.5,
+      color: Colors.blue.shade200,
+    );
   }
 }

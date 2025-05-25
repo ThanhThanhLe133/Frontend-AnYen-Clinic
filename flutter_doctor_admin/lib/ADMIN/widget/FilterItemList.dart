@@ -4,7 +4,7 @@ class FilterItemList extends StatefulWidget {
   final String title1;
   final String chosenOption;
   final Function(String) onSelected;
-  final List<String> dropdownItems;
+  final List<Map<String, dynamic>> dropdownItems;
 
   const FilterItemList({
     required this.title1,
@@ -38,12 +38,10 @@ class _FilterItemListState extends State<FilterItemList> {
             style: TextStyle(fontSize: 16, color: Colors.blue),
           ),
           SizedBox(width: 40),
-
           DropdownButton<String>(
             dropdownColor: Colors.white,
             value: selected,
             underline: SizedBox(),
-
             onChanged: (String? newValue) {
               if (newValue != null) {
                 setState(() {
@@ -52,23 +50,19 @@ class _FilterItemListState extends State<FilterItemList> {
                 widget.onSelected(newValue);
               }
             },
-
-            items:
-                widget.dropdownItems.map<DropdownMenuItem<String>>((
-                  String value,
-                ) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(
-                      value,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        backgroundColor: Colors.transparent,
-                      ),
-                    ),
-                  );
-                }).toList(),
+            items: widget.dropdownItems.map((item) {
+              return DropdownMenuItem<String>(
+                value: item['id'],
+                child: Text(
+                  item['name'],
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    backgroundColor: Colors.transparent,
+                  ),
+                ),
+              );
+            }).toList(),
           ),
         ],
       ),

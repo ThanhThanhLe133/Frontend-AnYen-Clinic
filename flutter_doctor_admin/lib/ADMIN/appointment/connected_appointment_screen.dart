@@ -1,26 +1,25 @@
 import 'dart:convert';
 
 import 'package:ayclinic_doctor_admin/ADMIN/Provider/FilterOptionProvider.dart';
-import 'package:ayclinic_doctor_admin/ADMIN/appointment/widget/appointmentConnectingCard.dart';
-import 'package:ayclinic_doctor_admin/ADMIN/widget/BottomFilterBarConnecting.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/appointment/widget/appointmentConnectedCard.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/widget/BottomFilterBarConnected.dart';
 import 'package:ayclinic_doctor_admin/makeRequest.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ConnectingAppointmentScreen extends ConsumerStatefulWidget {
-  const ConnectingAppointmentScreen({super.key});
+class ConnectedAppointmentScreen extends ConsumerStatefulWidget {
+  const ConnectedAppointmentScreen({super.key});
   @override
-  ConsumerState<ConnectingAppointmentScreen> createState() =>
-      _ConnectingAppointmentScreenState();
+  ConsumerState<ConnectedAppointmentScreen> createState() =>
+      _ConnectedAppointmentScreenState();
 }
 
-class _ConnectingAppointmentScreenState
-    extends ConsumerState<ConnectingAppointmentScreen> {
+class _ConnectedAppointmentScreenState
+    extends ConsumerState<ConnectedAppointmentScreen> {
   List<Map<String, dynamic>> appointments = [];
   Set<Map<String, dynamic>> patientSet = {};
   Set<Map<String, dynamic>> doctorSet = {};
-
   Future<void> fetchAppointment() async {
     final response = await makeRequest(
       url: '$apiUrl/admin/get-all-appointments',
@@ -30,15 +29,16 @@ class _ConnectingAppointmentScreenState
     if (response.statusCode != 200) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(response.body)));
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
       Navigator.pop(context);
     } else {
       final data = jsonDecode(response.body);
       setState(() {
         appointments =
             List<Map<String, dynamic>>.from(data['data']).where((appointment) {
-          return appointment['status'] == 'Pending' ||
-              appointment['status'] == 'Unpaid';
+          return appointment['status'] == 'Confirmed' ||
+              appointment['status'] == 'Canceled' ||
+              appointment['status'] == 'Completed';
         }).map((appointment) {
           final patient = appointment['patient'];
           final doctor = appointment['doctor'];
@@ -67,6 +67,9 @@ class _ConnectingAppointmentScreenState
                 : 0,
             'patient_id': patient?['patient_id'],
             'doctor_id': doctor?['doctor_id'],
+            'review_id': appointment['review'] != null
+                ? appointment['review']['id']
+                : "",
           };
         }).toList();
       });
@@ -77,6 +80,7 @@ class _ConnectingAppointmentScreenState
     final isComplete = ref.watch(isCompleteProvider);
     final isOnline = ref.watch(isOnlineProvider);
     final isCancel = ref.watch(isCancelProvider);
+    final isReview = ref.watch(isReviewProvider);
     final isNewest = ref.watch(isNewestProvider) ?? true;
 
     final selectedDate = ref.watch(dateTimeProvider);
@@ -84,16 +88,35 @@ class _ConnectingAppointmentScreenState
     final selectedPatientId = ref.watch(selectedPatientProvider);
 
     List<Map<String, dynamic>> filtered = appointments.where((a) {
+      //lọc review hay chưa
+      if (isReview != null) {
+        if (isReview &&
+            (a['review_id'] == null || a['review_id'].toString().isEmpty)) {
+          return false;
+        }
+        if (!isReview &&
+            a['review_id'] != null &&
+            a['review_id'].toString().isNotEmpty) {
+          return false;
+        }
+      }
+
       // Lọc theo trạng thái hoàn thành nếu được chọn
       if (isComplete != null) {
-        if (isComplete && a['status'] != 'Pending') return false;
-        if (!isComplete && a['status'] == 'Pending') return false;
+        if (isComplete && a['status'] != 'Completed') return false;
+        if (!isComplete && a['status'] == 'Completed') return false;
       }
 
       // Lọc theo loại cuộc hẹn (online / offline)
       if (isOnline != null) {
         if (isOnline && a['appointment_type'] != 'Online') return false;
         if (!isOnline && a['appointment_type'] == 'Online') return false;
+      }
+
+      // Lọc theo trạng thái huỷ
+      if (isCancel != null) {
+        if (isCancel && a['status'] != 'Canceled') return false;
+        if (!isCancel && a['status'] == 'Canceled') return false;
       }
 
       if (selectedDate != null) {
@@ -105,7 +128,6 @@ class _ConnectingAppointmentScreenState
           return false;
         }
       }
-
       // Lọc theo bác sĩ (nếu chọn khác 'all')
       if (selectedDoctorId != 'all' &&
           a['doctor_id'].toString() != selectedDoctorId) {
@@ -137,8 +159,10 @@ class _ConnectingAppointmentScreenState
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(isCompleteProvider.notifier).reset();
       ref.read(isOnlineProvider.notifier).reset();
+      ref.read(isCancelProvider.notifier).reset();
       ref.read(isNewestProvider.notifier).reset();
       ref.read(dateTimeProvider.notifier).clear();
+      ref.read(isReviewProvider.notifier).reset();
       ref.read(selectedPatientProvider.notifier).state = "all";
       ref.read(selectedDoctorProvider.notifier).state = "all";
     });
@@ -157,8 +181,8 @@ class _ConnectingAppointmentScreenState
 
   @override
   Widget build(BuildContext context) {
-    double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
     final filteredAppointments = getFilteredSortedAppointments();
 
     return Scaffold(
@@ -180,10 +204,11 @@ class _ConnectingAppointmentScreenState
           : ListView.builder(
               itemCount: filteredAppointments.length,
               itemBuilder: (context, index) {
-                return AppointmentConnectingCard(
+                return AppointmentConnectedCard(
                   appointment_id: filteredAppointments[index]['id'],
                   status: filteredAppointments[index]['status'],
-                  isOnline: appointments[index]['appointment_type'] == "Online",
+                  isOnline: filteredAppointments[index]['appointment_type'] ==
+                      "Online",
                   doctor_id: filteredAppointments[index]['doctor_id'],
                   patient_id: filteredAppointments[index]['patient_id'],
                   date: _getFormattedDate(
@@ -193,11 +218,14 @@ class _ConnectingAppointmentScreenState
                     filteredAppointments[index]['appointment_time'],
                   ),
                   total_paid: filteredAppointments[index]['total_paid'],
+                  cancel_reason:
+                      filteredAppointments[index]['cancel_reason'] ?? '',
                   question: filteredAppointments[index]['question'],
+                  review_id: filteredAppointments[index]['review_id'],
                 );
               },
             ),
-      bottomNavigationBar: BottomFilterBarConnecting(
+      bottomNavigationBar: BottomFilterBarConnected(
         screenWidth: screenWidth,
         doctorSet: doctorSet,
         patientSet: patientSet,

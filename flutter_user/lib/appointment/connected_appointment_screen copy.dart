@@ -6,7 +6,7 @@ import 'package:anyen_clinic/provider/FilterOptionProvider.dart';
 import 'package:anyen_clinic/appointment/widget/appointmentConnectedCard.dart';
 import 'package:anyen_clinic/dialog/option_dialog.dart';
 import 'package:anyen_clinic/storage.dart';
-import 'package:anyen_clinic/widget/BottomFilterBar_appointment.dart';
+import 'package:anyen_clinic/widget/BottomFilterBarConnected.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -55,6 +55,56 @@ class _ConnectedAppointmentScreenState
     }
   }
 
+  List<Map<String, dynamic>> getFilteredSortedAppointments() {
+    final isComplete = ref.watch(isCompleteProvider);
+    final isOnline = ref.watch(isOnlineProvider);
+    final isCancel = ref.watch(isCancelProvider);
+    final isNewest = ref.watch(isNewestProvider) ?? true;
+
+    final selectedDate = ref.watch(dateTimeProvider);
+
+    List<Map<String, dynamic>> filtered = appointments.where((a) {
+      // Lọc theo trạng thái hoàn thành nếu được chọn
+      if (isComplete != null) {
+        if (isComplete && a['status'] != 'Completed') return false;
+        if (!isComplete && a['status'] == 'Completed') return false;
+      }
+
+      // Lọc theo loại cuộc hẹn (online / offline)
+      if (isOnline != null) {
+        if (isOnline && a['appointment_type'] != 'Online') return false;
+        if (!isOnline && a['appointment_type'] == 'Online') return false;
+      }
+
+      // Lọc theo trạng thái huỷ
+      if (isCancel != null) {
+        if (isCancel && a['status'] != 'Canceled') return false;
+        if (!isCancel && a['status'] == 'Canceled') return false;
+      }
+
+      if (selectedDate != null) {
+        final appointmentDate = DateTime.parse(a['appointment_time']).toLocal();
+
+        if (appointmentDate.year != selectedDate.year ||
+            appointmentDate.month != selectedDate.month ||
+            appointmentDate.day != selectedDate.day) {
+          return false;
+        }
+      }
+
+      return true;
+    }).toList();
+
+    // Sắp xếp theo ngày hẹn
+    filtered.sort((a, b) {
+      DateTime dateA = DateTime.parse(a['appointment_time']).toLocal();
+      DateTime dateB = DateTime.parse(b['appointment_time']).toLocal();
+      return isNewest ? dateB.compareTo(dateA) : dateA.compareTo(dateB);
+    });
+
+    return filtered;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -63,6 +113,7 @@ class _ConnectedAppointmentScreenState
       ref.read(isOnlineProvider.notifier).reset();
       ref.read(isCancelProvider.notifier).reset();
       ref.read(isNewestProvider.notifier).reset();
+      ref.read(dateTimeProvider.notifier).clear();
     });
     fetchAppointment();
   }
@@ -81,10 +132,10 @@ class _ConnectedAppointmentScreenState
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
-
+    final filteredAppointments = getFilteredSortedAppointments();
     return Scaffold(
       backgroundColor: Colors.white,
-      body: appointments.isEmpty
+      body: filteredAppointments.isEmpty
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -103,9 +154,9 @@ class _ConnectedAppointmentScreenState
               ),
             )
           : ListView.builder(
-              itemCount: appointments.length,
+              itemCount: filteredAppointments.length,
               itemBuilder: (context, index) {
-                if (index == appointments.length) {
+                if (index == filteredAppointments.length) {
                   return Center(
                     child: SpinKitWaveSpinner(
                       color: const Color.fromARGB(255, 72, 166, 243),
@@ -114,7 +165,7 @@ class _ConnectedAppointmentScreenState
                   );
                 }
                 return Dismissible(
-                  key: Key(appointments[index].toString()),
+                  key: Key(filteredAppointments[index].toString()),
                   direction: DismissDirection.endToStart,
                   onDismissed: (direction) {
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -123,7 +174,7 @@ class _ConnectedAppointmentScreenState
                     ));
 
                     setState(() {
-                      appointments.removeAt(index);
+                      filteredAppointments.removeAt(index);
                     });
                   },
                   confirmDismiss: (direction) async {
@@ -152,21 +203,22 @@ class _ConnectedAppointmentScreenState
                     ),
                   ),
                   child: AppointmentConnectedCard(
-                      isOnline:
-                          appointments[index]['appointment_type'] == "Online",
+                      isOnline: filteredAppointments[index]
+                              ['appointment_type'] ==
+                          "Online",
                       date: _getFormattedDate(
-                          appointments[index]['appointment_time']),
+                          filteredAppointments[index]['appointment_time']),
                       time: _getFormattedTime(
-                          appointments[index]['appointment_time']),
-                      status: appointments[index]['status'],
-                      question: appointments[index]['question'],
-                      doctor_id: appointments[index]['doctor_id'],
-                      appointment_id: appointments[index]['id'],
-                      review_id: appointments[index]['review_id']),
+                          filteredAppointments[index]['appointment_time']),
+                      status: filteredAppointments[index]['status'],
+                      question: filteredAppointments[index]['question'],
+                      doctor_id: filteredAppointments[index]['doctor_id'],
+                      appointment_id: filteredAppointments[index]['id'],
+                      review_id: filteredAppointments[index]['review_id']),
                 );
               },
             ),
-      bottomNavigationBar: BottomFilterBar(
+      bottomNavigationBar: BottomFilterBarConnected(
         screenWidth: screenWidth,
       ),
     );

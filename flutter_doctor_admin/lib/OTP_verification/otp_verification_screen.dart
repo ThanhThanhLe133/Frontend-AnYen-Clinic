@@ -167,6 +167,12 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
   }
 
   Future<void> verifyOTP(String phoneNumber, String password) async {
+    if (countdown <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("OTP hết hạn.")),
+      );
+      return;
+    }
     String otpCode = ref.read(otpProvider);
     try {
       final response = await http.post(
@@ -238,11 +244,9 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder:
-                    (context) =>
-                        widget.source == "forgot"
-                            ? ForgotPassScreen()
-                            : LoginScreen(),
+                builder: (context) => widget.source == "forgot"
+                    ? ForgotPassScreen()
+                    : LoginScreen(),
               ),
             );
           },
@@ -333,7 +337,7 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
                           }
                         } else {
                           if (index > 0) {
-                            otpFocusNodes[index - 1].requestFocus();
+                            otpFocusNodes[index].requestFocus();
                           }
                         }
                       },
@@ -343,36 +347,35 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
               ),
               SizedBox(height: screenHeight * 0.15),
               Center(
-                child:
-                    countdown > 0
-                        ? RichText(
-                          text: TextSpan(
-                            style: TextStyle(
-                              fontSize: screenWidth * 0.04,
-                              color: Color(0xFF9BA5AC),
-                            ),
-                            children: [
-                              TextSpan(text: "Gửi lại mã sau: "),
-                              TextSpan(
-                                text: "${countdown}s",
-                                style: TextStyle(
-                                  color: Color(0xFF119CF0),
-                                  fontSize: screenWidth * 0.045,
-                                ),
-                              ),
-                            ],
+                child: countdown > 0
+                    ? RichText(
+                        text: TextSpan(
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.04,
+                            color: Color(0xFF9BA5AC),
                           ),
-                        )
-                        : GestureDetector(
-                          onTap: () => resendOtp(phoneNumber),
-                          child: Text(
-                            "Gửi lại mã",
-                            style: TextStyle(
-                              color: Color(0xFF119CF0),
-                              fontSize: screenWidth * 0.045,
+                          children: [
+                            TextSpan(text: "Gửi lại mã sau: "),
+                            TextSpan(
+                              text: "${countdown}s",
+                              style: TextStyle(
+                                color: Color(0xFF119CF0),
+                                fontSize: screenWidth * 0.045,
+                              ),
                             ),
+                          ],
+                        ),
+                      )
+                    : GestureDetector(
+                        onTap: () => resendOtp(phoneNumber),
+                        child: Text(
+                          "Gửi lại mã",
+                          style: TextStyle(
+                            color: Color(0xFF119CF0),
+                            fontSize: screenWidth * 0.045,
                           ),
                         ),
+                      ),
               ),
               SizedBox(height: screenHeight * 0.05),
               normalButton(

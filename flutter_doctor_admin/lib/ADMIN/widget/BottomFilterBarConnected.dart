@@ -4,17 +4,26 @@ import 'package:ayclinic_doctor_admin/widget/FilterItemWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class BottomFilterBar extends ConsumerStatefulWidget {
-  const BottomFilterBar({super.key, required this.screenWidth});
+class BottomFilterBarConnected extends ConsumerStatefulWidget {
+  const BottomFilterBarConnected({
+    super.key,
+    required this.screenWidth,
+    required this.doctorSet,
+    required this.patientSet,
+  });
 
   final double screenWidth;
+  final Set<Map<String, dynamic>> doctorSet;
+  final Set<Map<String, dynamic>> patientSet;
 
   @override
-  _BottomFilterBarState createState() => _BottomFilterBarState();
+  _BottomFilterBarConnectedState createState() =>
+      _BottomFilterBarConnectedState();
 }
 
-class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
-  late DateTime selectedDate;
+class _BottomFilterBarConnectedState
+    extends ConsumerState<BottomFilterBarConnected> {
+  DateTime? selectedDate;
 
   bool isComplete = false;
   bool isOnline = false;
@@ -23,7 +32,6 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
   @override
   void initState() {
     super.initState();
-    selectedDate = DateTime.now();
   }
 
   @override
@@ -69,7 +77,7 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
   Future<void> _showDatePicker(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: selectedDate,
+      initialDate: selectedDate ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
@@ -77,6 +85,7 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
+        ref.read(dateTimeProvider.notifier).setDate(picked);
       });
     }
   }
@@ -100,7 +109,9 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
                 isTitle1: ref.watch(isNewestProvider),
                 onSelected: (selectedValue) {
                   ref.read(isNewestProvider.notifier).state =
-                      (selectedValue == 'Mới nhất');
+                      selectedValue == null
+                          ? null
+                          : (selectedValue == 'Mới nhất');
                 },
               ),
             ],
@@ -132,7 +143,10 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
                         selectedValue;
                   });
                 },
-                dropdownItems: ['Tất cả', 'Bác sĩ A', 'Bác sĩ B', 'Bác sĩ C'],
+                dropdownItems: [
+                  {'id': 'all', 'name': 'Tất cả'},
+                  ...widget.doctorSet,
+                ],
               ),
               FilterItemList(
                 title1: 'Bệnh nhân',
@@ -143,7 +157,10 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
                         selectedValue;
                   });
                 },
-                dropdownItems: ['Tất cả', 'User1', 'User2', 'User3'],
+                dropdownItems: [
+                  {'id': 'all', 'name': 'Tất cả'},
+                  ...widget.patientSet,
+                ],
               ),
               FilterItemWidget(
                 title1: 'Đã hoàn thành',
@@ -151,7 +168,20 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
                 isTitle1: ref.watch(isCompleteProvider),
                 onSelected: (selectedValue) {
                   ref.read(isCompleteProvider.notifier).state =
-                      (selectedValue == 'Đã hoàn thành');
+                      selectedValue == null
+                          ? null
+                          : (selectedValue == 'Đã hoàn thành');
+                },
+              ),
+              FilterItemWidget(
+                title1: 'Đã đánh giá',
+                title2: 'Chưa đánh giá',
+                isTitle1: ref.watch(isReviewProvider),
+                onSelected: (selectedValue) {
+                  ref.read(isReviewProvider.notifier).state =
+                      selectedValue == null
+                          ? null
+                          : (selectedValue == 'Đã đánh giá');
                 },
               ),
               FilterItemWidget(
@@ -160,7 +190,9 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
                 isTitle1: ref.watch(isOnlineProvider),
                 onSelected: (selectedValue) {
                   ref.read(isOnlineProvider.notifier).state =
-                      (selectedValue == 'Tư vấn online');
+                      selectedValue == null
+                          ? null
+                          : (selectedValue == 'Tư vấn online');
                 },
               ),
               FilterItemWidget(
@@ -168,8 +200,10 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
                 isTitle1: ref.watch(isCancelProvider),
                 onSelected: (selectedValue) {
                   setState(() {
-                    ref.read(isOnlineProvider.notifier).state =
-                        selectedValue == 'Đã huỷ';
+                    ref.read(isCancelProvider.notifier).state =
+                        selectedValue == null
+                            ? null
+                            : selectedValue == 'Đã huỷ';
                   });
                 },
               ),
