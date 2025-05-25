@@ -98,105 +98,103 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * 0.5,
         ),
-        child:
-            patientProfile.isEmpty
-                ? Center(
-                  child: SpinKitWaveSpinner(color: Colors.blue, size: 75.0),
-                )
-                : Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: screenWidth * 0.9,
-                      padding: EdgeInsets.all(screenWidth * 0.02),
-                      height: screenHeight * 0.5,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Color(0xFFD9D9D9), width: 1),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          infoWidget(
-                            screenWidth: screenWidth,
-                            label: "Họ và tên",
-                            info: patientProfile['fullname'] ?? 'Không có tên',
-                          ),
-                          infoWidget(
-                            screenWidth: screenWidth,
-                            label: "Giới tính",
-                            info: patientProfile['gender'] ?? 'Unknown',
-                          ),
-                          infoWidget(
-                            screenWidth: screenWidth,
-                            label: "Ngày sinh",
-                            info: formatDate(patientProfile['date_of_birth']),
-                          ),
-                          infoWidget(
-                            screenWidth: screenWidth,
-                            label: "Tiền sử bệnh",
-                            info: patientProfile['medical_history'] ?? '',
-                          ),
-                          infoWidget(
-                            screenWidth: screenWidth,
-                            label: "Dị ứng",
-                            info: patientProfile['allergies'] ?? '',
-                          ),
-                        ],
-                      ),
+        child: patientProfile.isEmpty
+            ? Center(
+                child: SpinKitWaveSpinner(color: Colors.blue, size: 75.0),
+              )
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Container(
+                    width: screenWidth * 0.9,
+                    padding: EdgeInsets.all(screenWidth * 0.02),
+                    height: screenHeight * 0.5,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Color(0xFFD9D9D9), width: 1),
                     ),
-                    Padding(
-                      padding: EdgeInsets.all(screenWidth * 0.05),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          sectionTitle(
-                            title: 'Chỉ số sức khoẻ',
-                            screenHeight: screenHeight,
-                            screenWidth: screenWidth,
-                          ),
-                        ],
-                      ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        infoWidget(
+                          screenWidth: screenWidth,
+                          label: "Họ và tên",
+                          info: patientProfile['fullname'] ?? 'Không có tên',
+                        ),
+                        infoWidget(
+                          screenWidth: screenWidth,
+                          label: "Giới tính",
+                          info: patientProfile['gender'] ?? 'Unknown',
+                        ),
+                        infoWidget(
+                          screenWidth: screenWidth,
+                          label: "Ngày sinh",
+                          info: formatDate(patientProfile['date_of_birth']),
+                        ),
+                        infoWidget(
+                          screenWidth: screenWidth,
+                          label: "Tiền sử bệnh",
+                          info: patientProfile['medical_history'] ?? '',
+                        ),
+                        infoWidget(
+                          screenWidth: screenWidth,
+                          label: "Dị ứng",
+                          info: patientProfile['allergies'] ?? '',
+                        ),
+                      ],
                     ),
-                    Container(
-                      width: screenWidth * 0.9,
-                      padding: EdgeInsets.all(screenWidth * 0.01),
-
-                      decoration: BoxDecoration(color: Color(0xFFD9D9D9)),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          LabelMedicalRecord(
-                            screenWidth: screenWidth * 0.9,
-                            label: "Ngày đo",
-                          ),
-                          LabelMedicalRecord(
-                            screenWidth: screenWidth * 0.9,
-                            label: "Tuổi",
-                          ),
-                          LabelMedicalRecord(
-                            screenWidth: screenWidth * 0.9,
-                            label: "Chiều cao \n (cm)",
-                          ),
-                          LabelMedicalRecord(
-                            screenWidth: screenWidth * 0.9,
-                            label: "Cân nặng \n (kg)",
-                          ),
-                          LabelMedicalRecord(
-                            screenWidth: screenWidth * 0.9,
-                            label: "BMI",
-                          ),
-                        ],
-                      ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(screenWidth * 0.05),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        sectionTitle(
+                          title: 'Chỉ số sức khoẻ',
+                          screenHeight: screenHeight,
+                          screenWidth: screenWidth,
+                        ),
+                      ],
                     ),
-                    healthRecords.isEmpty
-                        ? Center(
+                  ),
+                  Container(
+                    width: screenWidth * 0.9,
+                    padding: EdgeInsets.all(screenWidth * 0.01),
+                    decoration: BoxDecoration(color: Color(0xFFD9D9D9)),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        LabelMedicalRecord(
+                          screenWidth: screenWidth * 0.9,
+                          label: "Ngày đo",
+                        ),
+                        LabelMedicalRecord(
+                          screenWidth: screenWidth * 0.9,
+                          label: "Tuổi",
+                        ),
+                        LabelMedicalRecord(
+                          screenWidth: screenWidth * 0.9,
+                          label: "Chiều cao \n (cm)",
+                        ),
+                        LabelMedicalRecord(
+                          screenWidth: screenWidth * 0.9,
+                          label: "Cân nặng \n (kg)",
+                        ),
+                        LabelMedicalRecord(
+                          screenWidth: screenWidth * 0.9,
+                          label: "BMI",
+                        ),
+                      ],
+                    ),
+                  ),
+                  healthRecords.isEmpty
+                      ? Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -217,7 +215,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                             ],
                           ),
                         )
-                        : Expanded(
+                      : Expanded(
                           // Bọc ListView bằng Expanded
                           child: ListView.builder(
                             itemCount: healthRecords.length,
@@ -232,8 +230,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                                 screenWidth: screenWidth * 0.9,
                                 screenHeight: screenHeight * 0.9,
                                 dateRecord: formatDate(recordDate),
-                                age:
-                                    DateTime.now().year -
+                                age: DateTime.now().year -
                                     DateTime.parse(
                                       patientProfile['date_of_birth'],
                                     ).year,
@@ -243,8 +240,8 @@ class _PatientDetailScreenState extends State<PatientDetailScreen> {
                             },
                           ),
                         ),
-                  ],
-                ),
+                ],
+              ),
       ),
     );
   }

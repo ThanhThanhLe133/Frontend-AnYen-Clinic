@@ -16,6 +16,18 @@ class FilterNotifier extends Notifier<bool?> {
   }
 }
 
+class DateNotifier extends Notifier<DateTime?> {
+  @override
+  DateTime? build() => null;
+  void setDate(DateTime? date) {
+    state = date;
+  }
+
+  void clear() {
+    state = null;
+  }
+}
+
 final isOnlineProvider = NotifierProvider<FilterNotifier, bool?>(
   () => FilterNotifier(),
 );
@@ -29,3 +41,5 @@ final isNewestProvider = NotifierProvider<FilterNotifier, bool?>(
 final isCompleteProvider = NotifierProvider<FilterNotifier, bool?>(
   () => FilterNotifier(),
 );
+final dateTimeProvider =
+    NotifierProvider<DateNotifier, DateTime?>(DateNotifier.new);

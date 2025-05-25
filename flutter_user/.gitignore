@@ -45,3 +45,13 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+
+# CMake build files
+CMakeFiles/
+CMakeCache.txt
+*.cmake
+*.ninja
+build/
+.gradle/
+.cxx/

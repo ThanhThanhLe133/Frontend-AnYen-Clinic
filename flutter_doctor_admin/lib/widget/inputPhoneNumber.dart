@@ -24,12 +24,7 @@ class InputPhoneNumber extends ConsumerWidget {
         keyboardType: TextInputType.phone,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         controller: controller,
-        onChanged: (value) {
-          controller.text = value;
-          controller.selection = TextSelection.fromPosition(
-            TextPosition(offset: controller.text.length),
-          );
-        },
+        onChanged: (value) {},
         decoration: InputDecoration(
           prefixIcon: Row(
             mainAxisSize: MainAxisSize.min,

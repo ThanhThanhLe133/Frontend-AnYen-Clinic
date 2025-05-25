@@ -7,6 +7,7 @@ class DoctorCardInListRow extends StatelessWidget {
   final String specialty;
   final String workplace;
   final String imageUrl;
+  final int percentage;
 
   const DoctorCardInListRow({
     super.key,
@@ -15,6 +16,7 @@ class DoctorCardInListRow extends StatelessWidget {
     required this.name,
     required this.specialty,
     required this.workplace,
+    required this.percentage,
     required this.imageUrl,
   });
 
@@ -61,12 +63,13 @@ class DoctorCardInListRow extends StatelessWidget {
                   ),
                 ),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.thumb_up,
                         color: Colors.blue, size: screenWidth * 0.04),
                     SizedBox(width: screenWidth * 0.01),
                     Text(
-                      "100% hài lòng",
+                      '$percentage% hài lòng',
                       style: TextStyle(
                         fontSize: screenWidth * 0.03,
                         color: Colors.blue,

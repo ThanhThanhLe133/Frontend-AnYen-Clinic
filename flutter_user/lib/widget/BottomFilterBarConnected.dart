@@ -4,8 +4,8 @@ import 'package:anyen_clinic/widget/FilterItemWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class BottomFilterBarMessage extends ConsumerStatefulWidget {
-  const BottomFilterBarMessage({
+class BottomFilterBarConnected extends ConsumerStatefulWidget {
+  const BottomFilterBarConnected({
     super.key,
     required this.screenWidth,
   });
@@ -13,11 +13,13 @@ class BottomFilterBarMessage extends ConsumerStatefulWidget {
   final double screenWidth;
 
   @override
-  _BottomFilterBarState createState() => _BottomFilterBarState();
+  _BottomFilterBarConnectedState createState() =>
+      _BottomFilterBarConnectedState();
 }
 
-class _BottomFilterBarState extends ConsumerState<BottomFilterBarMessage> {
-  late DateTime selectedDate;
+class _BottomFilterBarConnectedState
+    extends ConsumerState<BottomFilterBarConnected> {
+  DateTime? selectedDate;
 
   bool isComplete = false;
   bool isOnline = false;
@@ -26,7 +28,6 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBarMessage> {
   @override
   void initState() {
     super.initState();
-    selectedDate = DateTime.now();
   }
 
   @override
@@ -59,7 +60,7 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBarMessage> {
   Future<void> _showDatePicker(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: selectedDate,
+      initialDate: selectedDate ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
@@ -67,12 +68,14 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBarMessage> {
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
+        ref.read(dateTimeProvider.notifier).setDate(picked);
       });
     }
   }
 
   void showSortMenu(BuildContext context) {
     showModalBottomSheet(
+      backgroundColor: Colors.white,
       context: context,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -89,7 +92,9 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBarMessage> {
                 isTitle1: ref.watch(isNewestProvider),
                 onSelected: (selectedValue) {
                   ref.read(isNewestProvider.notifier).state =
-                      (selectedValue == 'Mới nhất');
+                      selectedValue == null
+                          ? null
+                          : (selectedValue == 'Mới nhất');
                 },
               ),
             ],
@@ -101,6 +106,7 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBarMessage> {
 
   void showFilterMenu(BuildContext context) {
     showModalBottomSheet(
+      backgroundColor: Colors.white,
       context: context,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -112,12 +118,14 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBarMessage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               FilterItemWidget(
-                title1: 'Đã đánh giá',
-                title2: 'Chưa đánh giá',
+                title1: 'Đã hoàn thành',
+                title2: 'Sắp tới',
                 isTitle1: ref.watch(isCompleteProvider),
                 onSelected: (selectedValue) {
                   ref.read(isCompleteProvider.notifier).state =
-                      (selectedValue == 'Đã đánh giá');
+                      selectedValue == null
+                          ? null
+                          : (selectedValue == 'Đã hoàn thành');
                 },
               ),
               FilterItemWidget(
@@ -126,7 +134,9 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBarMessage> {
                 isTitle1: ref.watch(isOnlineProvider),
                 onSelected: (selectedValue) {
                   ref.read(isOnlineProvider.notifier).state =
-                      (selectedValue == 'Tư vấn online');
+                      selectedValue == null
+                          ? null
+                          : (selectedValue == 'Tư vấn online');
                 },
               ),
               FilterItemWidget(
@@ -134,8 +144,10 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBarMessage> {
                 isTitle1: ref.watch(isCancelProvider),
                 onSelected: (selectedValue) {
                   setState(() {
-                    ref.read(isOnlineProvider.notifier).state =
-                        selectedValue == 'Đã huỷ';
+                    ref.read(isCancelProvider.notifier).state =
+                        selectedValue == null
+                            ? null
+                            : selectedValue == 'Đã huỷ';
                   });
                 },
               ),

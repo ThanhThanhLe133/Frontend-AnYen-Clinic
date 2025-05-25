@@ -1,11 +1,10 @@
-import 'package:anyen_clinic/provider/FilterOptionProvider.dart';
-
-import 'package:anyen_clinic/widget/FilterItemWidget.dart';
+import 'package:ayclinic_doctor_admin/Provider/FilterOptionProvider.dart';
+import 'package:ayclinic_doctor_admin/widget/FilterItemWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class BottomFilterBar extends ConsumerStatefulWidget {
-  const BottomFilterBar({
+class BottomFilterBarConnected extends ConsumerStatefulWidget {
+  const BottomFilterBarConnected({
     super.key,
     required this.screenWidth,
   });
@@ -13,11 +12,13 @@ class BottomFilterBar extends ConsumerStatefulWidget {
   final double screenWidth;
 
   @override
-  _BottomFilterBarState createState() => _BottomFilterBarState();
+  _BottomFilterBarConnectedState createState() =>
+      _BottomFilterBarConnectedState();
 }
 
-class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
-  late DateTime selectedDate;
+class _BottomFilterBarConnectedState
+    extends ConsumerState<BottomFilterBarConnected> {
+  DateTime? selectedDate;
 
   bool isComplete = false;
   bool isOnline = false;
@@ -26,7 +27,6 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
   @override
   void initState() {
     super.initState();
-    selectedDate = DateTime.now();
   }
 
   @override
@@ -59,7 +59,7 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
   Future<void> _showDatePicker(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: selectedDate,
+      initialDate: selectedDate ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
@@ -67,6 +67,7 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
+        ref.read(dateTimeProvider.notifier).setDate(picked);
       });
     }
   }
@@ -90,7 +91,9 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
                 isTitle1: ref.watch(isNewestProvider),
                 onSelected: (selectedValue) {
                   ref.read(isNewestProvider.notifier).state =
-                      (selectedValue == 'Mới nhất');
+                      selectedValue == null
+                          ? null
+                          : (selectedValue == 'Mới nhất');
                 },
               ),
             ],
@@ -119,7 +122,9 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
                 isTitle1: ref.watch(isCompleteProvider),
                 onSelected: (selectedValue) {
                   ref.read(isCompleteProvider.notifier).state =
-                      (selectedValue == 'Đã hoàn thành');
+                      selectedValue == null
+                          ? null
+                          : (selectedValue == 'Đã hoàn thành');
                 },
               ),
               FilterItemWidget(
@@ -128,7 +133,9 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
                 isTitle1: ref.watch(isOnlineProvider),
                 onSelected: (selectedValue) {
                   ref.read(isOnlineProvider.notifier).state =
-                      (selectedValue == 'Tư vấn online');
+                      selectedValue == null
+                          ? null
+                          : (selectedValue == 'Tư vấn online');
                 },
               ),
               FilterItemWidget(
@@ -136,8 +143,10 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBar> {
                 isTitle1: ref.watch(isCancelProvider),
                 onSelected: (selectedValue) {
                   setState(() {
-                    ref.read(isOnlineProvider.notifier).state =
-                        selectedValue == 'Đã huỷ';
+                    ref.read(isCancelProvider.notifier).state =
+                        selectedValue == null
+                            ? null
+                            : selectedValue == 'Đã huỷ';
                   });
                 },
               ),

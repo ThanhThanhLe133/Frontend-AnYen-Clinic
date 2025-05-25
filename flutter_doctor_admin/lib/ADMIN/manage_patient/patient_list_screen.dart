@@ -49,11 +49,9 @@ class _PatientListScreenState extends State<PatientListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-
       appBar: AppBar(
         elevation: 0,
         leading: CustomBackButton(),
-
         title: Text(
           "Danh sách bệnh nhân",
           style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
@@ -85,12 +83,12 @@ class _PatientListScreenState extends State<PatientListScreen> {
             child: PatientCardInList(
               screenWidth: MediaQuery.of(context).size.width,
               screenHeight: MediaQuery.of(context).size.height,
+              phone_number: patient['phone_number'],
               name: patient['full_name'],
               gender: patient['gender']!,
-              age:
-                  (DateTime.now().year -
-                          DateTime.parse(patient['date_of_birth']).year)
-                      .toString(),
+              age: (DateTime.now().year -
+                      DateTime.parse(patient['date_of_birth']).year)
+                  .toString(),
               imageUrl: patient['avatar_url']!,
               reviewCount: patient['review_count'].toString(),
               visitCount: patient['appointment_count'].toString(),

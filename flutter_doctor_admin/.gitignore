@@ -60,3 +60,13 @@ app.*.map.json
 
 # Các thư mục cấu hình cache khác (nếu có)
 .cxx/
+
+
+# CMake build files
+CMakeFiles/
+CMakeCache.txt
+*.cmake
+*.ninja
+build/
+.gradle/
+.cxx/
