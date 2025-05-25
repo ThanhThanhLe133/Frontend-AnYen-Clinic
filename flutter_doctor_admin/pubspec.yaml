@@ -10,7 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  intl: ^0.19.0
+  intl: ^0.18.1
   fab_circular_menu_plus: ^0.0.3
 
   permission_handler: ^11.4.0
