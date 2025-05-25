@@ -45,6 +45,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final TextEditingController controller = TextEditingController();
   final List<Map<String, dynamic>> messages = [];
   bool isOnline = false;
+  bool isConnecting = false;
   final ScrollController scrollController = ScrollController();
   late WebSocketService webSocketService;
   String? currentRoom;
@@ -62,121 +63,131 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Future<void> _initializeChat() async {
+    setState(() {
+      isConnecting = true;
+    });
+
     try {
       // Get access token
       final accessToken = await getAccessToken();
       if (accessToken == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Please login to continue')),
-        );
+        _showErrorSnackBar('Please login to continue');
         return;
       }
 
       // Get user ID
       currentUserId = await JwtUtils.getUserId();
       if (currentUserId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to get user information')),
-        );
+        _showErrorSnackBar('Failed to get user information');
         return;
       }
 
-      _setupWebSocket(accessToken);
+      // Setup WebSocket connection
+      await _setupWebSocket(accessToken);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error initializing chat: $e')),
-      );
+      _showErrorSnackBar('Error initializing chat: $e');
+    } finally {
+      setState(() {
+        isConnecting = false;
+      });
     }
   }
 
-  void _setupWebSocket(String accessToken) {
-    // Connect to WebSocket with your token
-    webSocketService.connect(
-      accessToken,
-      onConnect: () {
-        setState(() {
-          isOnline = true;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Connected to chat server')),
-        );
-        // Join the room
-        _joinRoom(getConversationId());
-      },
-      onError: (error) {
-        setState(() {
-          isOnline = false;
-        });
-        String errorMessage = 'Connection error';
-        if (error is SocketException) {
-          errorMessage =
-              'Cannot connect to server. Please check if the server is running.';
-        } else {
-          errorMessage = error.toString();
-        }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            action: SnackBarAction(
-              label: 'Retry',
-              onPressed: () {
-                _initializeChat();
-              },
-            ),
-          ),
-        );
-      },
-    );
-
-    // Listen for incoming messages
-    webSocketService.onChatMessage((data) {
-      setState(() {
-        if (data['sender'] != currentUserId) {
-          messages.add({
-            'text': data['message'],
-            'isMe': false,
-            'timestamp': data['timestamp'],
-            'sender': data['sender'],
+  Future<void> _setupWebSocket(String accessToken) async {
+    try {
+      // Connect to WebSocket with your token
+      await webSocketService.connect(
+        accessToken,
+        onConnect: () {
+          print('✅ WebSocket connected successfully');
+          setState(() {
+            isOnline = true;
           });
+          _showSuccessSnackBar('Connected to chat server');
+          // Join the room after successful connection
+          _joinRoom(getConversationId());
+        },
+        onError: (error) {
+          print('❌ WebSocket connection error: $error');
+          String errorMessage = 'Connection error';
+          if (error is SocketException) {
+            errorMessage =
+                'Cannot connect to server. Please check if the server is running.';
+          } else {
+            errorMessage = error.toString();
+          }
+          _showErrorSnackBar(errorMessage, showRetry: true);
+        },
+        onDisconnect: () {
+          print('🔌 WebSocket disconnected');
+          setState(() {
+            isOnline = false;
+          });
+          _showErrorSnackBar('Disconnected from chat server', showRetry: true);
+        },
+      );
+
+      // Listen for incoming messages
+      webSocketService.onChatMessage((data) {
+        print('📨 Received chat message: $data');
+        setState(() {
+          if (data['sender'] != currentUserId) {
+            messages.add({
+              'text': data['message'],
+              'isMe': false,
+              'timestamp':
+                  data['timestamp'] ?? DateTime.now().toIso8601String(),
+              'sender': data['sender'],
+            });
+          }
+        });
+        _scrollToBottom();
+      });
+
+      // Listen for user joined events
+      webSocketService.onUserJoined((data) {
+        print('👋 User joined: $data');
+        if (data['userId'] != currentUserId) {
+          _showInfoSnackBar('A user joined the chat');
         }
       });
-      scrollToBottom();
-    });
 
-    // Listen for user joined events
-    webSocketService.onUserJoined((data) {
-      if (data['userId'] != currentUserId) {
-        // Don't show notification for self
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${data['sender']} joined the chat')),
-        );
-      }
-    });
+      // Listen for user left events
+      webSocketService.onUserLeft((data) {
+        print('👋 User left: $data');
+        if (data['userId'] != currentUserId) {
+          _showInfoSnackBar('A user left the chat');
+        }
+      });
 
-    // Listen for user left events
-    webSocketService.onUserLeft((data) {
-      if (data['userId'] != currentUserId) {
-        // Don't show notification for self
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${data['sender']} left the chat')),
-        );
-      }
-    });
+      // Listen for errors
+      webSocketService.onError((error) {
+        print('❌ WebSocket error: $error');
+        _showErrorSnackBar('Chat error: $error');
+      });
+    } catch (e) {
+      print('❌ Error setting up WebSocket: $e');
+      throw e;
+    }
   }
 
   void _joinRoom(String roomId) {
+    if (!isOnline) {
+      _showErrorSnackBar('Not connected to server joined room');
+      return;
+    }
+
     currentRoom = roomId;
+    print('🏠 Joining room: $roomId');
+
     webSocketService.subscribeToConversation(
       roomId,
       ack: (response) {
+        print('🏠 Subscribe response: $response');
         if (response != null && response['error'] != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error joining room: ${response['error']}')),
-          );
+          _showErrorSnackBar('Error joining room: ${response['error']}');
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Joined room: $roomId')),
-          );
+          _showSuccessSnackBar('Joined room: $roomId');
         }
       },
     );
@@ -186,66 +197,123 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (controller.text.trim().isNotEmpty ||
         image != null ||
         recordedFilePath != null) {
-      if (currentRoom == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Please join a room first')),
-        );
+      if (!isOnline) {
+        _showErrorSnackBar('Not connected to server chat');
         return;
       }
 
+      if (currentRoom == null) {
+        _showErrorSnackBar('Please join a room first');
+        return;
+      }
+
+      final timestamp = DateTime.now().toIso8601String();
+
+      // Send text message
       if (controller.text.isNotEmpty) {
-        webSocketService.sendMessage(currentRoom!, controller.text.trim());
+        final messageText = controller.text.trim();
+        print('📤 Sending message: $messageText');
+
+        webSocketService.sendMessage(currentRoom!, messageText);
+
         setState(() {
           messages.add({
-            'text': controller.text.trim(),
+            'text': messageText,
             'isMe': true,
-            'timestamp': DateTime.now().toIso8601String(),
+            'timestamp': timestamp,
             'sender': currentUserId,
           });
         });
+        controller.clear();
       }
 
+      // Handle image sending
       if (image != null) {
-        // Handle image sending
+        print('📤 Sending image: ${image!.path}');
         setState(() {
           messages.add({
             "text": null,
             "isMe": true,
             "imagePath": image!.path,
-            "timestamp": DateTime.now().toIso8601String(),
+            "timestamp": timestamp,
             "sender": currentUserId,
           });
           image = null;
         });
       }
 
+      // Handle audio sending
       if (recordedFilePath != null) {
-        // Handle audio sending
+        print('📤 Sending audio: $recordedFilePath');
         setState(() {
           messages.add({
             "text": null,
             "isMe": true,
             "audioPath": recordedFilePath,
-            "timestamp": DateTime.now().toIso8601String(),
+            "timestamp": timestamp,
             "sender": currentUserId,
           });
           recordedFilePath = null;
         });
       }
 
-      controller.clear();
-      scrollToBottom();
+      _scrollToBottom();
     }
   }
 
-  void scrollToBottom() {
-    Future.delayed(Duration(milliseconds: 100), () {
-      scrollController.animateTo(
-        scrollController.position.maxScrollExtent, // Cuộn đến cuối
-        duration: Duration(milliseconds: 300),
-        curve: Curves.easeOut, // Hiệu ứng cuộn
-      );
-    });
+  void _scrollToBottom() {
+    if (scrollController.hasClients) {
+      Future.delayed(Duration(milliseconds: 100), () {
+        if (scrollController.hasClients) {
+          scrollController.animateTo(
+            scrollController.position.maxScrollExtent,
+            duration: Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+      });
+    }
+  }
+
+  void _showErrorSnackBar(String message, {bool showRetry = false}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        action: showRetry
+            ? SnackBarAction(
+                label: 'Retry',
+                textColor: Colors.white,
+                onPressed: () {
+                  _initializeChat();
+                },
+              )
+            : null,
+      ),
+    );
+  }
+
+  void _showSuccessSnackBar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _showInfoSnackBar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.blue,
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 
   Future<void> openCamera(BuildContext context) async {
@@ -262,26 +330,31 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Future<void> startRecording(BuildContext context) async {
-    final String uniqueId = Uuid().v4(); // Tạo ID ngẫu nhiên
+    final String uniqueId = Uuid().v4();
     final String path =
         "/data/user/0/com.example.anyen_clinic/cache/audio_$uniqueId.mp3";
 
     bool hasMicPermission = await audioRecorder.hasPermission();
 
     if (!hasMicPermission) {
-      debugPrint("❌ Không có quyền ghi âm, không thể bắt đầu ghi");
+      print("❌ No microphone permission");
+      _showErrorSnackBar("Microphone permission required");
       return;
     }
+
     await audioRecorder.start(const RecordConfig(), path: path);
     setState(() {
       isRecording = true;
       recordedFilePath = path;
       recordDuration = Duration.zero;
     });
+
     recordTimer = Timer.periodic(Duration(seconds: 1), (timer) {
-      setState(() {
-        recordDuration = Duration(seconds: recordDuration.inSeconds + 1);
-      });
+      if (mounted) {
+        setState(() {
+          recordDuration = Duration(seconds: recordDuration.inSeconds + 1);
+        });
+      }
     });
 
     showRecordingDialog(context);
@@ -316,6 +389,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   final Map<String, Duration> currentPositions = {};
+
   void togglePlayPause(String? path) async {
     if (path == null) return;
 
@@ -330,9 +404,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         await audioPlayer.stop();
       }
       currentAudioPath = path;
-      currentPosition = Duration.zero; // Reset thời gian khi phát file mới
+      currentPosition = Duration.zero;
       await audioPlayer.setSource(DeviceFileSource(path));
-
       await audioPlayer.play(DeviceFileSource(path));
 
       setState(() {
@@ -340,16 +413,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         currentPositions[path] = Duration.zero;
       });
 
-      // Lắng nghe thời gian phát
       audioPlayer.onPositionChanged.listen((Duration position) {
-        if (currentAudioPath == path) {
+        if (currentAudioPath == path && mounted) {
           setState(() {
             currentPositions[path] = position;
           });
         }
       });
+
       audioPlayer.onPlayerComplete.listen((_) {
-        if (currentAudioPath == path) {
+        if (currentAudioPath == path && mounted) {
           setState(() {
             isPlaying = false;
             currentAudioPath = null;
@@ -371,25 +444,25 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void showRecordingDialog(BuildContext context) {
     showDialog(
       context: context,
-      barrierDismissible: false, // Ngăn người dùng thoát
+      barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
-          title: Text("Đang ghi âm"),
+          title: Text("Recording"),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.mic, size: 50, color: Colors.red),
               SizedBox(height: 10),
-              Text("Đang ghi âm..."),
+              Text("Recording audio..."),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () async {
                 await stopRecording();
-                Navigator.of(context).pop(); // Đóng hộp thoại
+                Navigator.of(context).pop();
               },
-              child: Text("Dừng ghi âm"),
+              child: Text("Stop Recording"),
             ),
           ],
         );
@@ -399,12 +472,21 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   void dispose() {
+    print('🧹 Disposing ChatScreen');
+
+    // Clean up WebSocket
     if (currentRoom != null) {
       webSocketService.unsubscribeFromConversation(currentRoom!);
     }
     webSocketService.dispose();
+
+    // Clean up controllers and timers
     scrollController.dispose();
     audioRecorder.dispose();
+    audioPlayer.dispose();
+    recordTimer?.cancel();
+    controller.dispose();
+
     super.dispose();
   }
 
@@ -451,14 +533,20 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           margin: EdgeInsets.only(right: 5),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: isOnline ? Colors.green : Colors.grey,
+                            color: isConnecting
+                                ? Colors.orange
+                                : (isOnline ? Colors.green : Colors.grey),
                           ),
                         ),
                         Text(
-                          isOnline ? 'Đang online' : 'Đang offline',
+                          isConnecting
+                              ? 'Connecting...'
+                              : (isOnline ? 'Online' : 'Offline'),
                           style: TextStyle(
                             fontSize: 13,
-                            color: isOnline ? Colors.green : Colors.grey,
+                            color: isConnecting
+                                ? Colors.orange
+                                : (isOnline ? Colors.green : Colors.grey),
                           ),
                         ),
                       ],
@@ -479,30 +567,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             itemBuilder: (BuildContext context) => [
               PopupMenuItem<String>(
                 value: "Lịch sử thanh toán",
-                child: Text("Lịch sử thanh toán"),
+                child: Text("Payment History"),
               ),
               PopupMenuItem<String>(
                 value: "Xem thông tin bác sĩ",
-                child: Text("Xem thông tin bác sĩ"),
+                child: Text("Doctor Information"),
               ),
             ],
             onSelected: (String value) {
-              switch (value) {
-                case "Lịch sử thanh toán":
-                  // showPaymentHistoryDialog(
-                  //   context,
-                  //   "MOMO",
-                  //   true,
-                  //   -99000,
-                  //   DateTime(2025, 2, 23, 14, 58),
-                  // );
-                  break;
-                case "Xem thông tin bác sĩ":
-                  // showDoctorInfoDialog(context);
-                  break;
-                default:
-                  break;
-              }
+              // Handle menu selections
             },
           ),
         ],
@@ -521,53 +594,39 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           controller: scrollController,
           child: Column(
             children: [
-              SizedBox(
-                height: 10,
-              ),
+              SizedBox(height: 10),
               Align(
                 alignment: Alignment.topLeft,
                 child: Text(
-                  "Câu hỏi",
+                  "Question",
                   style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
                       color: Colors.black),
                 ),
               ),
-              SizedBox(
-                height: 10,
-              ),
+              SizedBox(height: 10),
               buildQuestionBubble(screenWidth),
-              SizedBox(
-                height: 10,
-              ),
-              Divider(
-                height: 1,
-              ),
-              SizedBox(
-                height: 10,
-              ),
+              SizedBox(height: 10),
+              Divider(height: 1),
+              SizedBox(height: 10),
               Align(
                 alignment: Alignment.topLeft,
                 child: Text(
-                  "Thời gian: 22/02/2025, 14h50",
+                  "Time: 22/02/2025, 14h50",
                   style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF40494F)),
                 ),
               ),
-              SizedBox(
-                height: 10,
-              ),
+              SizedBox(height: 10),
               Text(
-                "BS.CKI Macus Horizon đã tham gia cuộc trò chuyện",
+                "BS.CKI Macus Horizon has joined the conversation",
                 textAlign: TextAlign.left,
                 style: TextStyle(fontSize: 15, color: Color(0xFF9AA5AC)),
               ),
-              SizedBox(
-                height: 10,
-              ),
+              SizedBox(height: 10),
               ...messages.map((message) {
                 return buildChatBubble(
                   message['text'] ?? "",
@@ -576,9 +635,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   audioPath: message["audioPath"] as String?,
                 );
               }),
-              SizedBox(
-                height: 20,
-              ),
+              SizedBox(height: 20),
             ],
           ),
         ),
@@ -586,13 +643,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       bottomNavigationBar: KeyboardVisibilityBuilder(
         builder: (context, isKeyboardVisible) {
           if (isKeyboardVisible) {
-            scrollToBottom();
+            _scrollToBottom();
           }
           return Padding(
             padding: EdgeInsets.only(
                 bottom: isKeyboardVisible
                     ? MediaQuery.of(context).viewInsets.bottom
-                    : 0), // Đẩy lên khi bàn phím mở
+                    : 0),
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -690,14 +747,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   icon: Icon(Icons.cancel, color: Colors.red),
                   onPressed: () {
                     setState(() {
-                      image = null; // Xóa ảnh chưa gửi
+                      image = null;
                     });
                   },
                 ),
               ],
             ),
           ),
-        if (recordedFilePath != null) // Hiển thị file ghi âm
+        if (recordedFilePath != null)
           AudioPreview(
             isPlaying: isPlaying,
             currentAudioPath: currentAudioPath,
@@ -718,7 +775,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Color(0xFFECF8FF),
-                hintText: 'Gõ nội dung...',
+                hintText: 'Type message...',
                 hintStyle: TextStyle(
                     fontSize: 16,
                     color: Color(0xFF9AA5AC),
@@ -738,12 +795,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 sendMessage();
               },
               onTap: () {
-                scrollToBottom();
+                _scrollToBottom();
               },
             ),
           ),
         IconButton(
-          icon: Icon(Icons.send_sharp, color: Colors.blue), // Màu icon
+          icon: Icon(Icons.send_sharp, color: Colors.blue),
           onPressed: () => sendMessage(),
           iconSize: 24,
         ),
