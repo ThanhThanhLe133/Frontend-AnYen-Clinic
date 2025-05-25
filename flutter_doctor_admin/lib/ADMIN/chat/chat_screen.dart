@@ -47,8 +47,6 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController controller = TextEditingController();
   final List<Map<String, dynamic>> messages = [
     {'text': 'Chào em', 'isMe': true},
-    {'text': 'Dạ em chào bác sĩ', 'isMe': false},
-    {'text': 'Chào em', 'isMe': true},
   ];
   bool isOnline = true;
   final ScrollController scrollController = ScrollController();
