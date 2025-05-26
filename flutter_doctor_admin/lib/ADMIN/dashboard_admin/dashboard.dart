@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:ayclinic_doctor_admin/ADMIN/appointment/appointment_screen.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/message/message_screen.dart';
+import 'package:ayclinic_doctor_admin/Provider/historyConsultProvider.dart';
 import 'package:ayclinic_doctor_admin/login/login_screen.dart';
 import 'package:ayclinic_doctor_admin/makeRequest.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
@@ -27,6 +28,8 @@ class _DashboardState extends ConsumerState<DashboardAdmin> {
   late int totalAppointmentsThisMonth = 0;
   late int connectingAppointment = 0;
   late int connectingMessage = 0;
+  late int onlineAppointment = 0;
+  late int offlineAppointment = 0;
 
   Future<void> fetchAppointment() async {
     final response = await makeRequest(
@@ -60,7 +63,18 @@ class _DashboardState extends ConsumerState<DashboardAdmin> {
         }).toList();
 
         totalAppointmentsThisMonth = currentMonthAppointments.length;
+        //số ca tư vấn online
+        onlineAppointment = appointments
+            .where((appointment) => appointment['appointment_type'] == "Online")
+            .toList()
+            .length;
 
+        //số ca tư vấn offline
+        onlineAppointment = appointments
+            .where(
+                (appointment) => appointment['appointment_type'] == "Offline")
+            .toList()
+            .length;
         //số ca tư vấn đang kết nối
         final currentConnectingAppointments = appointments.where((appointment) {
           return appointment['status'] == 'Pending' ||
@@ -71,6 +85,10 @@ class _DashboardState extends ConsumerState<DashboardAdmin> {
 
         //số tin nhắn đang chờ
       });
+      ref.read(onlineAppointmentProvider.notifier).setValue(onlineAppointment);
+      ref
+          .read(offlineAppointmentProvider.notifier)
+          .setValue(offlineAppointment);
     }
   }
 
@@ -231,8 +249,8 @@ class _DashboardState extends ConsumerState<DashboardAdmin> {
                           screenWidth: screenWidth,
                           year: DateTime.now().year,
                           month: DateTime.now().month,
-                          connectingAppointment: connectingAppointment,
-                          waitingAppointment: connectingMessage,
+                          onlineAppointment: onlineAppointment,
+                          offlineAppointment: offlineAppointment,
                         ),
                       ),
                       Row(
