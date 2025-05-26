@@ -14,12 +14,11 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
-        coreLibraryDesugaringEnabled true
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
-    }
+kotlinOptions {
+    jvmTarget = "11"
+}
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
@@ -49,3 +48,5 @@ dependencies{
 flutter {
     source = "../.."
 }
+
+apply plugin: 'com.google.gms.google-services'
