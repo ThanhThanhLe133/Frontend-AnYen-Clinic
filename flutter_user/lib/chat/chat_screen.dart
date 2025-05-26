@@ -17,6 +17,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:anyen_clinic/chat/websocket_service.dart';
 import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/utils/jwt_utils.dart';
+import 'package:anyen_clinic/chat/models/message.dart';
+import 'package:anyen_clinic/chat/services/chat_service.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key, required this.conversationId});
@@ -46,8 +48,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final List<Map<String, dynamic>> messages = [];
   bool isOnline = false;
   bool isConnecting = false;
+  bool isLoadingMessages = false;
   final ScrollController scrollController = ScrollController();
   late WebSocketService webSocketService;
+  late ChatService chatService;
   String? currentRoom;
   String? currentUserId;
 
@@ -59,7 +63,43 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void initState() {
     super.initState();
     webSocketService = ref.read(webSocketServiceProvider);
+    chatService = ChatService();
     _initializeChat();
+  }
+
+  Future<void> _loadMessages() async {
+    if (isLoadingMessages) return;
+
+    setState(() {
+      isLoadingMessages = true;
+    });
+
+    try {
+      final List<Message> apiMessages =
+          await chatService.getMessages(widget.conversationId);
+
+      setState(() {
+        messages.clear();
+        messages.addAll(apiMessages
+            .map((msg) => {
+                  'text': msg.content,
+                  'isMe': msg.sender.id == currentUserId,
+                  'timestamp': msg.createdAt.toIso8601String(),
+                  'sender': msg.sender.id,
+                  'senderName': msg.sender.name,
+                  'senderAvatar': msg.sender.avatar,
+                })
+            .toList());
+      });
+
+      _scrollToBottom();
+    } catch (e) {
+      _showErrorSnackBar('Failed to load messages: $e');
+    } finally {
+      setState(() {
+        isLoadingMessages = false;
+      });
+    }
   }
 
   Future<void> _initializeChat() async {
@@ -81,6 +121,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         _showErrorSnackBar('Failed to get user information');
         return;
       }
+
+      // Load messages from API
+      await _loadMessages();
 
       // Setup WebSocket connection
       await _setupWebSocket(accessToken);
@@ -673,7 +716,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       children: [
         if (!isMe) ...[
           CircleAvatar(
-            backgroundImage: AssetImage('assets/images/doctor.png'),
+            backgroundImage: NetworkImage(messages.firstWhere(
+              (m) => m['text'] == message,
+              orElse: () => {'senderAvatar': 'assets/images/doctor.png'},
+            )['senderAvatar']),
           ),
           SizedBox(width: 16),
         ],
@@ -681,7 +727,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           Padding(
             padding: EdgeInsets.only(right: 8, left: 64),
             child: Text(
-              "19:21",
+              DateTime.parse(messages.firstWhere(
+                (m) => m['text'] == message,
+                orElse: () => {'timestamp': DateTime.now().toIso8601String()},
+              )['timestamp'])
+                  .toString()
+                  .substring(11, 16),
               style: TextStyle(fontSize: 13, color: Color(0xFF9AA5AC)),
             ),
           ),
@@ -722,7 +773,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           Padding(
             padding: EdgeInsets.only(right: 64, left: 8),
             child: Text(
-              "19:21",
+              DateTime.parse(messages.firstWhere(
+                (m) => m['text'] == message,
+                orElse: () => {'timestamp': DateTime.now().toIso8601String()},
+              )['timestamp'])
+                  .toString()
+                  .substring(11, 16),
               style: TextStyle(fontSize: 13, color: Color(0xFF9AA5AC)),
             ),
           ),

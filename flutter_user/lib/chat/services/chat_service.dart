@@ -14,7 +14,7 @@ class ChatService {
       final response = await http.get(
         Uri.parse('$apiUrl/chat/conversation/$conversationId/messages'),
         headers: {
-          'Authorization': 'Bearer $token',
+          'Authorization': token,
           'Content-Type': 'application/json',
         },
       );
