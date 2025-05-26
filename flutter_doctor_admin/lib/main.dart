@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'ADMIN/admin_review/admin_review_screen.dart';
+import 'package:ayclinic_doctor_admin/DOCTOR/post/list_post_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,7 +33,7 @@ class MainApp extends StatelessWidget {
           bodySmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
         ),
       ),
-      home: SplashScreen(),
+      home: ListPostScreen(),
     );
   }
 }
