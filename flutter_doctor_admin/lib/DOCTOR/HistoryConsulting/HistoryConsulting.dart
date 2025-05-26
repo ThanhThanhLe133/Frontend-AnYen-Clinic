@@ -1,25 +1,27 @@
 import 'dart:convert';
 
 import 'package:ayclinic_doctor_admin/DOCTOR/menu_doctor.dart';
+import 'package:ayclinic_doctor_admin/Provider/historyConsultProvider.dart';
 import 'package:ayclinic_doctor_admin/makeRequest.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:ayclinic_doctor_admin/widget/radialBarChart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class HistoryConsulting extends StatefulWidget {
+class HistoryConsulting extends ConsumerStatefulWidget {
   const HistoryConsulting({super.key});
 
   @override
-  State<HistoryConsulting> createState() => _HistoryConsultingState();
+  ConsumerState<HistoryConsulting> createState() => _HistoryConsultingState();
 }
 
-class _HistoryConsultingState extends State<HistoryConsulting> {
-  int selectedMonth = DateTime.now().month;
-  int selectedYear = DateTime.now().year;
+class _HistoryConsultingState extends ConsumerState<HistoryConsulting> {
+  late int selectedMonth;
+  late int selectedYear;
   List<Map<String, dynamic>> appointments = [];
   late int totalAppointments = 0;
-  late int connectingAppointment = 0;
-  late int waitingAppointment = 0;
+  late int onlineAppointment = 0;
+  late int offlineAppointment = 0;
   Future<void> fetchAppointment() async {
     final response = await makeRequest(
       url: '$apiUrl/doctor/get-all-appointments',
@@ -33,46 +35,51 @@ class _HistoryConsultingState extends State<HistoryConsulting> {
       Navigator.pop(context);
     } else {
       final data = jsonDecode(response.body);
+
       setState(() {
         appointments =
             List<Map<String, dynamic>>.from(data['data']).where((appointment) {
-              return appointment['status'] == 'Pending' ||
-                  appointment['status'] == 'Confirmed';
-            }).toList();
+          return appointment['status'] == 'Pending' ||
+              appointment['status'] == 'Confirmed' ||
+              appointment['status'] == 'Completed';
+        }).toList();
 
         //tổng số ca tư vấn trong tháng
-        final filteredAppointments =
-            appointments.where((appointment) {
-              final time = DateTime.tryParse(appointment['appointment_time']);
-              return time != null &&
-                  time.month == selectedMonth &&
-                  time.year == selectedYear;
-            }).toList();
+        final filteredAppointments = appointments.where((appointment) {
+          final time = DateTime.tryParse(appointment['appointment_time']);
+          return time != null &&
+              time.month == selectedMonth &&
+              time.year == selectedYear;
+        }).toList();
 
         totalAppointments = filteredAppointments.length;
 
-        //số ca tư vấn đang kết nối
-        final currentConnectingAppointments =
-            appointments.where((appointment) {
-              return appointment['status'] == 'Pending';
-            }).toList();
+        //số ca tư vấn online
+        onlineAppointment = filteredAppointments
+            .where((appointment) => appointment['appointment_type'] == "Online")
+            .toList()
+            .length;
 
-        connectingAppointment = currentConnectingAppointments.length;
-
-        //số ca tư vấn đang chờ
-        final currentWaitingAppointments =
-            appointments.where((appointment) {
-              return appointment['status'] == 'Confirmed';
-            }).toList();
-
-        waitingAppointment = currentWaitingAppointments.length;
+        //số ca tư vấn offline
+        offlineAppointment = filteredAppointments
+            .where(
+                (appointment) => appointment['appointment_type'] == "Offline")
+            .toList()
+            .length;
       });
+
+      ref.read(onlineAppointmentProvider.notifier).setValue(onlineAppointment);
+      ref
+          .read(offlineAppointmentProvider.notifier)
+          .setValue(offlineAppointment);
     }
   }
 
   @override
   void initState() {
     super.initState();
+    selectedMonth = DateTime.now().month;
+    selectedYear = DateTime.now().year;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       fetchAppointment();
     });
@@ -181,13 +188,12 @@ class _HistoryConsultingState extends State<HistoryConsulting> {
                       fontSize: screenWidth * 0.06,
                       color: Colors.black,
                     ),
-                    items:
-                        yearList.map((int value) {
-                          return DropdownMenuItem<int>(
-                            value: value,
-                            child: Text(value.toString()),
-                          );
-                        }).toList(),
+                    items: yearList.map((int value) {
+                      return DropdownMenuItem<int>(
+                        value: value,
+                        child: Text(value.toString()),
+                      );
+                    }).toList(),
                     onChanged: (value) {
                       setState(() {
                         selectedYear = value!;
@@ -202,8 +208,8 @@ class _HistoryConsultingState extends State<HistoryConsulting> {
               screenWidth: screenWidth,
               year: selectedYear,
               month: selectedMonth,
-              connectingAppointment: connectingAppointment,
-              waitingAppointment: waitingAppointment,
+              onlineAppointment: ref.watch(onlineAppointmentProvider),
+              offlineAppointment: ref.watch(offlineAppointmentProvider),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -218,7 +224,7 @@ class _HistoryConsultingState extends State<HistoryConsulting> {
                 ),
                 SizedBox(width: screenWidth * 0.02),
                 Text(
-                  "15",
+                  '$totalAppointments',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: screenWidth * 0.045,

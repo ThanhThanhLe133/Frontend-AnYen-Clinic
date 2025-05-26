@@ -1,4 +1,5 @@
 assets/config/.env
+android/app/.cxx/
 
 # Miscellaneous
 *.class
