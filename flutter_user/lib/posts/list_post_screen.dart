@@ -9,19 +9,17 @@ import 'package:anyen_clinic/storage.dart';
 
 import 'package:anyen_clinic/widget/menu.dart';
 import 'package:anyen_clinic/widget/CustomBackButton.dart';
-import 'package:anyen_clinic/widget/PostCardInList.dart';
+import 'package:anyen_clinic/posts/widget/PostCardInList.dart';
 import 'package:anyen_clinic/posts/details_post_screen.dart';
-
-
 
 class ListPostScreen extends StatefulWidget {
   const ListPostScreen({super.key});
 
   @override
-  State<ListPostScreen> createState() => _ListPostScreenState ();
+  State<ListPostScreen> createState() => _ListPostScreenState();
 }
 
-class _ListPostScreenState  extends State<ListPostScreen> {
+class _ListPostScreenState extends State<ListPostScreen> {
   late ScrollController _scrollController;
   final List<Map<String, dynamic>> _displayedDoctors = [];
   int _currentPage = 1;
@@ -132,15 +130,14 @@ class _ListPostScreenState  extends State<ListPostScreen> {
                   size: 75.0,
                 ),
               );
-  }
-      return PostCardInList(
-      screenWidth: MediaQuery.of(context).size.width,
-      screenHeight: MediaQuery.of(context).size.height,
-      title: 'Làm thế nào để chăm sóc sức khỏe tâm thần?',
-      author: 'Nguyễn Văn A',
-      postedTime: '20 Tháng 5, 2025',
-      );
-
+            }
+            return PostCardInList(
+              screenWidth: MediaQuery.of(context).size.width,
+              screenHeight: MediaQuery.of(context).size.height,
+              title: 'Làm thế nào để chăm sóc sức khỏe tâm thần?',
+              author: 'Nguyễn Văn A',
+              postedTime: '20 Tháng 5, 2025',
+            );
           },
         ),
       ),

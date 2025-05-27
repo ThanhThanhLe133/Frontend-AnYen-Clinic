@@ -5,6 +5,7 @@ import 'package:anyen_clinic/chat/widget/buildCameraButton.dart';
 import 'package:anyen_clinic/chat/widget/buildMessageContent.dart';
 import 'package:anyen_clinic/chat/widget/buildMicButton.dart';
 import 'package:anyen_clinic/chat/widget/buildQuestionBubble.dart';
+import 'package:anyen_clinic/makeRequest.dart';
 import 'package:anyen_clinic/widget/CustomBackButton.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
@@ -92,7 +93,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             .toList());
       });
 
-      _scrollToBottom();
+      scrollToBottom();
     } catch (e) {
       _showErrorSnackBar('Failed to load messages: $e');
     } finally {
@@ -184,7 +185,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             });
           }
         });
-        _scrollToBottom();
+        scrollToBottom();
       });
 
       // Listen for user joined events
@@ -210,7 +211,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       });
     } catch (e) {
       print('❌ Error setting up WebSocket: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -252,6 +253,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
       final timestamp = DateTime.now().toIso8601String();
 
+      // Handle image sending
+      if (image != null) {
+        uploadImage(File(image!.path));
+      }
+
+      // Handle audio sending
+      if (recordedFilePath != null) {
+        uploadAudio(File(recordedFilePath!));
+      }
+
       // Send text message
       if (controller.text.isNotEmpty) {
         final messageText = controller.text.trim();
@@ -270,41 +281,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         controller.clear();
       }
 
-      // Handle image sending
-      if (image != null) {
-        print('📤 Sending image: ${image!.path}');
-        setState(() {
-          messages.add({
-            "text": null,
-            "isMe": true,
-            "imagePath": image!.path,
-            "timestamp": timestamp,
-            "sender": currentUserId,
-          });
-          image = null;
-        });
-      }
-
-      // Handle audio sending
-      if (recordedFilePath != null) {
-        print('📤 Sending audio: $recordedFilePath');
-        setState(() {
-          messages.add({
-            "text": null,
-            "isMe": true,
-            "audioPath": recordedFilePath,
-            "timestamp": timestamp,
-            "sender": currentUserId,
-          });
-          recordedFilePath = null;
-        });
-      }
-
-      _scrollToBottom();
+      scrollToBottom();
     }
   }
 
-  void _scrollToBottom() {
+  void scrollToBottom() {
     if (scrollController.hasClients) {
       Future.delayed(Duration(milliseconds: 100), () {
         if (scrollController.hasClients) {
@@ -641,7 +622,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               Align(
                 alignment: Alignment.topLeft,
                 child: Text(
-                  "Question",
+                  "Câu hỏi",
                   style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
@@ -686,7 +667,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       bottomNavigationBar: KeyboardVisibilityBuilder(
         builder: (context, isKeyboardVisible) {
           if (isKeyboardVisible) {
-            _scrollToBottom();
+            scrollToBottom();
           }
           return Padding(
             padding: EdgeInsets.only(
@@ -851,7 +832,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 sendMessage();
               },
               onTap: () {
-                _scrollToBottom();
+                scrollToBottom();
               },
             ),
           ),
@@ -862,5 +843,78 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         ),
       ],
     );
+  }
+
+  final timestamp = DateTime.now().toIso8601String();
+  Future<void> uploadImage(File imageFile) async {
+    try {
+      final response = await makeRequest(
+        url: '$apiUrl/conversation/send-images',
+        method: 'POST',
+        body: {"conversation_id": widget.conversationId},
+        file: imageFile,
+        fileFieldName: 'message',
+      );
+
+      if (response.statusCode == 200) {
+        if (!mounted) return;
+        setState(() {
+          setState(() {
+            messages.add({
+              "text": null,
+              "isMe": true,
+              "imagePath": image!.path,
+              "timestamp": timestamp,
+              "sender": currentUserId,
+            });
+            image = null;
+          });
+        });
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Lỗi!")));
+      }
+    } catch (e) {
+      debugPrint("Lỗi khi upload ảnh: $e");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Đã xảy ra lỗi không mong muốn.")));
+    }
+  }
+
+  Future<void> uploadAudio(File audioFile) async {
+    try {
+      final response = await makeRequest(
+        url: '$apiUrl/conversation/send-audios',
+        method: 'POST',
+        body: {"conversation_id": widget.conversationId},
+        file: audioFile,
+        fileFieldName: 'message',
+      );
+
+      if (response.statusCode == 200) {
+        if (!mounted) return;
+        setState(() {
+          messages.add({
+            "text": null,
+            "isMe": true,
+            "audioPath": recordedFilePath,
+            "timestamp": timestamp,
+            "sender": currentUserId,
+          });
+          recordedFilePath = null;
+        });
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Lỗi khi upload âm thanh!")));
+      }
+    } catch (e) {
+      debugPrint("Lỗi khi upload audio: $e");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Đã xảy ra lỗi không mong muốn.")));
+    }
   }
 }

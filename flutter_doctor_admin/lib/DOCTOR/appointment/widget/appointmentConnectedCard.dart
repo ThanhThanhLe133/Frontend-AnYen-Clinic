@@ -90,6 +90,41 @@ class AppointmentConnectedCardState
     fetchPatient();
   }
 
+  Future<String> getConversationIdByAppointmentId(String appointmentId) async {
+    final response = await makeRequest(
+      url: '$apiUrl/chat/appointment/$appointmentId/conversation-id',
+      method: 'GET',
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['data']['conversationId'];
+    } else {
+      // Handle error
+      print('Failed to fetch conversation ID: ${response.statusCode}');
+      throw Exception('Failed to fetch conversation ID');
+    }
+  }
+
+  Future<void> sendMessageToAdmin() async {
+    final response = await makeRequest(
+      url: '$apiUrl/chat/create-conversation',
+      method: 'POST',
+    );
+    final responseData = jsonDecode(response.body);
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(responseData['mes'])));
+    } else {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (_) =>
+                  ChatScreen(conversationId: responseData['data']['id'])));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -105,14 +140,16 @@ class AppointmentConnectedCardState
             ),
           )
         : GestureDetector(
-            onTap: () {
+            onTap: () async {
               //cuộc hẹn kết thúc -> vào xem tin nhắn
               if (widget.status == "Completed") {
+                final conversationId = await getConversationIdByAppointmentId(
+                    widget.appointment_id);
                 Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (_) =>
-                            ChatScreen(appointment_id: widget.appointment_id)));
+                            ChatScreen(conversationId: conversationId)));
 
                 //cuộc hẹn được xác nhận rồi + tới giờ hẹn
               } else if (widget.status == "Confirmed") {
@@ -121,7 +158,7 @@ class AppointmentConnectedCardState
                       context,
                       MaterialPageRoute(
                           builder: (_) => ChatScreen(
-                              appointment_id: widget.appointment_id)));
+                              appointmentId: widget.appointment_id)));
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -393,7 +430,7 @@ class AppointmentConnectedCardState
                       ),
                       SizedBox(height: screenWidth * 0.03),
                       ElevatedButton(
-                        onPressed: () {},
+                        onPressed: sendMessageToAdmin,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFECF8FF), //
                           shape: RoundedRectangleBorder(

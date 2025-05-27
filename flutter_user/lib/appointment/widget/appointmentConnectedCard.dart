@@ -112,17 +112,42 @@ class AppointmentConnectedCardState
 
   Future<String> getConversationIdByAppointmentId(String appointmentId) async {
     final response = await makeRequest(
-      url: '$apiUrl/chat/appointment/$appointmentId/conversation-id',
+      url:
+          '$apiUrl/conversation/get-by-appointment/?appointment_id=$appointmentId',
       method: 'GET',
     );
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      return data['data']['conversationId'];
+
+      if (data['data'] != null && data['data']['id'] != null) {
+        return data['data']['id'];
+      } else {
+        print('No conversation found for this appointment.');
+        return "";
+      }
     } else {
-      // Handle error
       print('Failed to fetch conversation ID: ${response.statusCode}');
-      throw Exception('Failed to fetch conversation ID');
+      return "";
+    }
+  }
+
+  Future<void> sendMessageToAdmin() async {
+    final response = await makeRequest(
+      url: '$apiUrl/chat/create-conversation',
+      method: 'POST',
+    );
+    final responseData = jsonDecode(response.body);
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(responseData['mes'])));
+    } else {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (_) =>
+                  ChatScreen(conversationId: responseData['data']['id'])));
     }
   }
 
@@ -142,31 +167,39 @@ class AppointmentConnectedCardState
           )
         : GestureDetector(
             onTap: () async {
-              //cuộc hẹn kết thúc -> vào xem tin nhắn
-              if (widget.status == "Completed") {
-                final conversationId = await getConversationIdByAppointmentId(
-                    widget.appointment_id);
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) =>
-                            ChatScreen(conversationId: conversationId)));
+              final conversationId =
+                  await getConversationIdByAppointmentId(widget.appointment_id);
 
-                //cuộc hẹn được xác nhận rồi + tới giờ hẹn
-              } else if (widget.status == "Confirmed") {
-                if (isAppointmentTimeReached(widget.date, widget.time)) {
-                  final conversationId = await getConversationIdByAppointmentId(
-                      widget.appointment_id);
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) =>
-                              ChatScreen(conversationId: conversationId)));
+              //cuộc hẹn kết thúc -> vào xem tin nhắn
+              if (widget.isOnline != true) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                      content: Text(
+                    '📵 Cuộc hẹn này là trực tiếp nên không thể gửi tin nhắn.',
+                  )),
+                );
+              } else {
+                if (conversationId.isNotEmpty) {
+                  if (widget.status == "Completed" ||
+                      (widget.status == "Confirmed" &&
+                          isAppointmentTimeReached(widget.date, widget.time))) {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                ChatScreen(conversationId: conversationId)));
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text(
+                              'Chưa đến giờ hẹn. Vui lòng đợi đến ${widget.time} ${widget.date}')),
+                    );
+                  }
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                         content: Text(
-                            'Chưa đến giờ hẹn. Vui lòng đợi đến ${widget.time} ${widget.date}')),
+                            'Bác sĩ chưa bắt đầu. Không thể trò chuyện. \n Vui lòng liên hệ quản trị viên nếu đã tới giờ hẹn.')),
                   );
                 }
               }
@@ -491,7 +524,7 @@ class AppointmentConnectedCardState
                               : SizedBox(),
                           SizedBox(width: screenWidth * 0.05),
                           ElevatedButton(
-                            onPressed: () {},
+                            onPressed: sendMessageToAdmin,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFECF8FF), //
                               shape: RoundedRectangleBorder(

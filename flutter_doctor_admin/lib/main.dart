@@ -1,3 +1,4 @@
+import 'package:ayclinic_doctor_admin/DOCTOR/post/new_post_screen.dart';
 import 'package:ayclinic_doctor_admin/notification_service.dart';
 import 'package:ayclinic_doctor_admin/splash/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -33,7 +34,7 @@ class MainApp extends StatelessWidget {
           bodySmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
         ),
       ),
-      home: SplashScreen(),
+      home: ListPostScreen(),
     );
   }
 }

@@ -1,8 +1,17 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/chat/models/message.dart';
+import 'package:ayclinic_doctor_admin/DOCTOR/chat/models/message.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/chat/CameraScreen.dart';
+import 'package:ayclinic_doctor_admin/DOCTOR/chat/services/chat_service.dart';
+import 'package:ayclinic_doctor_admin/DOCTOR/chat/websocket_service.dart';
+import 'package:ayclinic_doctor_admin/function.dart';
+import 'package:ayclinic_doctor_admin/makeRequest.dart';
+import 'package:ayclinic_doctor_admin/storage.dart';
+import 'package:ayclinic_doctor_admin/utils/jwt_utils.dart';
 import 'package:ayclinic_doctor_admin/widget/widget_chat/AudioPreview.dart';
 import 'package:ayclinic_doctor_admin/widget/widget_chat/buildCameraButton.dart';
 import 'package:ayclinic_doctor_admin/widget/widget_chat/buildMessageContent.dart';
@@ -12,20 +21,22 @@ import 'package:ayclinic_doctor_admin/dialog/option_dialog.dart';
 import 'package:ayclinic_doctor_admin/widget/CustomBackButton.dart';
 import 'package:ayclinic_doctor_admin/widget/buildButton.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:record/record.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 
-class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key, this.appointment_id});
-  final String? appointment_id;
+class ChatScreen extends ConsumerStatefulWidget {
+  const ChatScreen({super.key, this.appointmentId, this.conversationId});
+  final String? appointmentId;
+  final String? conversationId;
   @override
-  _ChatScreenState createState() => _ChatScreenState();
+  ConsumerState<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatScreenState extends ConsumerState<ChatScreen> {
   //image
   final List<XFile> sentImages = [];
   XFile? image;
@@ -43,42 +54,238 @@ class _ChatScreenState extends State<ChatScreen> {
   final Map<String, Duration> audioDurations = {};
 
   final TextEditingController controller = TextEditingController();
-  final List<Map<String, dynamic>> messages = [
-    {'text': 'Chào em', 'isMe': true},
-    {'text': 'Dạ em chào bác sĩ', 'isMe': false},
-    {'text': 'Chào em', 'isMe': true},
-  ];
-  bool isOnline = true;
+  final List<Map<String, dynamic>> messages = [];
+  bool isOnline = false;
+  bool isConnecting = false;
+  bool isLoadingMessages = false;
   final ScrollController scrollController = ScrollController();
+  late WebSocketService webSocketService;
+  late ChatService chatService;
+  String? currentRoom;
+  String? currentUserId;
+  late String conversationId;
+
+  //xử lý nút tham gia (nếu chưa có conversationId)
+  bool isJoined = false;
+  String timeJoined = "";
+  @override
+  void initState() {
+    super.initState();
+    webSocketService = ref.read(webSocketServiceProvider);
+    chatService = ChatService();
+    if (widget.conversationId != null) {
+      initializeChat();
+    }
+  }
+
+  Future<void> loadMessages() async {
+    if (isLoadingMessages) return;
+
+    setState(() {
+      isLoadingMessages = true;
+    });
+
+    try {
+      final apiMessages = await chatService.getMessages(conversationId);
+      final firstMessageTime = apiMessages.first.createdAt;
+      setState(() {
+        timeJoined = timeJoined =
+            DateFormat('dd/MM/yyyy, HH:mm').format(firstMessageTime);
+        messages.addAll(apiMessages
+            .map((msg) => {
+                  'text': msg.content,
+                  'isMe': msg.sender.id == currentUserId,
+                  'timestamp': msg.createdAt.toIso8601String(),
+                  'sender': msg.sender.id,
+                  'senderName': msg.sender.name,
+                  'senderAvatar': msg.sender.avatar,
+                })
+            .toList());
+      });
+    } catch (e) {
+      showErrorSnackBar('Failed to load messages: $e');
+    } finally {
+      setState(() {
+        isLoadingMessages = false;
+      });
+    }
+  }
+
+  Future<void> initializeChat() async {
+    setState(() {
+      isConnecting = true;
+      isJoined = true;
+    });
+
+    try {
+      // Get access token
+      final accessToken = await getAccessToken();
+      if (accessToken == null) {
+        showErrorSnackBar('Please login to continue');
+        return;
+      }
+
+      // Get user ID
+      currentUserId = await jwtUtils.getUserId();
+      if (currentUserId == null) {
+        showErrorSnackBar('Failed to get user information');
+        return;
+      }
+
+      // Load messages from API
+      await loadMessages();
+
+      // Setup WebSocket connection
+      await setupWebSocket(accessToken);
+    } catch (e) {
+      showErrorSnackBar('Error initializing chat: $e');
+    } finally {
+      setState(() {
+        isConnecting = false;
+      });
+    }
+  }
+
+  Future<void> setupWebSocket(String accessToken) async {
+    try {
+      // Connect to WebSocket with your token
+      webSocketService.connect(
+        accessToken,
+        onConnect: () {
+          print('✅ WebSocket connected successfully');
+          setState(() {
+            isOnline = true;
+          });
+          showSuccessSnackBar('Connected to chat server');
+          // Join the room after successful connection
+          joinRoom(conversationId);
+        },
+        onError: (error) {
+          print('❌ WebSocket connection error: $error');
+          String errorMessage = 'Connection error';
+          if (error is SocketException) {
+            errorMessage =
+                'Cannot connect to server. Please check if the server is running.';
+          } else {
+            errorMessage = error.toString();
+          }
+          showErrorSnackBar(errorMessage, showRetry: true);
+        },
+        onDisconnect: () {
+          print('🔌 WebSocket disconnected');
+          setState(() {
+            isOnline = false;
+          });
+          showErrorSnackBar('Disconnected from chat server', showRetry: true);
+        },
+      );
+
+      // Listen for incoming messages
+      webSocketService.onChatMessage((data) {
+        print('📨 Received chat message: $data');
+        setState(() {
+          if (data['sender'] != currentUserId) {
+            messages.add({
+              'text': data['message'],
+              'isMe': false,
+              'timestamp':
+                  data['timestamp'] ?? DateTime.now().toIso8601String(),
+              'sender': data['sender'],
+            });
+          }
+        });
+        scrollToBottom();
+      });
+
+      // Listen for user joined events
+      webSocketService.onUserJoined((data) {
+        print('👋 User joined: $data');
+        if (data['userId'] != currentUserId) {
+          showInfoSnackBar('A user joined the chat');
+        }
+      });
+
+      // Listen for user left events
+      webSocketService.onUserLeft((data) {
+        print('👋 User left: $data');
+        if (data['userId'] != currentUserId) {
+          showInfoSnackBar('A user left the chat');
+        }
+      });
+
+      // Listen for errors
+      webSocketService.onError((error) {
+        print('❌ WebSocket error: $error');
+        showErrorSnackBar('Chat error: $error');
+      });
+    } catch (e) {
+      print('❌ Error setting up WebSocket: $e');
+      rethrow;
+    }
+  }
+
+  void joinRoom(String roomId) {
+    if (!isOnline) {
+      showErrorSnackBar('Not connected to server joined room');
+      return;
+    }
+
+    currentRoom = roomId;
+    print('🏠 Joining room: $roomId');
+
+    webSocketService.subscribeToConversation(
+      roomId,
+      ack: (response) {
+        print('🏠 Subscribe response: $response');
+        if (response != null && response['error'] != null) {
+          showErrorSnackBar('Error joining room: ${response['error']}');
+        } else {
+          showSuccessSnackBar('Joined room: $roomId');
+        }
+      },
+    );
+  }
+
   void sendMessage() {
     if (controller.text.trim().isNotEmpty ||
         image != null ||
         recordedFilePath != null) {
-      setState(() {
-        if (controller.text.isNotEmpty) {
-          messages.add({'text': controller.text.trim(), 'isMe': true});
-        }
-        if (image != null) {
-          messages.add({
-            "text": null,
-            "isMe": true,
-            "imagePath": image!.path,
-          });
+      if (!isOnline) {
+        showErrorSnackBar('Not connected to server chat');
+        return;
+      }
 
-          image = null; // Xóa ảnh sau khi gửi
-        }
-        if (recordedFilePath != null) {
-          messages.add({
-            "text": null,
-            "isMe": true,
-            "audioPath": recordedFilePath,
-          });
-          print('FILE PATH $recordedFilePath');
-          recordedFilePath = null;
-        }
+      if (currentRoom == null) {
+        showErrorSnackBar('Please join a room first');
+        return;
+      }
+      // Handle image sending
+      if (image != null) {
+        uploadImage(File(image!.path));
+      }
 
+      // Handle audio sending
+      if (recordedFilePath != null) {
+        uploadAudio(File(recordedFilePath!));
+      }
+
+      // Send text message
+      if (controller.text.isNotEmpty) {
+        final messageText = controller.text.trim();
+        print('📤 Sending message: $messageText');
+
+        webSocketService.sendMessage(currentRoom!, messageText);
+
+        setState(() {
+          messages.add({
+            'text': messageText,
+            'isMe': true,
+            'timestamp': timestamp,
+            'sender': currentUserId,
+          });
+        });
         controller.clear();
-      });
+      }
 
       scrollToBottom();
     }
@@ -92,6 +299,47 @@ class _ChatScreenState extends State<ChatScreen> {
         curve: Curves.easeOut, // Hiệu ứng cuộn mượt mà
       );
     });
+  }
+
+  void showErrorSnackBar(String message, {bool showRetry = false}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        action: showRetry
+            ? SnackBarAction(
+                label: 'Retry',
+                textColor: Colors.white,
+                onPressed: () {
+                  initializeChat();
+                },
+              )
+            : null,
+      ),
+    );
+  }
+
+  void showSuccessSnackBar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void showInfoSnackBar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.blue,
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 
   Future<void> openCamera(BuildContext context) async {
@@ -243,22 +491,45 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  @override
-  void dispose() {
-    scrollController.dispose();
-    audioRecorder.dispose();
-    super.dispose();
+  Future<void> joinAction() async {
+    final response = await makeRequest(
+        url: '$apiUrl/chat/create-conversation',
+        method: 'POST',
+        body: {"appointment_id": widget.appointmentId});
+    final responseData = jsonDecode(response.body);
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(responseData['mes'])));
+    } else {
+      setState(() {
+        conversationId = responseData['data']['id'];
+        isJoined = true;
+        timeJoined = DateFormat('dd/MM/yyyy, HH:mm')
+            .format(responseData['data']['createdAt']);
+      });
+      initializeChat();
+    }
   }
 
-  //xử lý nút tham gia
-  bool isJoined = false;
-  String currentTime = "";
+  @override
+  void dispose() {
+    print('🧹 Disposing ChatScreen');
 
-  void joinAction() {
-    setState(() {
-      isJoined = true;
-      currentTime = DateFormat('dd/MM/yyyy, HH:mm').format(DateTime.now());
-    });
+    // Clean up WebSocket
+    if (currentRoom != null) {
+      webSocketService.unsubscribeFromConversation(currentRoom!);
+    }
+    webSocketService.dispose();
+
+    // Clean up controllers and timers
+    scrollController.dispose();
+    audioRecorder.dispose();
+    audioPlayer.dispose();
+    recordTimer?.cancel();
+    controller.dispose();
+
+    super.dispose();
   }
 
   @override
@@ -305,14 +576,18 @@ class _ChatScreenState extends State<ChatScreen> {
                           margin: EdgeInsets.only(right: 5),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: isOnline ? Colors.green : Colors.grey,
+                            color: isConnecting ? Colors.green : Colors.grey,
                           ),
                         ),
                         Text(
-                          isOnline ? 'Đang online' : 'Đang offline',
+                          isConnecting
+                              ? 'Connecting...'
+                              : (isOnline ? 'Online' : 'Offline'),
                           style: TextStyle(
                             fontSize: 13,
-                            color: isOnline ? Colors.green : Colors.grey,
+                            color: isConnecting
+                                ? Colors.orange
+                                : (isOnline ? Colors.green : Colors.grey),
                           ),
                         ),
                       ],
@@ -431,7 +706,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 Align(
                   alignment: Alignment.topLeft,
                   child: Text(
-                    "Thời gian: $currentTime",
+                    "Thời gian: $timeJoined",
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
@@ -634,5 +909,78 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
       ],
     );
+  }
+
+  final timestamp = DateTime.now().toIso8601String();
+  Future<void> uploadImage(File imageFile) async {
+    try {
+      final response = await makeRequest(
+        url: '$apiUrl/conversation/send-images',
+        method: 'POST',
+        body: {"conversation_id": conversationId},
+        file: imageFile,
+        fileFieldName: 'message',
+      );
+
+      if (response.statusCode == 200) {
+        if (!mounted) return;
+        setState(() {
+          setState(() {
+            messages.add({
+              "text": null,
+              "isMe": true,
+              "imagePath": image!.path,
+              "timestamp": timestamp,
+              "sender": currentUserId,
+            });
+            image = null;
+          });
+        });
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Lỗi!")));
+      }
+    } catch (e) {
+      debugPrint("Lỗi khi upload ảnh: $e");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Đã xảy ra lỗi không mong muốn.")));
+    }
+  }
+
+  Future<void> uploadAudio(File audioFile) async {
+    try {
+      final response = await makeRequest(
+        url: '$apiUrl/conversation/send-audios',
+        method: 'POST',
+        body: {"conversation_id": conversationId},
+        file: audioFile,
+        fileFieldName: 'message',
+      );
+
+      if (response.statusCode == 200) {
+        if (!mounted) return;
+        setState(() {
+          messages.add({
+            "text": null,
+            "isMe": true,
+            "audioPath": recordedFilePath,
+            "timestamp": timestamp,
+            "sender": currentUserId,
+          });
+          recordedFilePath = null;
+        });
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Lỗi khi upload âm thanh!")));
+      }
+    } catch (e) {
+      debugPrint("Lỗi khi upload audio: $e");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Đã xảy ra lỗi không mong muốn.")));
+    }
   }
 }
