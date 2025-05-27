@@ -5,6 +5,7 @@ import 'package:ayclinic_doctor_admin/makeRequest.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:ayclinic_doctor_admin/widget/BuildToggleOption.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -101,68 +102,73 @@ class _NotificationScreenState extends State<NotificationScreen> {
           child: Container(color: Color(0xFF9BA5AC), height: 1.0),
         ),
       ),
-      body: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: screenWidth * 0.08,
-            vertical: screenHeight * 0.1,
-          ),
-          child: Column(
-            children: [
-              Text(
-                "Cài đặt để nhận thông báo khi ngoại tuyến",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: screenWidth * 0.04,
-                ),
-                maxLines: null,
+      body: notiSetting.isEmpty
+          ? Center(
+              child: SpinKitWaveSpinner(
+                color: Colors.blue,
+                size: 75.0,
               ),
-              SizedBox(height: screenHeight * 0.05),
-              Container(
-                height: max(screenHeight * 0.3, 150),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Color(0xFFD9D9D9), width: 1),
+            )
+          : SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.08,
+                  vertical: screenHeight * 0.1,
                 ),
-                child: Center(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      SizedBox(height: screenHeight * 0.03),
-
-                      BuildToggleOption(
-                        screenWidth: screenWidth,
-                        icon: Icons.people_alt_rounded,
-                        title: "Lịch hẹn",
-                        value: isAppointments,
-                        onChanged: (value) async {
-                          setState(() => isAppointments = value);
-                          await changeNotiSetting("appointments", value);
-                        },
+                child: Column(
+                  children: [
+                    Text(
+                      "Cài đặt để nhận thông báo khi ngoại tuyến",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: screenWidth * 0.04,
                       ),
-                      BuildToggleOption(
-                        screenWidth: screenWidth,
-                        icon: Icons.notifications,
-                        title: "Tin nhắn",
-                        value: isMessages,
-                        onChanged: (value) async {
-                          setState(() => isMessages = value);
-                          await changeNotiSetting("messages", value);
-                        },
+                      maxLines: null,
+                    ),
+                    SizedBox(height: screenHeight * 0.05),
+                    Container(
+                      height: max(screenHeight * 0.3, 150),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Color(0xFFD9D9D9), width: 1),
                       ),
-
-                      SizedBox(height: screenHeight * 0.03),
-                    ],
-                  ),
+                      child: Center(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            SizedBox(height: screenHeight * 0.03),
+                            BuildToggleOption(
+                              screenWidth: screenWidth,
+                              icon: Icons.people_alt_rounded,
+                              title: "Lịch hẹn",
+                              value: isAppointments,
+                              onChanged: (value) async {
+                                setState(() => isAppointments = value);
+                                await changeNotiSetting("appointments", value);
+                              },
+                            ),
+                            BuildToggleOption(
+                              screenWidth: screenWidth,
+                              icon: Icons.notifications,
+                              title: "Tin nhắn",
+                              value: isMessages,
+                              onChanged: (value) async {
+                                setState(() => isMessages = value);
+                                await changeNotiSetting("messages", value);
+                              },
+                            ),
+                            SizedBox(height: screenHeight * 0.03),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }

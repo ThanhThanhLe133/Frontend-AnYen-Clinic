@@ -17,9 +17,9 @@ android {
         coreLibraryDesugaringEnabled true
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
-    }
+kotlinOptions {
+    jvmTarget = "1.8"
+}
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
@@ -49,3 +49,5 @@ dependencies{
 flutter {
     source = "../.."
 }
+
+apply plugin: 'com.google.gms.google-services'
