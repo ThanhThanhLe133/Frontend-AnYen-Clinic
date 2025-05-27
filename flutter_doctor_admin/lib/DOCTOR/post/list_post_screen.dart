@@ -5,25 +5,23 @@ import 'package:ayclinic_doctor_admin/widget/CustomBackButton.dart';
 import 'package:ayclinic_doctor_admin/widget/PostCardInList.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:http/http.dart' as http;
-import 'package:http/http.dart' as https;
-import 'package:http/src/response.dart';
-import 'package:ayclinic_doctor_admin/DOCTOR/post/details_post_screen.dart';
+
 
 class ListPostScreen extends StatefulWidget {
   const ListPostScreen({super.key});
 
   @override
-  State<ListPostScreen> createState() => _ListPostScreenState();
+  State<ListPostScreen> createState() => _ListPostScreenState ();
 }
 
-class _ListPostScreenState extends State<ListPostScreen> {
+class _ListPostScreenState  extends State<ListPostScreen> {
   late ScrollController _scrollController;
   final List<Map<String, dynamic>> _displayedDoctors = [];
   int _currentPage = 1;
   final int _itemsPerPage = 5;
   bool _isLoading = false;
 
+  // ✅ Dữ liệu mẫu
   final List<Map<String, dynamic>> doctors = List.generate(20, (index) {
     return {
       'name': 'Bác sĩ ${index + 1}',
@@ -40,7 +38,7 @@ class _ListPostScreenState extends State<ListPostScreen> {
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
-    _loadMoreDoctors();
+    _loadMoreDoctors(); // Load dữ liệu ngay khi khởi tạo
   }
 
   @override
@@ -90,7 +88,6 @@ class _ListPostScreenState extends State<ListPostScreen> {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -127,34 +124,22 @@ class _ListPostScreenState extends State<ListPostScreen> {
                   size: 75.0,
                 ),
               );
-            }
+  }
+      return PostCardInList(
+      screenWidth: MediaQuery.of(context).size.width,
+      screenHeight: MediaQuery.of(context).size.height,
+      title: 'Làm thế nào để chăm sóc sức khỏe ngày nóng?',
+      author: 'Nguyễn Văn A',
+      postedTime: '20 Tháng 5, 2025',
+        content: 'Để tăng cường hệ miễn dịch, bạn nên bổ sung thêm các loại vitamin từ rau củ quả tươi như cam, bưởi, cà rốt, cải bó xôi và ớt chuông đỏ. Những thực phẩm này giàu vitamin C, A và các chất chống oxy hóa giúp bảo vệ tế bào khỏi tác hại của gốc tự do. Ngoài ra, việc duy trì một chế độ ăn cân bằng giữa đạm, chất béo tốt và tinh bột phức tạp là rất quan trọng. Hạn chế thực phẩm chế biến sẵn, đường tinh luyện và dầu chiên đi chiên lại sẽ giúp giảm nguy cơ viêm nhiễm và tăng cường trao đổi chất. Đặc biệt, đừng quên uống đủ nước – ít nhất 1,5 đến 2 lít mỗi ngày – để hỗ trợ thải độc cho cơ thể. Bên cạnh chế độ ăn, bạn nên ngủ đủ giấc, vận động thường xuyên và giữ tinh thần lạc quan. Tất cả những yếu tố này kết hợp lại sẽ giúp cơ thể khỏe mạnh, phòng chống bệnh tật hiệu quả và cải thiện chất lượng cuộc sống mỗi ngày.',
 
-            // 🔁 Thay thế đoạn này:
-            // return PostCardInList(...)
 
-            return GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => PostDetailScreen(postId: '',),
-                  ),
-                );
-              },
-              child: PostCardInList(
-                screenWidth: screenWidth,
-                screenHeight: screenHeight,
-                title: 'Làm thế nào để chăm sóc sức khỏe tâm thần?',
-                author: 'Nguyễn Văn A',
-                postedTime: '20 Tháng 5, 2025',
-              ),
-            );
-            
+      );
+
           },
         ),
-        
       ),
-      floatingActionButton: FloatingActionButton(
+            floatingActionButton: FloatingActionButton(
   onPressed: () {
     Navigator.push(
       context,
@@ -168,10 +153,6 @@ class _ListPostScreenState extends State<ListPostScreen> {
   child: Icon(Icons.add, color: Colors.white),
 ),
 
-
-
-
     );
-    
   }
 }
