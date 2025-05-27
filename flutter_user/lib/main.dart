@@ -3,6 +3,7 @@ import 'package:anyen_clinic/dashboard/dashboard.dart';
 import 'package:anyen_clinic/doctor/list_doctor_screen.dart';
 import 'package:anyen_clinic/login/login_screen.dart';
 import 'package:anyen_clinic/notification_service.dart';
+import 'package:anyen_clinic/posts/list_post_screen.dart';
 import 'package:anyen_clinic/splash/splash_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:anyen_clinic/login/login_screen.dart';
@@ -41,7 +42,7 @@ class MainApp extends StatelessWidget {
           bodySmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
         ),
       ),
-      home: LoginScreen(),
+      home: ListPostScreen(),
     );
   }
 }
