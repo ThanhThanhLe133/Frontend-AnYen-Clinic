@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:ayclinic_doctor_admin/ADMIN/chat/models/message.dart';
+import 'package:ayclinic_doctor_admin/widget/chat_widget/models/message.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:http/http.dart' as http;
 

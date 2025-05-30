@@ -1,4 +1,4 @@
-import 'package:ayclinic_doctor_admin/DOCTOR/post/new_post_screen.dart';
+import 'package:ayclinic_doctor_admin/login/login_screen.dart';
 import 'package:ayclinic_doctor_admin/notification_service.dart';
 import 'package:ayclinic_doctor_admin/splash/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -6,11 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'ADMIN/admin_review/admin_review_screen.dart';
-import 'package:ayclinic_doctor_admin/DOCTOR/post/list_post_screen.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('vi', null);
   await dotenv.load(fileName: "assets/config/.env");
   await Firebase.initializeApp();
   await NotificationService.instance.initialize();
@@ -34,7 +34,7 @@ class MainApp extends StatelessWidget {
           bodySmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
         ),
       ),
-      home: ListPostScreen(),
+      home: LoginScreen(),
     );
   }
 }

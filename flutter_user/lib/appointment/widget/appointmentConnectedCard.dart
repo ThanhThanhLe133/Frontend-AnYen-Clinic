@@ -11,6 +11,7 @@ import 'package:anyen_clinic/dialog/SuccessDialog.dart';
 import 'package:anyen_clinic/dialog/Summary.dart';
 import 'package:anyen_clinic/dialog/option_dialog.dart';
 import 'package:anyen_clinic/doctor/details_doctor_screen.dart';
+import 'package:anyen_clinic/function.dart';
 import 'package:anyen_clinic/makeRequest.dart';
 import 'package:anyen_clinic/review/review_doctor_screen.dart';
 import 'package:anyen_clinic/storage.dart';
@@ -129,25 +130,6 @@ class AppointmentConnectedCardState
     } else {
       print('Failed to fetch conversation ID: ${response.statusCode}');
       return "";
-    }
-  }
-
-  Future<void> sendMessageToAdmin() async {
-    final response = await makeRequest(
-      url: '$apiUrl/chat/create-conversation',
-      method: 'POST',
-    );
-    final responseData = jsonDecode(response.body);
-    if (response.statusCode != 200) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(responseData['mes'])));
-    } else {
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (_) =>
-                  ChatScreen(conversationId: responseData['data']['id'])));
     }
   }
 
@@ -524,7 +506,7 @@ class AppointmentConnectedCardState
                               : SizedBox(),
                           SizedBox(width: screenWidth * 0.05),
                           ElevatedButton(
-                            onPressed: sendMessageToAdmin,
+                            onPressed: () => sendMessageToAdmin(context),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFECF8FF), //
                               shape: RoundedRectangleBorder(

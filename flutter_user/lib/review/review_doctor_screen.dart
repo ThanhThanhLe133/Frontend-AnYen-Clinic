@@ -69,7 +69,6 @@ class _ReviewDoctorScreenState extends State<ReviewDoctorScreen> {
   }
 
   Future<void> createReview() async {
-    String reviewId = widget.reviewId;
     final response = await makeRequest(
         url: '$apiUrl/review/create-review',
         method: 'POST',

@@ -1,3 +1,9 @@
+import 'dart:convert';
+
+import 'package:anyen_clinic/chat/chat_screen.dart';
+import 'package:anyen_clinic/makeRequest.dart';
+import 'package:anyen_clinic/storage.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 
@@ -5,6 +11,18 @@ String formatDate(String? dateString) {
   if (dateString == null || dateString.isEmpty) return 'Unknown';
   DateTime parsedDate = DateTime.parse(dateString);
   return DateFormat('dd/MM/yyyy').format(parsedDate);
+}
+
+String formatDatePost(String? dateString) {
+  if (dateString == null || dateString.isEmpty) return 'Unknown';
+  DateTime parsedDate = DateTime.parse(dateString);
+  return DateFormat('dd MMMM, yyyy', 'vi').format(parsedDate);
+}
+
+String formatDateComment(String? dateString) {
+  if (dateString == null || dateString.isEmpty) return 'Unknown';
+  DateTime parsedDate = DateTime.parse(dateString);
+  return DateFormat('dd/MM/yyyy - HH:mm', 'vi').format(parsedDate);
 }
 
 String formatCurrency(String totalMoney) {
@@ -103,4 +121,23 @@ String formatDuration(Duration duration) {
   final minutes = twoDigits(duration.inMinutes);
   final seconds = twoDigits(duration.inSeconds.remainder(60));
   return "$minutes:$seconds";
+}
+
+Future<void> sendMessageToAdmin(context) async {
+  final response = await makeRequest(
+    url: '$apiUrl/chat/create-conversation',
+    method: 'POST',
+  );
+  final responseData = jsonDecode(response.body);
+  if (response.statusCode != 200) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(responseData['mes'])));
+  } else {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChatScreen(conversationId: responseData['data']['id']),
+      ),
+    );
+  }
 }

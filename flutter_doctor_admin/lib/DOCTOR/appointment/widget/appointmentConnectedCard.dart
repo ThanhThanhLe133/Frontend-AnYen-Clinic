@@ -10,6 +10,7 @@ import 'package:ayclinic_doctor_admin/dialog/Prescription.dart';
 import 'package:ayclinic_doctor_admin/dialog/SuccessDialog.dart';
 import 'package:ayclinic_doctor_admin/dialog/Summary_doctor.dart';
 import 'package:ayclinic_doctor_admin/dialog/option_dialog.dart';
+import 'package:ayclinic_doctor_admin/function.dart';
 import 'package:ayclinic_doctor_admin/makeRequest.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:ayclinic_doctor_admin/widget/buildMoreOption.dart';
@@ -103,25 +104,6 @@ class AppointmentConnectedCardState
       // Handle error
       print('Failed to fetch conversation ID: ${response.statusCode}');
       throw Exception('Failed to fetch conversation ID');
-    }
-  }
-
-  Future<void> sendMessageToAdmin() async {
-    final response = await makeRequest(
-      url: '$apiUrl/chat/create-conversation',
-      method: 'POST',
-    );
-    final responseData = jsonDecode(response.body);
-    if (response.statusCode != 200) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(responseData['mes'])));
-    } else {
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (_) =>
-                  ChatScreen(conversationId: responseData['data']['id'])));
     }
   }
 
@@ -430,7 +412,7 @@ class AppointmentConnectedCardState
                       ),
                       SizedBox(height: screenWidth * 0.03),
                       ElevatedButton(
-                        onPressed: sendMessageToAdmin,
+                        onPressed: () => sendMessageToAdmin(context),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFECF8FF), //
                           shape: RoundedRectangleBorder(

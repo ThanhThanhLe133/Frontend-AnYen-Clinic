@@ -1,11 +1,16 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:anyen_clinic/appointment/appointment_screen.dart';
 import 'package:anyen_clinic/chat/chat_screen.dart';
 import 'package:anyen_clinic/dashboard/dashboard.dart';
 import 'package:anyen_clinic/doctor/list_doctor_screen.dart';
+import 'package:anyen_clinic/function.dart';
+import 'package:anyen_clinic/makeRequest.dart';
+import 'package:anyen_clinic/posts/list_post_screen.dart';
 import 'package:anyen_clinic/psychological_test/psychological_test_home_screen.dart';
 import 'package:anyen_clinic/settings/account_screen.dart';
+import 'package:anyen_clinic/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:fab_circular_menu_plus/fab_circular_menu_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,6 +26,7 @@ class Menu extends ConsumerStatefulWidget {
 
 class _MenuState extends ConsumerState<Menu> {
   final GlobalKey<FabCircularMenuPlusState> _fabKey = GlobalKey();
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -46,6 +52,25 @@ class _MenuState extends ConsumerState<Menu> {
       );
     }
 
+    Widget navigateToChat(
+        IconData icon, String label, Future<void> Function() onTap) {
+      return Tooltip(
+        message: label,
+        textStyle: const TextStyle(color: Colors.white, fontSize: 14),
+        decoration: BoxDecoration(
+          color: Colors.black87.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: IconButton(
+            icon: Icon(icon, color: Colors.white, size: 25),
+            onPressed: () async {
+              ref.read(menuOpenProvider.notifier).state = false; // Đóng menu
+              _fabKey.currentState?.close();
+              await onTap();
+            }),
+      );
+    }
+
     return FabCircularMenuPlus(
       key: _fabKey,
       ringColor: Colors.blue.withOpacity(0.5),
@@ -60,11 +85,19 @@ class _MenuState extends ConsumerState<Menu> {
         buildMenuItem(
             Icons.local_hospital, "Danh sách bác sĩ", DoctorListScreen()),
         buildMenuItem(Icons.quiz, "Trắc nghiệm", PsychologicalTestHomeScreen()),
-        buildMenuItem(Icons.book, "Nhật ký", AccountScreen()), //tạm thời
+        buildMenuItem(Icons.book, "Nhật ký", AccountScreen()),
+        buildMenuItem(
+          Icons.description,
+          "Bài viết",
+          ListPostScreen(),
+        ),
         buildMenuItem(Icons.event, "Lịch hẹn", AppointmentScreen()),
         buildMenuItem(Icons.settings, "Cài đặt", AccountScreen()),
-        // buildMenuItem(
-        //     Icons.support_agent, "Liên hệ CSKH", ChatScreen()), //tạm thời
+        navigateToChat(
+          Icons.support_agent,
+          "Liên hệ CSKH",
+          () => sendMessageToAdmin(context),
+        ),
       ],
     );
   }

@@ -3,12 +3,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:ayclinic_doctor_admin/ADMIN/chat/models/message.dart';
-import 'package:ayclinic_doctor_admin/DOCTOR/chat/models/message.dart';
+import 'package:ayclinic_doctor_admin/widget/chat_widget/models/message.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/chat/CameraScreen.dart';
-import 'package:ayclinic_doctor_admin/DOCTOR/chat/services/chat_service.dart';
-import 'package:ayclinic_doctor_admin/DOCTOR/chat/websocket_service.dart';
-import 'package:ayclinic_doctor_admin/function.dart';
+import 'package:ayclinic_doctor_admin/widget/chat_widget/services/chat_service.dart';
+import 'package:ayclinic_doctor_admin/widget/chat_widget/websocket_service.dart';
 import 'package:ayclinic_doctor_admin/makeRequest.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:ayclinic_doctor_admin/utils/jwt_utils.dart';
@@ -27,6 +25,7 @@ import 'package:intl/intl.dart';
 import 'package:record/record.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
+import 'package:ayclinic_doctor_admin/widget/chat_widget/models/message.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key, this.appointmentId, this.conversationId});
@@ -86,7 +85,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     });
 
     try {
-      final apiMessages = await chatService.getMessages(conversationId);
+      final List<Message> apiMessages =
+          await chatService.getMessages(conversationId);
       final firstMessageTime = apiMessages.first.createdAt;
       setState(() {
         timeJoined = timeJoined =

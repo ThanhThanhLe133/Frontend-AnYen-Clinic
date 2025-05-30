@@ -1,5 +1,5 @@
+import 'package:ayclinic_doctor_admin/ADMIN/post/details_post_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:ayclinic_doctor_admin/DOCTOR/post/details_post_screen.dart';
 
 class PostCardInList extends StatelessWidget {
   final double screenWidth;
@@ -8,18 +8,19 @@ class PostCardInList extends StatelessWidget {
   final String author;
   final String postedTime;
   final String content;
+  final String postId;
+  final bool isCreator;
 
-  const PostCardInList({
-    super.key,
-    required this.screenWidth,
-    required this.screenHeight,
-    required this.title,
-    required this.author,
-    required this.postedTime,
-    required this.content,
-
-    
-  });
+  const PostCardInList(
+      {super.key,
+      required this.screenWidth,
+      required this.screenHeight,
+      required this.title,
+      required this.author,
+      required this.postedTime,
+      required this.content,
+      required this.postId,
+      required this.isCreator});
 
   @override
   Widget build(BuildContext context) {
@@ -28,14 +29,7 @@ class PostCardInList extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => PostDetailScreen(
-              postDetail: {
-                'title': title,
-                'author': author,
-                'postedTime': postedTime,
-                'content': content,
-              },
-            ),
+            builder: (_) => PostDetailScreen(postId: postId),
           ),
         );
       },
@@ -69,7 +63,8 @@ class PostCardInList extends StatelessWidget {
             SizedBox(height: screenHeight * 0.005),
             Row(
               children: [
-                Icon(Icons.person, color: Colors.blue, size: screenWidth * 0.045),
+                Icon(Icons.person,
+                    color: Colors.blue, size: screenWidth * 0.045),
                 SizedBox(width: screenWidth * 0.02),
                 Text(
                   author,

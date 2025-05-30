@@ -54,7 +54,10 @@ void showSuccess(BuildContext rootContext, Widget? nextScreen, String label) {
                       fontWeight: FontWeight.w600,
                       fontFamily: 'Inter-Medium'),
                 ),
-                child: Text(label),
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                ),
               ),
             ],
           ),

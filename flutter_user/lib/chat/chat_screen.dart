@@ -22,8 +22,8 @@ import 'package:anyen_clinic/chat/models/message.dart';
 import 'package:anyen_clinic/chat/services/chat_service.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
-  const ChatScreen({super.key, required this.conversationId});
-  final String conversationId;
+  const ChatScreen({super.key, this.conversationId});
+  final String? conversationId;
   @override
   ConsumerState<ChatScreen> createState() => _ChatScreenState();
 }
@@ -53,19 +53,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final ScrollController scrollController = ScrollController();
   late WebSocketService webSocketService;
   late ChatService chatService;
+
+  late String conversationId;
   String? currentRoom;
   String? currentUserId;
-
-  String getConversationId() {
-    return widget.conversationId;
-  }
 
   @override
   void initState() {
     super.initState();
     webSocketService = ref.read(webSocketServiceProvider);
     chatService = ChatService();
-    _initializeChat();
+    if (widget.conversationId != null) {
+      initializeChat();
+    }
   }
 
   Future<void> _loadMessages() async {
@@ -77,7 +77,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     try {
       final List<Message> apiMessages =
-          await chatService.getMessages(widget.conversationId);
+          await chatService.getMessages(conversationId);
 
       setState(() {
         messages.clear();
@@ -103,7 +103,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
-  Future<void> _initializeChat() async {
+  Future<void> initializeChat() async {
     setState(() {
       isConnecting = true;
     });
@@ -149,7 +149,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           });
           _showSuccessSnackBar('Connected to chat server');
           // Join the room after successful connection
-          _joinRoom(getConversationId());
+          _joinRoom(conversationId);
         },
         onError: (error) {
           print('❌ WebSocket connection error: $error');
@@ -310,7 +310,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 label: 'Retry',
                 textColor: Colors.white,
                 onPressed: () {
-                  _initializeChat();
+                  initializeChat();
                 },
               )
             : null,

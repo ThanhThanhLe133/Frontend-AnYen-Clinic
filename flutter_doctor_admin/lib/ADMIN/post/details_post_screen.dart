@@ -1,8 +1,5 @@
 import 'dart:convert';
 
-import 'package:ayclinic_doctor_admin/DOCTOR/post/list_post_screen.dart';
-import 'package:ayclinic_doctor_admin/DOCTOR/post/new_post_screen.dart';
-import 'package:ayclinic_doctor_admin/dialog/SuccessDialog.dart';
 import 'package:ayclinic_doctor_admin/dialog/option_dialog.dart';
 import 'package:ayclinic_doctor_admin/function.dart';
 import 'package:ayclinic_doctor_admin/makeRequest.dart';
@@ -29,59 +26,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   late String postId;
   String creatorName = "";
   final Set<int> openReplyIndexes = {};
-  bool isCreator = false;
-  int? _replyingToIndex;
-
-  Future<void> handleSendComment() async {
-    final content = _commentController.text.trim();
-    if (content.isEmpty) return;
-    final response = await makeRequest(
-        url: '$apiUrl/doctor/create-comment',
-        method: 'POST',
-        body: {"post_id": postId, "content": content});
-    final data = jsonDecode(response.body);
-    if (response.statusCode != 200) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(data['mes'])));
-    } else {
-      setState(() {
-        comments.insert(0, data['data']);
-        _commentController.clear();
-      });
-    }
-  }
-
-  Future<void> handleSendReply(int index, String commentId) async {
-    final replyContent = _replyControllers[index]?.text.trim();
-    if (replyContent == null || replyContent.isEmpty) return;
-    final response = await makeRequest(
-        url: '$apiUrl/doctor/reply-comment',
-        method: 'POST',
-        body: {"comment_id": commentId, "content": replyContent});
-    final data = jsonDecode(response.body);
-    if (response.statusCode != 200) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(data['mes'])));
-    } else {
-      final data = jsonDecode(response.body);
-      setState(() {
-        comments[index]['replies'].insert(0, data['data']);
-        comments[index]['replyCount']++;
-        _replyControllers[index]?.clear();
-        _replyingToIndex = null;
-        openReplyIndexes.add(index);
-        _commentController.clear();
-      });
-    }
-  }
 
   Future<void> deleteComment(String commentId, int index) async {
     final response = await makeRequest(
-      url: '$apiUrl/doctor/delete-comment',
+      url: '$apiUrl/admin/delete-comment',
       body: {"comment_id": commentId},
       method: 'DELETE',
     );
@@ -104,7 +52,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   Future<void> deleteReply(String replyId, int index) async {
     final response = await makeRequest(
-      url: '$apiUrl/doctor/delete-reply',
+      url: '$apiUrl/admin/delete-reply',
       body: {"reply_id": replyId},
       method: 'DELETE',
     );
@@ -126,25 +74,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
-  Future<void> deletePost() async {
-    final response = await makeRequest(
-      url: '$apiUrl/doctor/delete-post',
-      body: {"post_id": widget.postId},
-      method: 'DELETE',
-    );
-
-    final data = jsonDecode(response.body);
-    if (response.statusCode != 200) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(data['mes'])));
-    } else {
-      showSuccessDialog(context, ListPostScreen(), "Xoá bài viết thành công",
-          "Tới danh sách bài viết");
-    }
-  }
-
   Future<void> fetchPost() async {
     final response = await makeRequest(
       url: '$apiUrl/get/get-post/?post_id=$postId',
@@ -162,7 +91,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       final responseData = data['data'];
       setState(() {
         post = Map<String, dynamic>.from(responseData['post']);
-        isCreator = responseData['isCreator'];
         creatorName = responseData['post']['doctor']['name'];
       });
     }
@@ -239,49 +167,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // --- Nút sửa và xoá ---
-              if (isCreator)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => NewPostScreen(
-                              title: post['title'],
-                              content: post['content'],
-                            ),
-                          ),
-                        );
-                      },
-                      icon: Icon(Icons.edit, size: 18, color: Colors.blue),
-                      label: Text("Chỉnh sửa",
-                          style: TextStyle(color: Colors.blue)),
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: Colors.blue),
-                      ),
-                    ),
-                    SizedBox(width: 10),
-                    OutlinedButton.icon(
-                      onPressed: () {
-                        showOptionDialog(
-                            context,
-                            "Xoá bài viết",
-                            "Bạn có chắc chắn muốn xoá bài viết này",
-                            "HUỶ",
-                            "Xoá",
-                            deletePost);
-                      },
-                      icon: Icon(Icons.delete, size: 18, color: Colors.red),
-                      label: Text("Xoá", style: TextStyle(color: Colors.red)),
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: Colors.red),
-                      ),
-                    ),
-                  ],
-                ),
               SizedBox(height: screenHeight * 0.01),
 
               // --- Bài viết ---
@@ -335,27 +220,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 ),
               ),
               SizedBox(height: screenHeight * 0.02),
-
-              // Ô nhập bình luận chính
-              TextField(
-                controller: _commentController,
-                decoration: InputDecoration(
-                  hintText: 'Nhập bình luận của bạn...',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  contentPadding: EdgeInsets.symmetric(
-                    vertical: screenHeight * 0.015,
-                    horizontal: screenWidth * 0.04,
-                  ),
-                  suffixIcon: GestureDetector(
-                    onTap: handleSendComment,
-                    child: Icon(Icons.send, color: Colors.blue),
-                  ),
-                ),
-                maxLines: null,
-              ),
-              SizedBox(height: screenHeight * 0.03),
 
               // Danh sách bình luận
               if (comments.isEmpty)
@@ -429,27 +293,26 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                       ],
                                     ),
                                   ),
-                                  if (comment['isCreator'])
-                                    IconButton(
-                                      icon: Icon(
-                                        Icons.delete,
-                                        size: 20,
-                                        color: Colors.red,
-                                      ),
-                                      onPressed: () {
-                                        showOptionDialog(
-                                          context,
-                                          "Xoá bình luận",
-                                          "Bạn có chắc chắn muốn xoá bình luận này?",
-                                          "HUỶ",
-                                          "OK",
-                                          () async {
-                                            await deleteComment(
-                                                comment['id'], index);
-                                          },
-                                        );
-                                      },
+                                  IconButton(
+                                    icon: Icon(
+                                      Icons.delete,
+                                      size: 20,
+                                      color: Colors.red,
                                     ),
+                                    onPressed: () {
+                                      showOptionDialog(
+                                        context,
+                                        "Xoá bình luận",
+                                        "Bạn có chắc chắn muốn xoá bình luận này?",
+                                        "HUỶ",
+                                        "OK",
+                                        () async {
+                                          await deleteComment(
+                                              comment['id'], index);
+                                        },
+                                      );
+                                    },
+                                  ),
                                 ],
                               ),
                               SizedBox(height: 6),
@@ -465,60 +328,27 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                       color: Colors.grey[600],
                                     ),
                                   ),
-                                  Row(
-                                    children: [
-                                      if ((comment['replyCount'] ?? 0) > 0)
-                                        TextButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              if (openReplyIndexes
-                                                  .contains(index)) {
-                                                openReplyIndexes.remove(index);
-                                              } else {
-                                                openReplyIndexes.add(index);
-                                              }
-                                            });
-                                          },
-                                          child: Text(
-                                            openReplyIndexes.contains(index)
-                                                ? 'Ẩn'
-                                                : '${comment['replyCount']} lượt trả lời',
-                                            style:
-                                                TextStyle(color: Colors.blue),
-                                          ),
-                                        ),
-                                      TextButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            _replyingToIndex =
-                                                _replyingToIndex == index
-                                                    ? null
-                                                    : index;
-                                          });
-                                        },
-                                        child: Text(
-                                          'Trả lời',
-                                          style: TextStyle(color: Colors.blue),
-                                        ),
+                                  if ((comment['replyCount'] ?? 0) > 0)
+                                    TextButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          if (openReplyIndexes
+                                              .contains(index)) {
+                                            openReplyIndexes.remove(index);
+                                          } else {
+                                            openReplyIndexes.add(index);
+                                          }
+                                        });
+                                      },
+                                      child: Text(
+                                        openReplyIndexes.contains(index)
+                                            ? 'Ẩn'
+                                            : '${comment['replyCount']} lượt trả lời',
+                                        style: TextStyle(color: Colors.blue),
                                       ),
-                                    ],
-                                  ),
+                                    ),
                                 ],
                               ),
-                              if (_replyingToIndex == index) ...[
-                                TextField(
-                                  controller: _replyControllers[index],
-                                  decoration: InputDecoration(
-                                    hintText: 'Nhập phản hồi...',
-                                    suffixIcon: IconButton(
-                                      icon:
-                                          Icon(Icons.send, color: Colors.blue),
-                                      onPressed: () =>
-                                          handleSendReply(index, comment['id']),
-                                    ),
-                                  ),
-                                ),
-                              ],
                             ],
                           ),
                         ),
@@ -576,27 +406,26 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                           ),
                                         ),
                                         SizedBox(height: 4),
-                                        if (reply['isCreator'])
-                                          IconButton(
-                                            icon: Icon(
-                                              Icons.delete,
-                                              size: 20,
-                                              color: Colors.red,
-                                            ),
-                                            onPressed: () {
-                                              showOptionDialog(
-                                                context,
-                                                "Xoá bình luận",
-                                                "Bạn có chắc chắn muốn xoá bình luận này?",
-                                                "HUỶ",
-                                                "OK",
-                                                () async {
-                                                  await deleteReply(
-                                                      reply['id'], index);
-                                                },
-                                              );
-                                            },
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.delete,
+                                            size: 20,
+                                            color: Colors.red,
                                           ),
+                                          onPressed: () {
+                                            showOptionDialog(
+                                              context,
+                                              "Xoá bình luận",
+                                              "Bạn có chắc chắn muốn xoá bình luận này?",
+                                              "HUỶ",
+                                              "OK",
+                                              () async {
+                                                await deleteReply(
+                                                    reply['id'], index);
+                                              },
+                                            );
+                                          },
+                                        ),
                                       ],
                                     ),
                                     SizedBox(height: 4),

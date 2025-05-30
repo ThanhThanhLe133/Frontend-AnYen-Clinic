@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:anyen_clinic/posts/details_post_screen.dart';
+import 'package:ayclinic_doctor_admin/DOCTOR/post/details_post_screen.dart';
 
 class PostCardInList extends StatelessWidget {
   final double screenWidth;

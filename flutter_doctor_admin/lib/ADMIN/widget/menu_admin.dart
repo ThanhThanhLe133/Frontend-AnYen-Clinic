@@ -4,6 +4,7 @@ import 'package:ayclinic_doctor_admin/ADMIN/admin_review/admin_review_screen.dar
 import 'package:ayclinic_doctor_admin/ADMIN/appointment/appointment_screen.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/dashboard_admin/dashboard.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/message/message_screen.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/post/list_post_screen.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/settings/account_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -70,6 +71,11 @@ class _MenuAdminState extends ConsumerState<MenuAdmin> {
         buildMenuItem(Icons.event, "Lịch hẹn", AppointmentScreen()),
         buildMenuItem(Icons.message, "Tin nhắn", MessageScreen()),
         buildMenuItem(Icons.reviews, "DS đánh giá", AdminReviewScreen()),
+        buildMenuItem(
+          Icons.description,
+          "Bài viết",
+          ListPostScreen(),
+        ),
         buildMenuItem(
           Icons.library_books,
           "Trắc nghiệm tâm lý",
