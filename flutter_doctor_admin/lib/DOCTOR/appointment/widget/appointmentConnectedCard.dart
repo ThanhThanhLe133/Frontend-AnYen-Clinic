@@ -93,17 +93,20 @@ class AppointmentConnectedCardState
 
   Future<String> getConversationIdByAppointmentId(String appointmentId) async {
     final response = await makeRequest(
-      url: '$apiUrl/chat/appointment/$appointmentId/conversation-id',
+      url:
+          '$apiUrl/chat/conversation/get-by-appointment/?appointment_id=$appointmentId',
       method: 'GET',
     );
 
-    if (response.statusCode == 200) {
+    final responseData = jsonDecode(response.body);
+
+    if (response.statusCode == 200 && responseData['err'] == 0) {
       final data = jsonDecode(response.body);
-      return data['data']['conversationId'];
+      return data['data']['id'] ?? "";
     } else {
       // Handle error
       print('Failed to fetch conversation ID: ${response.statusCode}');
-      throw Exception('Failed to fetch conversation ID');
+      return "";
     }
   }
 
@@ -123,31 +126,41 @@ class AppointmentConnectedCardState
           )
         : GestureDetector(
             onTap: () async {
-              //cuộc hẹn kết thúc -> vào xem tin nhắn
-              if (widget.status == "Completed") {
-                final conversationId = await getConversationIdByAppointmentId(
-                    widget.appointment_id);
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) =>
-                            ChatScreen(conversationId: conversationId)));
+              if (widget.isOnline != true) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                      content: Text(
+                    '📵 Cuộc hẹn này là trực tiếp nên không thể gửi tin nhắn.',
+                  )),
+                );
+                return;
+              }
+              final conversationId =
+                  await getConversationIdByAppointmentId(widget.appointment_id);
 
-                //cuộc hẹn được xác nhận rồi + tới giờ hẹn
-              } else if (widget.status == "Confirmed") {
-                if (isAppointmentTimeReached(widget.date, widget.time)) {
+              if (isAppointmentTimeReached(widget.date, widget.time)) {
+                if (conversationId.isNotEmpty) {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (_) => ChatScreen(
-                              appointmentId: widget.appointment_id)));
+                                appointmentId: widget.appointment_id,
+                                conversationId: conversationId,
+                              )));
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text(
-                            'Chưa đến giờ hẹn. Vui lòng đợi đến ${widget.time} ${widget.date}')),
-                  );
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => ChatScreen(
+                                appointmentId: widget.appointment_id,
+                              )));
                 }
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                      content: Text(
+                          'Chưa đến giờ hẹn. Vui lòng đợi đến ${widget.time} ${widget.date}')),
+                );
               }
             },
             child: Container(

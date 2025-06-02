@@ -86,7 +86,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     try {
       final List<Message> apiMessages =
-          await chatService.getMessages(conversationId);
+          await chatService.getMessages(widget.conversationId!);
       final firstMessageTime = apiMessages.first.createdAt;
       setState(() {
         timeJoined = timeJoined =
@@ -506,7 +506,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         conversationId = responseData['data']['id'];
         isJoined = true;
         timeJoined = DateFormat('dd/MM/yyyy, HH:mm')
-            .format(responseData['data']['createdAt']);
+            .format(DateTime.parse(responseData['data']['createdAt']));
       });
       initializeChat();
     }
