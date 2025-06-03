@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/psychological_test/psychological_add_questions_screen.dart';
+import 'dart:convert';
+import 'package:ayclinic_doctor_admin/makeRequest.dart';
+import 'package:ayclinic_doctor_admin/storage.dart';
 
 class PsychologicalAddTestScreen extends StatefulWidget {
   const PsychologicalAddTestScreen({super.key});
@@ -13,6 +16,30 @@ class _PsychologicalAddTestScreenState
     extends State<PsychologicalAddTestScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  List<dynamic> newTest = [];
+
+  Future<String?> createTest(String name) async {
+    try {
+      final response = await makeRequest(
+        url: '$apiUrl/admin/test',
+        method: 'POST', // sửa từ DELETE sang POST
+        body: {"name": name},
+      );
+
+      if (response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        final testId = data['newQuestionSet']['test_id'];
+        return testId;
+      } else {
+        throw Exception('Lỗi khi tạo bài kiểm tra.');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi khi tạo bài kiểm tra.')),
+      );
+      return null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,61 +98,44 @@ class _PsychologicalAddTestScreenState
               ),
             ),
             SizedBox(height: 25),
-            Text(
-              'Mô tả',
-              style: TextStyle(
-                fontSize: screenWidth * 0.045,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            SizedBox(height: 10),
-            TextField(
-              controller: _descriptionController,
-              maxLines: 4,
-              decoration: InputDecoration(
-                hintText: 'Nhập mô tả',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                contentPadding: EdgeInsets.all(15),
-              ),
-            ),
             Spacer(),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   final title = _titleController.text.trim();
-                  final description = _descriptionController.text.trim();
+                  final description = "";
 
-                  if (title.isEmpty || description.isEmpty) {
+                  if (title.isEmpty) {
                     showDialog(
                       context: context,
-                      builder:
-                          (ctx) => AlertDialog(
-                            title: Text('Thiếu thông tin'),
-                            content: Text(
-                              'Vui lòng nhập đầy đủ tên và mô tả bài kiểm tra.',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx),
-                                child: Text('OK'),
-                              ),
-                            ],
+                      builder: (ctx) => AlertDialog(
+                        title: Text('Thiếu thông tin'),
+                        content: Text(
+                          'Vui lòng nhập đầy đủ tên và mô tả bài kiểm tra.',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            child: Text('OK'),
                           ),
+                        ],
+                      ),
                     );
                     return;
                   }
 
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (context) =>
-                              PsychologicalAddQuestionsScreen(testTitle: title),
-                    ),
-                  );
+                  final testId = await createTest(title);
+
+                  if (testId != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            PsychologicalAddQuestionsScreen(testId: testId),
+                      ),
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,

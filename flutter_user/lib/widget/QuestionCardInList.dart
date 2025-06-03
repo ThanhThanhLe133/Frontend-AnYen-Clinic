@@ -5,6 +5,7 @@ class QuestionCardInList extends StatelessWidget {
   final double screenWidth;
   final double screenHeight;
   final String title;
+  final String testId;
   final bool isComplete;
   final String buttonText;
   final String questionCount;
@@ -16,6 +17,7 @@ class QuestionCardInList extends StatelessWidget {
     required this.screenWidth,
     required this.screenHeight,
     required this.title,
+    required this.testId,
     required this.isComplete,
     required this.buttonText,
     required this.questionCount,
@@ -115,6 +117,7 @@ class QuestionCardInList extends StatelessWidget {
                             MaterialPageRoute(
                                 builder: (context) => PsychologicalTestScreen(
                                       title: title ?? '',
+                                      testId: testId,
                                     )));
                       },
                       icon: Icon(

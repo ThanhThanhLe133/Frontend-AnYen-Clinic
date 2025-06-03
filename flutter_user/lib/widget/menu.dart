@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:anyen_clinic/appointment/appointment_screen.dart';
 import 'package:anyen_clinic/chat/chat_screen.dart';
 import 'package:anyen_clinic/dashboard/dashboard.dart';
+import 'package:anyen_clinic/diary/diary_list_screen.dart';
 import 'package:anyen_clinic/doctor/list_doctor_screen.dart';
 import 'package:anyen_clinic/psychological_test/psychological_test_home_screen.dart';
 import 'package:anyen_clinic/settings/account_screen.dart';
@@ -60,6 +61,7 @@ class _MenuState extends ConsumerState<Menu> {
         buildMenuItem(
             Icons.local_hospital, "Danh sách bác sĩ", DoctorListScreen()),
         buildMenuItem(Icons.quiz, "Trắc nghiệm", PsychologicalTestHomeScreen()),
+        buildMenuItem(Icons.book, "Nhật ký", DiaryListScreen()),
         buildMenuItem(Icons.book, "Nhật ký", AccountScreen()), //tạm thời
         buildMenuItem(Icons.event, "Lịch hẹn", AppointmentScreen()),
         buildMenuItem(Icons.settings, "Cài đặt", AccountScreen()),

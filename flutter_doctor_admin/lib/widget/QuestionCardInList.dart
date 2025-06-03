@@ -1,23 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/psychological_test/psychological_review_screen.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/psychological_test/psychological_test_home_screen.dart';
+import 'dart:convert';
+import 'package:ayclinic_doctor_admin/makeRequest.dart';
+import 'package:ayclinic_doctor_admin/storage.dart';
 
 class QuestionCardInList extends StatelessWidget {
   final double screenWidth;
   final double screenHeight;
   final String title;
+  final String testId;
   final String questionCount;
   final String description;
   final VoidCallback onPressed;
+  final VoidCallback onDeleted;
 
   const QuestionCardInList({
     super.key,
     required this.screenWidth,
     required this.screenHeight,
     required this.title,
+    required this.testId,
     required this.questionCount,
     required this.description,
     required this.onPressed,
+    required this.onDeleted,
   });
+
+  Future<void> deleteTest(BuildContext context) async {
+    try {
+      final response = await makeRequest(
+        url: '$apiUrl/admin/test/remove/$testId',
+        method: 'DELETE',
+      );
+
+      if (response.statusCode == 200) {
+        Navigator.pop(context); // Đóng dialog
+        onDeleted(); // Gọi callback để màn hình cha xoá khỏi danh sách
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Đã xóa bài kiểm tra.')),
+        );
+      } else {
+        throw Exception('Lỗi khi xóa bài kiểm tra.');
+      }
+    } catch (e) {
+      Navigator.pop(context); // Đảm bảo đóng dialog nếu có lỗi
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi khi xóa bài kiểm tra.')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,33 +95,27 @@ class QuestionCardInList extends StatelessWidget {
                   onPressed: () {
                     showDialog(
                       context: context,
-                      builder:
-                          (context) => AlertDialog(
-                            title: Text('Xác nhận xóa'),
-                            content: Text(
-                              'Bạn có chắc muốn xóa bài kiểm tra này không?',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: Text('Hủy'),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Đã xóa bài kiểm tra.'),
-                                    ),
-                                  );
-                                },
-                                child: Text(
-                                  'Xóa',
-                                  style: TextStyle(color: Colors.red),
-                                ),
-                              ),
-                            ],
+                      builder: (context) => AlertDialog(
+                        title: Text('Xác nhận xóa'),
+                        content: Text(
+                          'Bạn có chắc muốn xóa bài kiểm tra này không?',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => {Navigator.pop(context)},
+                            child: Text('Hủy'),
                           ),
+                          TextButton(
+                            onPressed: () {
+                              deleteTest(context);
+                            },
+                            child: Text(
+                              'Xóa',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ],
+                      ),
                     );
                   },
                 ),
@@ -124,8 +150,10 @@ class QuestionCardInList extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder:
-                            (context) => PsychologicalTestScreen(title: title),
+                        builder: (context) => PsychologicalTestScreen(
+                          title: title ?? '',
+                          testId: testId,
+                        ),
                       ),
                     );
                   },

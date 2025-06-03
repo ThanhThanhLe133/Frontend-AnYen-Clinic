@@ -80,7 +80,9 @@ Future<http.Response> makeRequest({
     http.Response res = await sendRequest(token: accessToken);
     final body = jsonDecode(res.body);
 
-    if (body['err'] == 2 && refreshToken != null) {
+    if (body is Map<String, dynamic> &&
+        body['err'] == 2 &&
+        refreshToken != null) {
       final refreshRes = await http.post(
         Uri.parse('$apiUrl/auth/refresh-token'),
         headers: {"Content-Type": "application/json"},
