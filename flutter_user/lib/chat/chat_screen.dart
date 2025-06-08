@@ -11,7 +11,9 @@ import 'package:anyen_clinic/chat/widget/buildQuestionBubble.dart';
 import 'package:anyen_clinic/makeRequest.dart';
 import 'package:anyen_clinic/widget/CustomBackButton.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:anyen_clinic/chat/CameraScreen.dart';
 import 'package:intl/intl.dart';
@@ -168,11 +170,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     });
 
     try {
-      // Get access token
-      String? accessToken = await getAccessToken();
-
       // Get user ID
-      currentUserId = await JwtUtils.getUserId();
+      currentUserId = await jwtUtils.getUserId();
       if (currentUserId == null) {
         showErrorSnackBar('Failed to get user information');
         return;
@@ -180,8 +179,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
       await loadMessages();
 
-      // Setup WebSocket connection
-      await setupWebSocket(accessToken!);
+      await setupWebSocket();
     } catch (e) {
       showErrorSnackBar('Error initializing chat: $e');
     } finally {
@@ -191,9 +189,34 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
-  Future<void> setupWebSocket(String accessToken) async {
+  Future<void> refreshToken() async {
+    // Get access token
+    String? refreshToken = await getRefreshToken();
+    final refreshRes = await http.post(
+      Uri.parse('$apiUrl/auth/refresh-token'),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"refresh_token": refreshToken}),
+    );
+
+    if (refreshRes.statusCode == 200) {
+      final respond = jsonDecode(refreshRes.body);
+      final newAccessToken = respond['access_token'];
+      final newRefreshToken = respond['refresh_token'];
+
+      // Lưu token mới
+      if (newAccessToken != null) await saveAccessToken(newAccessToken);
+      if (newRefreshToken != null) await saveRefreshToken(newRefreshToken);
+    } else {
+      showErrorSnackBar('Failed to get refresh token: ${refreshRes.body}');
+      throw Exception('Failed to refresh token: ${refreshRes.body}');
+    }
+    await setupWebSocket();
+  }
+
+  Future<void> setupWebSocket() async {
     try {
-      String token = accessToken.replaceFirst("Bearer ", "");
+      String? accessToken = await getAccessToken();
+      String token = accessToken!.replaceFirst("Bearer ", "");
 
       await webSocketService.connect(
         token,
@@ -246,6 +269,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               'content': data['message'],
               'isMe': false,
               'sender': data['sender'],
+              'message_type': data['type'],
               'createdAt':
                   data['timestamp'] ?? DateTime.now().toIso8601String(),
             });
@@ -256,17 +280,21 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
       // receive call
       webSocketService.onReceiveCall((data) async {
-        final String fromSocketId = data['from'];
+        final String fromSocketId = data['sender'];
         final Map<String, dynamic> signal = data['signal'];
 
-        // Kiểm tra tránh nhận chính mình
         if (fromSocketId != currentUserId) {
-          // showInfoSnackBar('📞 Có người đang gọi cho bạn');
-
           showIncomingCallPopup(context, signal);
         }
       });
 
+      webSocketService.onCallUnreceived((data) async {
+        if (data['sender'] != currentUserId) {
+          Navigator.of(context, rootNavigator: true)
+              .maybePop(); // Đóng popup nếu đang mở
+          showInfoSnackBar('Cuộc gọi bị nhỡ');
+        }
+      });
       //answer a call
       // webSocketService.onCallAnswered((data) {
       //   print('✅ Call was answered');
@@ -329,7 +357,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         final messageText = controller.text.trim();
         print('📤 Sending message: $messageText');
 
-        webSocketService.sendMessage(conversationId, messageText);
+        webSocketService.sendMessage(conversationId, messageText, "text");
 
         setState(() {
           messages.add({
@@ -337,6 +365,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             'isMe': true,
             'createdAt': timestamp,
             'sender': currentUserId,
+            'type': "text"
           });
         });
         controller.clear();
@@ -360,7 +389,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
-  void showErrorSnackBar(String message, {bool showRetry = false}) {
+  void showErrorSnackBar(String message,
+      {bool showRetry = kFlutterMemoryAllocationsEnabled}) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -371,7 +401,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 label: 'Retry',
                 textColor: Colors.white,
                 onPressed: () {
-                  initializeChat();
+                  refreshToken();
                 },
               )
             : null,
@@ -547,6 +577,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
         final answer = await signaling.createAnswer();
         webSocketService.answerCall(conversationId, answer);
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => CallScreen(
+                    roomId: conversationId,
+                    signaling: signaling,
+                  )),
+        );
       } catch (e) {
         print("❌ Error while creating answer: $e");
         showInfoSnackBar("❌ Không thể tạo answer: $e");
@@ -599,21 +638,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   IconButton(
                     icon: Icon(Icons.call_end, color: Colors.red, size: 40),
                     onPressed: () {
+                      Navigator.pop(context);
                       webSocketService.declineCall(conversationId);
                       showInfoSnackBar("🚫 Bạn đã từ chối cuộc gọi");
-                      Navigator.pop(context);
                     },
                   ),
                   IconButton(
                     icon: Icon(Icons.call, color: Colors.green, size: 40),
                     onPressed: () async {
-                      await answerCall(signal);
                       Navigator.pop(context);
-                      await Future.delayed(Duration(milliseconds: 100));
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => CallScreen()),
-                      );
+                      answerCall(signal);
                     },
                   ),
                 ],
@@ -1021,6 +1055,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       );
 
       if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
         if (!mounted) return;
         setState(() {
           messages.add({
@@ -1032,6 +1067,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           });
           image = null;
         });
+        webSocketService.sendMessage(conversationId, data['image'], "image");
       } else {
         ScaffoldMessenger.of(
           context,
@@ -1056,6 +1092,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       );
 
       if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
         if (!mounted) return;
         setState(() {
           messages.add({
@@ -1068,6 +1105,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           });
           recordedFilePath = null;
         });
+        webSocketService.sendMessage(conversationId, data['audio'], "audio");
       } else {
         ScaffoldMessenger.of(
           context,

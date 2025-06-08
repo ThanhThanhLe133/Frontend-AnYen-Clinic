@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:anyen_clinic/utils/jwt_utils.dart';
@@ -10,8 +11,6 @@ class WebSocketService {
   bool isConnected = false;
   final String serverUrl = apiUrl;
   String? userId;
-
-  WebSocketService();
 
   // Connect manually with a token
   Future<void> connect(String token,
@@ -24,7 +23,7 @@ class WebSocketService {
     }
 
     // Get user ID from token
-    userId = await JwtUtils.getUserId();
+    userId = await jwtUtils.getUserId();
     if (userId == null) {
       onError?.call('Failed to get user ID from token');
       return;
@@ -34,7 +33,7 @@ class WebSocketService {
 
     socket = IO.io(serverUrl, <String, dynamic>{
       'transports': ['websocket'],
-      'autoConnect': false,
+      'autoConnect': true,
       'auth': {
         'token': token,
       },
@@ -71,6 +70,13 @@ class WebSocketService {
     socket!.emitWithAck('subscribe', conversationId, ack: ack);
   }
 
+  // Handle unreceive call
+  void callUnreceived(String room) {
+    socket?.emit('call-unreceived', {
+      'room': room,
+    });
+  }
+
   // Unsubscribe from a conversation/room
   void unsubscribeFromConversation(String conversationId) {
     if (!isConnected || socket == null) return;
@@ -78,13 +84,14 @@ class WebSocketService {
   }
 
   // Send a chat message
-  void sendMessage(String roomId, String message) {
+  void sendMessage(String roomId, String message, String type) {
     if (!isConnected || socket == null) return;
     final msg = {
       'room': roomId,
       'message': message,
       'timestamp': DateTime.now().toIso8601String(),
       'sender': userId,
+      'type': type
     };
     socket!.emit('chatMessage', msg);
   }
@@ -103,6 +110,17 @@ class WebSocketService {
   // Listen for user joined events
   void onUserJoined(Function(Map<String, dynamic>) callback) {
     socket?.on('userJoined', (data) {
+      if (data is Map<String, dynamic>) {
+        callback(data);
+      } else if (data is Map) {
+        callback(Map<String, dynamic>.from(data));
+      }
+    });
+  }
+
+  //handle declined call
+  void onCallUnreceived(Function(Map<String, dynamic>) callback) {
+    socket?.on('call-unreceived', (data) {
       if (data is Map<String, dynamic>) {
         callback(data);
       } else if (data is Map) {
@@ -133,6 +151,17 @@ class WebSocketService {
     });
   }
 
+  //handle declined call
+  void onCallDeclined(Function(Map<String, dynamic>) callback) {
+    socket?.on('call-declined', (data) {
+      if (data is Map<String, dynamic>) {
+        callback(data);
+      } else if (data is Map) {
+        callback(Map<String, dynamic>.from(data));
+      }
+    });
+  }
+
   // Handle call answers
   void onCallAnswered(Function(Map<String, dynamic>) callback) {
     socket?.on('call-answered', (data) {
@@ -144,9 +173,8 @@ class WebSocketService {
     });
   }
 
-  //handle declined call
-  void onCallDeclined(Function(Map<String, dynamic>) callback) {
-    socket?.on('call-declined', (data) {
+  void onEndCall(Function(Map<String, dynamic>) callback) {
+    socket?.on('call-ended', (data) {
       if (data is Map<String, dynamic>) {
         callback(data);
       } else if (data is Map) {
@@ -185,6 +213,12 @@ class WebSocketService {
     });
   }
 
+  void endCall(String room) {
+    socket?.emit('end-call', {
+      'room': room,
+    });
+  }
+
   void dispose() {
     disconnect();
   }
@@ -194,6 +228,27 @@ class WebSocketService {
     socket?.dispose();
     socket = null;
     isConnected = false;
+  }
+
+  void sendIceCandidate(String toUserId, RTCIceCandidate candidate) {
+    socket?.emit('ice-candidate', {
+      'room': toUserId,
+      'candidate': {
+        'candidate': candidate.candidate,
+        'sdpMid': candidate.sdpMid,
+        'sdpMLineIndex': candidate.sdpMLineIndex,
+      }
+    });
+  }
+
+  void onReceiveIceCandidate(Function(Map<String, dynamic>) callback) {
+    socket?.on('ice-candidate-res', (data) {
+      if (data is Map<String, dynamic>) {
+        callback(data);
+      } else if (data is Map) {
+        callback(Map<String, dynamic>.from(data));
+      }
+    });
   }
 }
 

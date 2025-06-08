@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:anyen_clinic/storage.dart';
 
-class JwtUtils {
+class jwtUtils {
   static Future<String?> getUserId() async {
     final token = await getAccessToken();
     if (token == null) return null;

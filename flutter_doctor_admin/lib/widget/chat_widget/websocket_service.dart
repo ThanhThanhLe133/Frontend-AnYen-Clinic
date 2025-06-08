@@ -12,8 +12,6 @@ class WebSocketService {
   final String serverUrl = apiUrl;
   String? userId;
 
-  WebSocketService();
-
   // Connect manually with a token
   Future<void> connect(String token,
       {Function()? onConnect,
@@ -35,7 +33,7 @@ class WebSocketService {
 
     socket = IO.io(serverUrl, <String, dynamic>{
       'transports': ['websocket'],
-      'autoConnect': false,
+      'autoConnect': true,
       'auth': {
         'token': token,
       },
@@ -66,9 +64,7 @@ class WebSocketService {
   // Subscribe to a conversation/room with acknowledgement
   void subscribeToConversation(String conversationId,
       {Function(dynamic)? ack}) {
-    print("trying here response");
     if (!isConnected || socket == null) return;
-    print("trying to subcribe $conversationId");
     socket!.emitWithAck('subscribe', conversationId, ack: ack);
   }
 
@@ -79,15 +75,23 @@ class WebSocketService {
   }
 
   // Send a chat message
-  void sendMessage(String roomId, String message) {
+  void sendMessage(String roomId, String message, String type) {
     if (!isConnected || socket == null) return;
     final msg = {
       'room': roomId,
       'message': message,
       'timestamp': DateTime.now().toIso8601String(),
       'sender': userId,
+      'type': type
     };
     socket!.emit('chatMessage', msg);
+  }
+
+  // Handle unreceive call
+  void callUnreceived(String room) {
+    socket?.emit('call-unreceived', {
+      'room': room,
+    });
   }
 
   // Listen for incoming chat messages
@@ -126,6 +130,17 @@ class WebSocketService {
   // Handle call requests
   void onReceiveCall(Function(Map<String, dynamic>) callback) {
     socket?.on('receive-call', (data) {
+      if (data is Map<String, dynamic>) {
+        callback(data);
+      } else if (data is Map) {
+        callback(Map<String, dynamic>.from(data));
+      }
+    });
+  }
+
+//handle declined call
+  void onCallUnreceived(Function(Map<String, dynamic>) callback) {
+    socket?.on('call-unreceived', (data) {
       if (data is Map<String, dynamic>) {
         callback(data);
       } else if (data is Map) {
@@ -182,10 +197,17 @@ class WebSocketService {
   }
 
   // Answer a call
-  void answerCall(String to, dynamic signal) {
+  void answerCall(String room, dynamic signal) {
     socket?.emit('answer-call', {
-      'to': to,
+      'room': room,
       'signal': signal,
+    });
+  }
+
+//decline call
+  void declineCall(String room) {
+    socket?.emit('call-declined', {
+      'room': room,
     });
   }
 
@@ -206,22 +228,10 @@ class WebSocketService {
     isConnected = false;
   }
 
-  // Gửi các tín hiệu liên quan đến WebRTC
-  void sendSignal(String type, String toUserId, dynamic payload) {
-    final data = {'to': toUserId, ...payload};
-    emit(type, data);
-  }
-
-  void sendOffer(String toUserId, String sdp) {
-    sendSignal('offer', toUserId, {'sdp': sdp});
-  }
-
-  void sendAnswer(String toUserId, Map<String, dynamic> answer) {
-    sendSignal('answer', toUserId, answer);
-  }
-
-  void sendIceCandidate(String toUserId, RTCIceCandidate candidate) {
-    sendSignal('ice-candidate', toUserId, {
+  void sendIceCandidate(String room, RTCIceCandidate candidate) {
+    print("sending st here");
+    socket?.emit('ice-candidate', {
+      'room': room,
       'candidate': {
         'candidate': candidate.candidate,
         'sdpMid': candidate.sdpMid,
@@ -230,9 +240,9 @@ class WebSocketService {
     });
   }
 
-// Đăng ký lắng nghe các loại tín hiệu
-  void onSignal(String type, Function(Map<String, dynamic>) callback) {
-    socket?.on(type, (data) {
+  void onReceiveIceCandidate(Function(Map<String, dynamic>) callback) {
+    print("receive st here");
+    socket?.on('ice-candidate-res', (data) {
       if (data is Map<String, dynamic>) {
         callback(data);
       } else if (data is Map) {
@@ -240,18 +250,6 @@ class WebSocketService {
       }
     });
   }
-
-  void onReceiveOffer(Function(Map<String, dynamic>) callback) =>
-      onSignal('offer', callback);
-  void onReceiveAnswer(Function(Map<String, dynamic>) callback) =>
-      onSignal('answer', callback);
-  void onReceiveIceCandidate(Function(Map<String, dynamic>) callback) =>
-      onSignal('ice-candidate', callback);
-
-// Gửi & lắng nghe event tùy chỉnh
-  void emit(String eventName, dynamic data) => socket?.emit(eventName, data);
-  void on(String eventName, Function(dynamic) callback) =>
-      socket?.on(eventName, callback);
 }
 
 // Provider for WebSocket service

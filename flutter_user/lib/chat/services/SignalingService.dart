@@ -19,22 +19,31 @@ class SignalingService {
     'optional': [],
   };
 
-  // Tạo kết nối và stream video/audio
+  // Khởi tạo PeerConnection, lấy stream local và add track
   Future<void> init() async {
     try {
       _peerConnection = await createPeerConnection(configuration);
+
+      // Lấy media stream (audio + video)
       _localStream = await navigator.mediaDevices.getUserMedia({
         'audio': true,
         'video': true,
       });
-
+      // Khi có track từ remote peer gửi đến, lưu lại remote stream
       _localStream!.getTracks().forEach((track) {
         _peerConnection!.addTrack(track, _localStream!);
       });
 
-      _peerConnection!.onTrack = (event) {
+      _peerConnection!.onTrack = (RTCTrackEvent event) {
         if (event.streams.isNotEmpty) {
           _remoteStream = event.streams[0];
+        }
+      };
+
+      // Lắng nghe ICE candidate để gửi qua signaling server
+      _peerConnection!.onIceCandidate = (RTCIceCandidate candidate) {
+        if (onSendIceCandidate != null) {
+          onSendIceCandidate!(candidate);
         }
       };
     } catch (e) {
@@ -42,7 +51,20 @@ class SignalingService {
     }
   }
 
-  // Tạo offer
+  void Function(RTCIceCandidate)? onSendIceCandidate;
+
+  Function(MediaStream)? onAddRemoteStream;
+
+  Future<void> addCandidate(Map<String, dynamic> candidateMap) async {
+    final candidate = RTCIceCandidate(
+      candidateMap['candidate'],
+      candidateMap['sdpMid'],
+      candidateMap['sdpMLineIndex'],
+    );
+    await _peerConnection!.addCandidate(candidate);
+  }
+
+  // Tạo offer SDP
   Future<Map<String, dynamic>> createOffer() async {
     try {
       if (_peerConnection == null) {
@@ -59,33 +81,68 @@ class SignalingService {
     }
   }
 
-  // Tạo answer
+  // Tạo answer SDP (đáp lại offer)
   Future<Map<String, dynamic>> createAnswer() async {
-    RTCSessionDescription answer =
-        await _peerConnection!.createAnswer(constraints);
-    await _peerConnection!.setLocalDescription(answer);
-    return answer.toMap();
+    try {
+      if (_peerConnection == null) {
+        throw Exception("PeerConnection is null");
+      }
+
+      final answer = await _peerConnection!.createAnswer(constraints);
+      await _peerConnection!.setLocalDescription(answer);
+      return answer.toMap();
+    } catch (e, stack) {
+      print('❌ Lỗi khi tạo answer: $e');
+      print(stack);
+      rethrow;
+    }
   }
 
-  // Nhận tín hiệu từ người khác (offer hoặc answer)
-  Future<void> setRemoteDescription(Map<String, dynamic> signal) async {
-    RTCSessionDescription desc =
-        RTCSessionDescription(signal['sdp'], signal['type']);
-    await _peerConnection!.setRemoteDescription(desc);
+  // Đặt remote description (offer hoặc answer nhận được từ đối phương)
+  Future<void> setRemoteDescription(Map<String, dynamic> session) async {
+    try {
+      if (_peerConnection == null) {
+        throw Exception("PeerConnection is null");
+      }
+
+      final desc = RTCSessionDescription(session['sdp'], session['type']);
+      await _peerConnection!.setRemoteDescription(desc);
+    } catch (e) {
+      print('❌ Lỗi khi set remote description: $e');
+      rethrow;
+    }
   }
 
-  // ICE Candidate (nếu dùng)
-  void addCandidate(RTCIceCandidate candidate) {
-    _peerConnection?.addCandidate(candidate);
+  // Lấy stream video/audio local để hiển thị trên UI (video preview)
+  MediaStream? get localStream => _localStream;
+
+  // Lấy stream video/audio remote để hiển thị trên UI (video đối phương)
+  MediaStream? get remoteStream => _remoteStream;
+
+  void toggleMicrophone(bool enabled) {
+    if (_localStream == null) return;
+
+    for (var track in _localStream!.getAudioTracks()) {
+      track.enabled = enabled;
+    }
   }
 
-  MediaStream? getLocalStream() => _localStream;
-  MediaStream? getRemoteStream() => _remoteStream;
+  // Bật/tắt camera (video)
+  void toggleCamera(bool enabled) {
+    if (_localStream == null) return;
 
-  void dispose() {
-    _localStream?.dispose();
-    _remoteStream?.dispose();
-    _peerConnection?.close();
+    for (var track in _localStream!.getVideoTracks()) {
+      track.enabled = enabled;
+    }
+  }
+
+  // Đóng kết nối và giải phóng tài nguyên
+  Future<void> close() async {
+    await _peerConnection?.close();
+    await _localStream?.dispose();
+    await _remoteStream?.dispose();
     _peerConnection = null;
+    _localStream = null;
+    _remoteStream = null;
   }
 }

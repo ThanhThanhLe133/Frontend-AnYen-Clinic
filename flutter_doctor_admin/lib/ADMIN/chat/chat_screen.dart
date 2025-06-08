@@ -274,7 +274,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         final messageText = controller.text.trim();
         print('📤 Sending message: $messageText');
 
-        webSocketService.sendMessage(currentRoom!, messageText);
+        webSocketService.sendMessage(currentRoom!, messageText, "text");
 
         setState(() {
           messages.add({
@@ -387,7 +387,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       }
     });
 
-    showRecordingDialog(context);
+    showRecordingDialog();
   }
 
   Future<void> stopRecording() async {
@@ -471,7 +471,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     });
   }
 
-  void showRecordingDialog(BuildContext context) {
+  void showRecordingDialog() {
     showDialog(
       context: context,
       barrierDismissible: false,

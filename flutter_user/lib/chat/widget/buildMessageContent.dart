@@ -79,20 +79,11 @@ class MessageContent extends StatelessWidget {
               ),
       );
     } else if (audioPath != null && audioPath!.isNotEmpty) {
-      final isNetworkAudio =
-          audioPath!.startsWith('http') || audioPath!.startsWith('https');
+      final isNetworkAudio = audioPath!.startsWith('http');
       return FutureBuilder<Duration>(
-        future: !isNetworkAudio
-            ? Future.value(audioDurations[audioPath])
-            : getAudioDuration(audioPath!, isNetworkAudio),
+        future: getAudioDuration(audioPath!, isNetworkAudio, audioDurations),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done &&
-              snapshot.hasData &&
-              snapshot.data != null) {
-            audioDurations[audioPath!] = snapshot.data!;
-          }
-
-          final audioDuration = audioDurations[audioPath!] ?? Duration.zero;
+          final duration = snapshot.data ?? Duration.zero;
           final currentPosition = currentPositions[audioPath!] ?? Duration.zero;
 
           return Row(
@@ -107,10 +98,10 @@ class MessageContent extends StatelessWidget {
                   color: Colors.white,
                 ),
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Text(
                 formatDuration(currentPosition),
-                style: TextStyle(fontSize: 14, color: Colors.white),
+                style: const TextStyle(fontSize: 14, color: Colors.white),
               ),
             ],
           );
@@ -122,21 +113,25 @@ class MessageContent extends StatelessWidget {
   }
 }
 
-Future<Duration> getAudioDuration(String path, bool isNetwork) async {
-  final player = AudioPlayer();
+Future<Duration> getAudioDuration(
+    String path, bool isNetwork, Map<String, Duration> cache) async {
+  if (cache.containsKey(path)) return cache[path]!;
 
+  final player = AudioPlayer();
   try {
     if (isNetwork) {
-      await player.setSourceUrl(path);
+      await player.setSource(UrlSource(path));
     } else {
-      await player.setSourceDeviceFile(path);
+      await player.setSource(DeviceFileSource(path));
     }
 
-    final duration = await player.onDurationChanged.first;
+    final duration = await player.getDuration() ?? Duration.zero;
+    cache[path] = duration;
 
     await player.dispose();
     return duration;
   } catch (e) {
+    debugPrint('❌ Lỗi khi lấy thời lượng audio: $e');
     await player.dispose();
     return Duration.zero;
   }

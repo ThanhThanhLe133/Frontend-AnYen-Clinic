@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/chat/CallingScreen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/chat/CallScreen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/chat/signalingService.dart';
 import 'package:ayclinic_doctor_admin/widget/chat_widget/models/message.dart';
@@ -22,6 +23,7 @@ import 'package:ayclinic_doctor_admin/widget/CustomBackButton.dart';
 import 'package:ayclinic_doctor_admin/widget/buildButton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:record/record.dart';
@@ -41,6 +43,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   //image
   final List<XFile> sentImages = [];
   XFile? image;
+  Timer? timeoutTimer;
 
   //record
   final audioRecorder = AudioRecorder();
@@ -60,11 +63,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   bool isConnecting = false;
   bool isLoadingMessages = false;
   final ScrollController scrollController = ScrollController();
-  WebSocketService webSocketService = WebSocketService();
+  late WebSocketService webSocketService;
   late ChatService chatService;
   String? currentUserId;
   String conversationId = "";
   final signaling = SignalingService();
+
+  late BuildContext rootContext;
 
   //xử lý nút tham gia (nếu chưa có conversationId)
   bool isJoined = false;
@@ -156,9 +161,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     });
 
     try {
-      // Get access token
-      String? accessToken = await getAccessToken();
-
       // Get user ID
       currentUserId = await jwtUtils.getUserId();
       if (currentUserId == null) {
@@ -166,11 +168,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         return;
       }
 
-      // Load messages from API
       await loadMessages();
 
-      // Setup WebSocket connection
-      await setupWebSocket(accessToken!);
+      await setupWebSocket();
     } catch (e) {
       showErrorSnackBar('Error initializing chat: $e');
     } finally {
@@ -180,18 +180,43 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
-  Future<void> setupWebSocket(String accessToken) async {
+  Future<void> refreshToken() async {
+    // Get access token
+    String? refreshToken = await getRefreshToken();
+    final refreshRes = await http.post(
+      Uri.parse('$apiUrl/auth/refresh-token'),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"refresh_token": refreshToken}),
+    );
+
+    if (refreshRes.statusCode == 200) {
+      final respond = jsonDecode(refreshRes.body);
+      final newAccessToken = respond['access_token'];
+      final newRefreshToken = respond['refresh_token'];
+
+      // Lưu token mới
+      if (newAccessToken != null) await saveAccessToken(newAccessToken);
+      if (newRefreshToken != null) await saveRefreshToken(newRefreshToken);
+    } else {
+      showErrorSnackBar('Failed to get refresh token: ${refreshRes.body}');
+      throw Exception('Failed to refresh token: ${refreshRes.body}');
+    }
+    setupWebSocket();
+  }
+
+  Future<void> setupWebSocket() async {
     try {
-      String token = accessToken.replaceFirst("Bearer ", "");
+      String? accessToken = await getAccessToken();
+      String token = accessToken!.replaceFirst("Bearer ", "");
 
       await webSocketService.connect(
         token,
         onConnect: () {
-          print('✅ WebSocket connected successfully');
-
           setState(() {
             isOnline = true;
           });
+
+          print('✅ WebSocket connected successfully');
           webSocketService.subscribeToConversation(
             conversationId,
             ack: (response) {
@@ -203,6 +228,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               }
             },
           );
+
           showSuccessSnackBar('Connected to chat server');
         },
         onError: (error) {
@@ -230,15 +256,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
       // Listen for incoming messages
       webSocketService.onChatMessage((data) {
-        print('📨 Received chat message: $data');
         setState(() {
           if (data['sender'] != currentUserId) {
+            print('📨 Received chat message: $data');
             messages.add({
               'content': data['message'],
               'isMe': false,
+              'sender': data['sender'],
+              'message_type': data['type'],
               'createdAt':
                   data['timestamp'] ?? DateTime.now().toIso8601String(),
-              'sender': data['sender'],
             });
           }
         });
@@ -268,18 +295,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       //     showInfoSnackBar('Someone is calling you');
       //   }
       // });
-
       // answer a call
       webSocketService.onCallAnswered((data) {
-        print('✅ Call was answered');
-        if (data['sender'] != currentUserId) {
-          showInfoSnackBar('Cuộc gọi đã được kết nối thành công!');
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => CallScreen(roomId: conversationId)),
-          );
-        }
+        handleCallAnswered(data);
       });
 
       // answer a call
@@ -299,6 +317,31 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     } catch (e) {
       print('❌ Error setting up WebSocket: $e');
       rethrow;
+    }
+  }
+
+  void handleCallAnswered(Map<String, dynamic> data) {
+    print('✅ Call was answered');
+
+    if (data['sender'] != currentUserId) {
+      if (timeoutTimer?.isActive == true) {
+        timeoutTimer?.cancel();
+        print('⏹️ Timer đã được huỷ do có người nhận cuộc gọi');
+      }
+
+      showInfoSnackBar('Cuộc gọi đã được kết nối thành công!');
+
+      Navigator.pop(rootContext);
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CallScreen(
+            roomId: conversationId,
+            signaling: signaling,
+          ),
+        ),
+      );
     }
   }
 
@@ -328,7 +371,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         final messageText = controller.text.trim();
         print('📤 Sending message: $messageText');
 
-        webSocketService.sendMessage(conversationId, messageText);
+        webSocketService.sendMessage(conversationId, messageText, "text");
 
         setState(() {
           messages.add({
@@ -336,6 +379,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             'isMe': true,
             'createdAt': timestamp,
             'sender': currentUserId,
+            'type': "text"
           });
         });
         controller.clear();
@@ -345,7 +389,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
-  Future<void> createCall() async {
+  Future<void> createCall(BuildContext context) async {
     final response = await makeRequest(
       url:
           '$apiUrl/chat/conversation/get-conversation/?conversation_id=$conversationId',
@@ -369,12 +413,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         showInfoSnackBar('⏳ Chưa có ai tham gia cuộc trò chuyện này');
         return;
       }
-
+      showCallingPopup(context);
       await signaling.init();
 
       final offerSignal = await signaling.createOffer();
 
       webSocketService.callUser(conversationId, offerSignal);
+
+      timeoutTimer = Timer(Duration(seconds: 10), () {
+        print('❌ Không ai trả lời trong 10s, gọi callUnreceived');
+        webSocketService.callUnreceived(conversationId);
+        Navigator.of(context).pop();
+        showInfoSnackBar("Không có ai trả lời cuộc gọi!");
+      });
     } else {
       print("❌ Lỗi khi lấy thông tin cuộc trò chuyện: ${response.statusCode}");
       showInfoSnackBar('❌ Không thể lấy thông tin cuộc trò chuyện');
@@ -402,7 +453,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 label: 'Retry',
                 textColor: Colors.white,
                 onPressed: () {
-                  initializeChat();
+                  refreshToken();
                 },
               )
             : null,
@@ -446,29 +497,38 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Future<void> startRecording(BuildContext context) async {
-    final String uniqueId = Uuid().v4(); // Tạo ID ngẫu nhiên
-    final String path =
-        "/data/user/0/com.example.anyen_clinic/cache/audio_$uniqueId.mp3";
+    try {
+      final String uniqueId = Uuid().v4();
+      final String path =
+          "/data/user/0/com.example.anyen_clinic/cache/audio_$uniqueId.mp3";
 
-    bool hasMicPermission = await audioRecorder.hasPermission();
+      final bool hasMicPermission = await audioRecorder.hasPermission();
 
-    if (!hasMicPermission) {
-      debugPrint("❌ Không có quyền ghi âm, không thể bắt đầu ghi");
-      return;
-    }
-    await audioRecorder.start(const RecordConfig(), path: path);
-    setState(() {
-      isRecording = true;
-      recordedFilePath = path;
-      recordDuration = Duration.zero;
-    });
-    recordTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (!hasMicPermission) {
+        debugPrint("❌ Không có quyền ghi âm, không thể bắt đầu ghi");
+        return;
+      }
+
+      await audioRecorder.start(const RecordConfig(), path: path);
+
+      if (!mounted) return;
+
       setState(() {
-        recordDuration = Duration(seconds: recordDuration.inSeconds + 1);
+        isRecording = true;
+        recordedFilePath = path;
+        recordDuration = Duration.zero;
       });
-    });
 
-    showRecordingDialog(context);
+      recordTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+        if (!mounted) return;
+        setState(() {
+          recordDuration = Duration(seconds: recordDuration.inSeconds + 1);
+        });
+      });
+      showRecordingDialog(context);
+    } catch (e) {
+      debugPrint("❌ Lỗi khi bắt đầu ghi âm: $e");
+    }
   }
 
   Future<void> stopRecording() async {
@@ -555,7 +615,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void showRecordingDialog(BuildContext context) {
     showDialog(
       context: context,
-      barrierDismissible: false, // Ngăn người dùng thoát bằng cách bấm ngoài
+      barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
           title: Text("Đang ghi âm"),
@@ -570,7 +630,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           actions: [
             TextButton(
               onPressed: () async {
-                await stopRecording();
+                stopRecording();
                 Navigator.of(context).pop(); // Đóng hộp thoại
               },
               child: Text("Dừng ghi âm"),
@@ -600,6 +660,79 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       });
       initializeChat();
     }
+  }
+
+  void showCallingPopup(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        rootContext = context;
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            String callingText = "Đang gọi";
+            int dotCount = 0;
+            Timer? timer;
+
+            // Khởi tạo timer chỉ 1 lần khi dialog hiển thị
+            void startTimer() {
+              timer = Timer.periodic(Duration(milliseconds: 500), (timer) {
+                setState(() {
+                  dotCount = (dotCount + 1) % 4;
+                  callingText = "Đang gọi${"." * dotCount}";
+                });
+              });
+            }
+
+            // Đảm bảo timer được khởi tạo một lần duy nhất
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (timer == null) {
+                startTimer();
+              }
+            });
+
+            // Hủy timer khi dialog bị đóng
+            Future.delayed(Duration.zero, () {
+              Navigator.of(context).popUntil((route) {
+                if (!route.isCurrent) timer?.cancel();
+                return true;
+              });
+            });
+
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              contentPadding: EdgeInsets.zero,
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: CircleAvatar(
+                      radius: 40,
+                      backgroundImage: NetworkImage(
+                        "https://i.pravatar.cc/150?img=3",
+                      ),
+                    ),
+                  ),
+                  Text(
+                    callingText,
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    "Nguyễn Văn ABC",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 20),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -691,7 +824,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               icon: Icon(Icons.call, size: 18, color: Colors.blue),
               onPressed: () async {
                 print("📞 Calling...");
-                await createCall();
+                await createCall(context);
               },
             ),
           if (isJoined)
@@ -1025,6 +1158,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       );
 
       if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
         if (!mounted) return;
         setState(() {
           messages.add({
@@ -1036,6 +1170,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           });
           image = null;
         });
+        webSocketService.sendMessage(conversationId, data['image'], "image");
       } else {
         ScaffoldMessenger.of(
           context,
@@ -1060,6 +1195,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       );
 
       if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
         if (!mounted) return;
         setState(() {
           messages.add({
@@ -1072,6 +1208,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           });
           recordedFilePath = null;
         });
+        webSocketService.sendMessage(conversationId, data['audio'], "audio");
       } else {
         ScaffoldMessenger.of(
           context,

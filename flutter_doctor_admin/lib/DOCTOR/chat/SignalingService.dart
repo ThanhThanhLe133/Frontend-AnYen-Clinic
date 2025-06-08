@@ -19,38 +19,39 @@ class SignalingService {
     'optional': [],
   };
 
-  // Khởi tạo PeerConnection, lấy stream local và add track
+  void Function(RTCIceCandidate)? onSendIceCandidate;
+  void Function(RTCSessionDescription)? onSendOffer;
+  void Function(RTCSessionDescription)? onSendAnswer;
+  void Function(MediaStream)? onAddRemoteStream;
+
+  // Khởi tạo kết nối và stream
   Future<void> init() async {
     try {
       _peerConnection = await createPeerConnection(configuration);
 
-      // Lấy media stream (audio + video)
+      // Lấy local stream (audio + video)
       _localStream = await navigator.mediaDevices.getUserMedia({
         'audio': true,
         'video': true,
       });
 
-      _localStream!.getTracks().forEach((track) {
+      // Add local tracks vào peer connection
+      for (var track in _localStream!.getTracks()) {
         _peerConnection!.addTrack(track, _localStream!);
-      });
+      }
 
+      // Khi nhận được track từ remote peer
       _peerConnection!.onTrack = (RTCTrackEvent event) {
         if (event.streams.isNotEmpty) {
           _remoteStream = event.streams[0];
+          onAddRemoteStream?.call(_remoteStream!);
         }
       };
 
-      // Lắng nghe ICE candidate để gửi qua signaling server
+      // Lắng nghe ICE candidate
       _peerConnection!.onIceCandidate = (RTCIceCandidate candidate) {
         if (onSendIceCandidate != null) {
-          final candidateData = {
-            'candidate': {
-              'candidate': candidate.candidate,
-              'sdpMid': candidate.sdpMid,
-              'sdpMLineIndex': candidate.sdpMLineIndex,
-            },
-          };
-          onSendIceCandidate!(candidateData);
+          onSendIceCandidate!(candidate);
         }
       };
     } catch (e) {
@@ -58,7 +59,17 @@ class SignalingService {
     }
   }
 
-  void Function(Map<String, dynamic>)? onSendIceCandidate;
+  Future<void> handleRemoteOffer(RTCSessionDescription offer) async {
+    await _peerConnection!.setRemoteDescription(offer);
+    final answer = await _peerConnection!.createAnswer(constraints);
+    await _peerConnection!.setLocalDescription(answer);
+    onSendAnswer?.call(answer);
+  }
+
+  Future<void> handleRemoteAnswer(RTCSessionDescription answer) async {
+    await _peerConnection!.setRemoteDescription(answer);
+  }
+
   Future<void> addCandidate(Map<String, dynamic> candidateMap) async {
     final candidate = RTCIceCandidate(
       candidateMap['candidate'],
@@ -68,79 +79,35 @@ class SignalingService {
     await _peerConnection!.addCandidate(candidate);
   }
 
-  // Tạo offer SDP
   Future<Map<String, dynamic>> createOffer() async {
-    try {
-      if (_peerConnection == null) {
-        throw Exception("PeerConnection is null");
-      }
-
-      final offer = await _peerConnection!.createOffer(constraints);
-      await _peerConnection!.setLocalDescription(offer);
-      return offer.toMap();
-    } catch (e, stack) {
-      print('❌ Lỗi khi tạo offer: $e');
-      print(stack);
-      rethrow;
-    }
+    final offer = await _peerConnection!.createOffer(constraints);
+    await _peerConnection!.setLocalDescription(offer);
+    onSendOffer?.call(offer);
+    return offer.toMap();
   }
 
-  // Tạo answer SDP (đáp lại offer)
   Future<Map<String, dynamic>> createAnswer() async {
-    try {
-      if (_peerConnection == null) {
-        throw Exception("PeerConnection is null");
-      }
-
-      final answer = await _peerConnection!.createAnswer(constraints);
-      await _peerConnection!.setLocalDescription(answer);
-      return answer.toMap();
-    } catch (e, stack) {
-      print('❌ Lỗi khi tạo answer: $e');
-      print(stack);
-      rethrow;
-    }
+    final answer = await _peerConnection!.createAnswer(constraints);
+    await _peerConnection!.setLocalDescription(answer);
+    return answer.toMap();
   }
 
-  // Đặt remote description (offer hoặc answer nhận được từ đối phương)
   Future<void> setRemoteDescription(Map<String, dynamic> session) async {
-    try {
-      if (_peerConnection == null) {
-        throw Exception("PeerConnection is null");
-      }
-
-      final desc = RTCSessionDescription(session['sdp'], session['type']);
-      await _peerConnection!.setRemoteDescription(desc);
-    } catch (e) {
-      print('❌ Lỗi khi set remote description: $e');
-      rethrow;
-    }
+    final desc = RTCSessionDescription(session['sdp'], session['type']);
+    await _peerConnection!.setRemoteDescription(desc);
   }
 
-  // Lấy stream video/audio local để hiển thị trên UI (video preview)
   MediaStream? get localStream => _localStream;
-
-  // Lấy stream video/audio remote để hiển thị trên UI (video đối phương)
   MediaStream? get remoteStream => _remoteStream;
 
   void toggleMicrophone(bool enabled) {
-    if (_localStream == null) return;
-
-    for (var track in _localStream!.getAudioTracks()) {
-      track.enabled = enabled;
-    }
+    _localStream?.getAudioTracks().forEach((track) => track.enabled = enabled);
   }
 
-  // Bật/tắt camera (video)
   void toggleCamera(bool enabled) {
-    if (_localStream == null) return;
-
-    for (var track in _localStream!.getVideoTracks()) {
-      track.enabled = enabled;
-    }
+    _localStream?.getVideoTracks().forEach((track) => track.enabled = enabled);
   }
 
-  // Đóng kết nối và giải phóng tài nguyên
   Future<void> close() async {
     await _peerConnection?.close();
     await _localStream?.dispose();
