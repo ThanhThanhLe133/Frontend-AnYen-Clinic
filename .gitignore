@@ -1,4 +1,10 @@
+# Thư mục cấu hình IDE
 .vscode/
 .idea/
 *.sublime-workspace
 *.sublime-project
+
+# File môi trường riêng không muốn Git theo dõi
+flutter_doctor_admin/android/app/build.gradle
+flutter_doctor_admin/android/settings.gradle
+flutter_doctor_admin/macos/Flutter/GeneratedPluginRegistrant.swift
