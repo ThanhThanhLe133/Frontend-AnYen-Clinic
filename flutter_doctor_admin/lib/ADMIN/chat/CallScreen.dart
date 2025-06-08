@@ -2,8 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 class CallScreen extends StatefulWidget {
-  const CallScreen({super.key});
-
+  const CallScreen({super.key, required this.roomId});
+  final String roomId;
   @override
   _CallScreenState createState() => _CallScreenState();
 }

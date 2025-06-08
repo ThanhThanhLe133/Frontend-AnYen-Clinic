@@ -40,6 +40,13 @@ Future<http.Response> makeRequest({
       var request = http.MultipartRequest('POST', uri);
       var pic = await http.MultipartFile.fromPath(fileFieldName, file.path);
       request.files.add(pic);
+
+      if (body != null) {
+        body!.forEach((key, value) {
+          request.fields[key] = value.toString();
+        });
+      }
+
       request.headers.addAll(requestHeaders);
       final streamedResponse = await request.send();
       return await http.Response.fromStream(streamedResponse);

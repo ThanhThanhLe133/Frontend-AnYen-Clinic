@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:anyen_clinic/utils/jwt_utils.dart';
@@ -28,6 +30,8 @@ class WebSocketService {
       return;
     }
 
+    final completer = Completer<void>();
+
     socket = IO.io(serverUrl, <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': false,
@@ -39,6 +43,7 @@ class WebSocketService {
     socket!.onConnect((_) {
       isConnected = true;
       onConnect?.call();
+      completer.complete();
     });
 
     socket!.onDisconnect((_) {
@@ -60,7 +65,9 @@ class WebSocketService {
   // Subscribe to a conversation/room with acknowledgement
   void subscribeToConversation(String conversationId,
       {Function(dynamic)? ack}) {
+    print("trying here response");
     if (!isConnected || socket == null) return;
+    print("trying to subcribe $conversationId");
     socket!.emitWithAck('subscribe', conversationId, ack: ack);
   }
 
@@ -137,6 +144,17 @@ class WebSocketService {
     });
   }
 
+  //handle declined call
+  void onCallDeclined(Function(Map<String, dynamic>) callback) {
+    socket?.on('call-declined', (data) {
+      if (data is Map<String, dynamic>) {
+        callback(data);
+      } else if (data is Map) {
+        callback(Map<String, dynamic>.from(data));
+      }
+    });
+  }
+
   // Listen for general WebSocket errors
   void onError(Function(dynamic) callback) {
     socket?.on('error', (error) {
@@ -145,18 +163,25 @@ class WebSocketService {
   }
 
   // Initiate a call
-  void callUser(String to, dynamic signal) {
+  void callUser(String room, dynamic signal) {
     socket?.emit('call-user', {
-      'to': to,
+      'room': room,
       'signal': signal,
     });
   }
 
   // Answer a call
-  void answerCall(String to, dynamic signal) {
+  void answerCall(String room, dynamic signal) {
     socket?.emit('answer-call', {
-      'to': to,
+      'room': room,
       'signal': signal,
+    });
+  }
+
+//decline call
+  void declineCall(String room) {
+    socket?.emit('call-declined', {
+      'room': room,
     });
   }
 

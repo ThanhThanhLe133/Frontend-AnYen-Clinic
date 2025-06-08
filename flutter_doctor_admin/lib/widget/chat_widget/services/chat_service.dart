@@ -22,8 +22,16 @@ class ChatService {
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
         if (jsonResponse['success'] == true) {
-          final List<dynamic> messagesJson = jsonResponse['data']['messages'];
-          return messagesJson.map((json) => Message.fromJson(json)).toList();
+          final data = jsonResponse['data'];
+
+          if (data is List && data.isEmpty) {
+            return [];
+          } else if (data is Map && data.containsKey('messages')) {
+            final List<dynamic> messagesJson = data['messages'];
+            return messagesJson.map((json) => Message.fromJson(json)).toList();
+          } else {
+            throw Exception('Unexpected data format');
+          }
         } else {
           throw Exception(
               'Failed to load messages: ${jsonResponse['message']}');

@@ -52,7 +52,10 @@ void showIncomingCallPopup(BuildContext context) {
                     Navigator.pop(context);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => CallScreen()),
+                      MaterialPageRoute(
+                          builder: (context) => CallScreen(
+                                roomId: "",
+                              )),
                     );
                   },
                 ),

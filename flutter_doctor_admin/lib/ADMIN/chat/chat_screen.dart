@@ -752,7 +752,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               audioDurations: audioDurations,
               currentPositions: currentPositions,
               togglePlayPause: togglePlayPause,
-              getAudioDuration: getAudioDuration,
             ),
           ),
         ),
