@@ -81,7 +81,7 @@ class _AddDiaryScreenState extends State<AddDiaryScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Đã tạo nhật ký!')),
     );
-    Navigator.pop(context);
+    Navigator.pop(context, newDiary);
   }
 
   void _saveDiary() {

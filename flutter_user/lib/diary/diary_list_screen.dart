@@ -150,9 +150,18 @@ class _DiaryListScreenState extends State<DiaryListScreen> {
                       String diaryText = diary['diary_text'] ?? "";
                       String diaryMood = diary['mood'] ?? "happy";
                       return GestureDetector(
-                        onTap: () {
-                          // Điều hướng đến trang chi tiết nhật ký
-                          _navigateToPage(DiaryDetailScreen(diary: diary));
+                        onTap: () async {
+                          final shouldRefresh = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  DiaryDetailScreen(diary: diary),
+                            ),
+                          );
+
+                          if (shouldRefresh == true) {
+                            fetchDiary(); // Reload danh sách nếu có thay đổi
+                          }
                         },
                         child: Card(
                           color: Color.fromRGBO(236, 248, 255, 1),

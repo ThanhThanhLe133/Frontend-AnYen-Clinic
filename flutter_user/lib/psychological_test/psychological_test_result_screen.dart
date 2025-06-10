@@ -144,6 +144,35 @@ class _PsychologicalTestResultScreenState
     bool canGoForward = currentQuestionIndex <=
         questions.length - 1; // Có thể đi tiếp nếu đã chọn
 
+    if (questions.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(
+          elevation: 0, // Bỏ shadow
+          leading: IconButton(
+            // Icon back nhỏ hơn một chút và màu khác
+            icon: Icon(Icons.chevron_left,
+                color: Colors.black54), // Màu icon giống ảnh hơn
+            iconSize: screenWidth * 0.08, // Giữ kích thước tương đối
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+          title: Text(
+            widget.title, // Sử dụng title được truyền vào hoặc mặc định
+            style: TextStyle(
+              color: Color(0xFF007AFF), // Màu xanh dương giống ảnh
+              fontSize: screenWidth * 0.055, // Cỡ chữ title điều chỉnh
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          centerTitle: true,
+          backgroundColor: Colors.white, // Nền AppBar trắng
+          // Bỏ bottom border
+        ),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.white, // Nền trắng như ảnh
       appBar: AppBar(

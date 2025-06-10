@@ -90,7 +90,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Đã cập nhật nhật ký!')),
     );
-    Navigator.pop(context);
+    Navigator.pop(context, true);
   }
 
   // Save changes and show confirmation
@@ -121,7 +121,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
 
     if (response.statusCode == 200) {
       Navigator.pop(context); // đóng dialog
-      Navigator.pop(context); // quay lại màn hình trước
+      Navigator.pop(context, true); // quay lại màn hình trước
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Đã xóa nhật ký!')),
       );
