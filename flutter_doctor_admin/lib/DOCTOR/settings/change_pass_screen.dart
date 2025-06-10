@@ -66,6 +66,14 @@ class _ChangePassScreenState extends State<ChangePassScreen> {
     }
   }
 
+  bool isObscure = true;
+
+  void toggleObscure() {
+    setState(() {
+      isObscure = !isObscure;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -109,25 +117,25 @@ class _ChangePassScreenState extends State<ChangePassScreen> {
             children: [
               SizedBox(height: screenHeight * 0.1),
               PasswordField(
-                screenWidth: screenWidth,
-                screenHeight: screenHeight,
-                hintText: "Nhập mật khẩu cũ",
-                controller: oldPassController,
-              ),
+                  screenWidth: screenWidth,
+                  screenHeight: screenHeight,
+                  hintText: "Nhập mật khẩu cũ",
+                  controller: oldPassController,
+                  isObscure: isObscure),
               SizedBox(height: screenHeight * 0.05),
               PasswordField(
-                screenWidth: screenWidth,
-                screenHeight: screenHeight,
-                hintText: "Nhập mật khẩu",
-                controller: newPassController,
-              ),
+                  screenWidth: screenWidth,
+                  screenHeight: screenHeight,
+                  hintText: "Nhập mật khẩu",
+                  controller: newPassController,
+                  isObscure: isObscure),
               SizedBox(height: screenHeight * 0.05),
               PasswordField(
-                screenWidth: screenWidth,
-                screenHeight: screenHeight,
-                hintText: "Xác thực mật khẩu",
-                controller: retypePassController,
-              ),
+                  screenWidth: screenWidth,
+                  screenHeight: screenHeight,
+                  hintText: "Xác thực mật khẩu",
+                  controller: retypePassController,
+                  isObscure: isObscure),
               SizedBox(height: screenHeight * 0.2),
               normalButton(
                 screenWidth: screenWidth,

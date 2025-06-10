@@ -250,9 +250,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => NewPostScreen(
-                              title: post['title'],
-                              content: post['content'],
-                            ),
+                                title: post['title'],
+                                content: post['content'],
+                                postId: post['id']),
                           ),
                         );
                       },

@@ -69,8 +69,6 @@ class _CallScreenState extends ConsumerState<CallScreen> {
 
   Future<void> setupWebSocket() async {
     try {
-      await signaling.init();
-
       if (signaling.localStream != null) {
         localRenderer.srcObject = signaling.localStream;
       }

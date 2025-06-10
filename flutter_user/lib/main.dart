@@ -1,3 +1,4 @@
+import 'package:anyen_clinic/dashboard/dashboard.dart';
 import 'package:anyen_clinic/login/login_screen.dart';
 import 'package:anyen_clinic/notification_service.dart';
 import 'package:anyen_clinic/posts/list_post_screen.dart';
@@ -19,12 +20,12 @@ void main() async {
   final bool isLoggedIn = await getLogin();
 
   runApp(ProviderScope(child: MainApp(isLoggedIn: isLoggedIn)));
+  print('loginnnnn không? $isLoggedIn');
 }
 
 class MainApp extends StatelessWidget {
   const MainApp({super.key, required this.isLoggedIn});
   final bool isLoggedIn;
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -38,7 +39,7 @@ class MainApp extends StatelessWidget {
           bodySmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
         ),
       ),
-      home: LoginScreen(),
+      home: isLoggedIn ? LoginScreen() : Dashboard(),
     );
   }
 }

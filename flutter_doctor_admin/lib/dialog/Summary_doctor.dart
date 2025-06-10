@@ -39,7 +39,7 @@ class _SummaryDialogState extends State<SummaryDialog> {
     } else {
       final data = jsonDecode(response.body);
       setState(() {
-        summary = data['data'];
+        summary = Map<String, dynamic>.from(data['appointment']);
       });
     }
   }
@@ -74,7 +74,7 @@ class _SummaryDialogState extends State<SummaryDialog> {
             SizedBox(height: screenWidth * 0.05),
             Center(
               child: Text(
-                summary['description'],
+                'Tổng kết ${summary['description'] ?? ""}',
                 style: TextStyle(
                   fontSize: screenWidth * 0.04,
                   fontWeight: FontWeight.bold,
@@ -84,7 +84,7 @@ class _SummaryDialogState extends State<SummaryDialog> {
             SizedBox(height: screenWidth * 0.05),
             Center(
               child: Text(
-                summary['note_for_admin'],
+                'Ghi chú cho admin ${summary['note_for_admin'] ?? ""}',
                 style: TextStyle(
                   fontSize: screenWidth * 0.04,
                   fontWeight: FontWeight.bold,

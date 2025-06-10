@@ -18,12 +18,30 @@ Future<void> saveLogin() async {
   await storage.write(key: 'isLoggedIn', value: 'true');
 }
 
+Future<void> saveDoctorState() async {
+  await storage.write(key: 'isDoctor', value: 'true');
+}
+
+Future<void> saveAdminState() async {
+  await storage.write(key: 'isAdmin', value: 'true');
+}
+
 Future<String?> getAccessToken() async {
   return await storage.read(key: 'access_token');
 }
 
 Future<bool> getLogin() async {
   final result = await storage.read(key: 'isLoggedIn');
+  return result == 'true';
+}
+
+Future<bool> getDoctorState() async {
+  final result = await storage.read(key: 'isDoctor');
+  return result == 'true';
+}
+
+Future<bool> getAdminState() async {
+  final result = await storage.read(key: 'isAdmin');
   return result == 'true';
 }
 

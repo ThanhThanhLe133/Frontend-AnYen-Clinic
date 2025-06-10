@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:ayclinic_doctor_admin/DOCTOR/menu_doctor.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/post/new_post_screen.dart';
 import 'package:ayclinic_doctor_admin/function.dart';
 import 'package:ayclinic_doctor_admin/makeRequest.dart';
@@ -164,18 +165,23 @@ class _ListPostScreenState extends State<ListPostScreen> {
                 },
               ),
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => NewPostScreen(),
-            ),
-          );
-        },
-        backgroundColor: Colors.blue,
-        shape: const CircleBorder(),
-        child: Icon(Icons.add, color: Colors.white),
+      floatingActionButton: Stack(
+        children: [
+          FloatingActionButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NewPostScreen(),
+                ),
+              );
+            },
+            backgroundColor: Colors.blue,
+            shape: const CircleBorder(),
+            child: Icon(Icons.add, color: Colors.white),
+          ),
+          MenuDoctor(),
+        ],
       ),
     );
   }

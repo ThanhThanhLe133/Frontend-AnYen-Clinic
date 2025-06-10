@@ -1,3 +1,5 @@
+import 'package:ayclinic_doctor_admin/ADMIN/dashboard_admin/dashboard.dart';
+import 'package:ayclinic_doctor_admin/DOCTOR/dashboard_doctor/dashboard.dart';
 import 'package:ayclinic_doctor_admin/login/login_screen.dart';
 import 'package:ayclinic_doctor_admin/notification_service.dart';
 import 'package:ayclinic_doctor_admin/splash/splash_screen.dart';
@@ -15,12 +17,25 @@ void main() async {
   await Firebase.initializeApp();
   await NotificationService.instance.initialize();
   final bool isLoggedIn = await getLogin();
-  runApp(ProviderScope(child: MainApp(isLoggedIn: isLoggedIn)));
+  final bool isDoctor = await getDoctorState();
+  final bool isAdmin = await getAdminState();
+  print('login nè $isLoggedIn');
+  print('doctor nè $isDoctor');
+  print('admin nè $isAdmin');
+  runApp(ProviderScope(
+      child: MainApp(
+          isLoggedIn: isLoggedIn, isDoctor: isDoctor, isAdmin: isAdmin)));
 }
 
 class MainApp extends StatelessWidget {
-  const MainApp({super.key, required this.isLoggedIn});
+  const MainApp(
+      {super.key,
+      required this.isLoggedIn,
+      required this.isDoctor,
+      required this.isAdmin});
   final bool isLoggedIn;
+  final bool isDoctor;
+  final bool isAdmin;
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -34,7 +49,11 @@ class MainApp extends StatelessWidget {
           bodySmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
         ),
       ),
-      home: LoginScreen(),
+      home: isLoggedIn
+          ? LoginScreen()
+          : isDoctor
+              ? DashboardDoctor()
+              : DashboardAdmin(),
     );
   }
 }

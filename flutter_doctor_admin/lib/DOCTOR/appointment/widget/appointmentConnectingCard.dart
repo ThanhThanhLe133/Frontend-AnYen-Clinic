@@ -40,9 +40,6 @@ class AppointmentConnectingCardState
   Map<String, dynamic> patientProfile = {};
   Future<void> confirmAppointment() async {
     String appointmentId = widget.appointment_id;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Lỗi lưu dữ liệu $appointmentId.')));
     final response = await makeRequest(
       url: '$apiUrl/doctor/confirm-appointment',
       method: 'PATCH',

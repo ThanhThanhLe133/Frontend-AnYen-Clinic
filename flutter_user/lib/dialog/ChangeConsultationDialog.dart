@@ -52,7 +52,7 @@ class _EditConsultationDialogState extends State<EditConsultationDialog> {
 
       if (response.statusCode == 200) {
         showSuccessDialog(
-            context, AppointmentScreen(), "Thay đổi thành công", "QUay lại");
+            context, AppointmentScreen(), "Thay đổi thành công", "Quay lại");
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(data['mes'] ?? "Lỗi sửa lịch hẹn")),
@@ -128,7 +128,7 @@ class _EditConsultationDialogState extends State<EditConsultationDialog> {
                   isPrimary: true,
                   screenWidth: screenWidth,
                   onPressed: () {
-                    print("Nút được nhấn!");
+                    editTimeAppointment();
                   },
                 ),
               ],
