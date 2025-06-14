@@ -70,3 +70,6 @@ CMakeCache.txt
 build/
 .gradle/
 .cxx/
+
+assets/config
+app/src/google-services.json
