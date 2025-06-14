@@ -11,6 +11,7 @@ import 'package:anyen_clinic/dialog/SuccessDialog.dart';
 import 'package:anyen_clinic/dialog/Summary.dart';
 import 'package:anyen_clinic/dialog/option_dialog.dart';
 import 'package:anyen_clinic/doctor/details_doctor_screen.dart';
+import 'package:anyen_clinic/function.dart';
 import 'package:anyen_clinic/makeRequest.dart';
 import 'package:anyen_clinic/review/review_doctor_screen.dart';
 import 'package:anyen_clinic/storage.dart';
@@ -110,6 +111,25 @@ class AppointmentConnectedCardState
     fetchDoctor();
   }
 
+  Future<String> getConversationIdByAppointmentId(String appointmentId) async {
+    final response = await makeRequest(
+      url:
+          '$apiUrl/chat/conversation/get-by-appointment/?appointment_id=$appointmentId',
+      method: 'GET',
+    );
+
+    final responseData = jsonDecode(response.body);
+
+    if (response.statusCode == 200 && responseData['err'] == 0) {
+      final data = jsonDecode(response.body);
+      return data['data']['id'] ?? "";
+    } else {
+      // Handle error
+      print('Failed to fetch conversation ID: ${response.statusCode}');
+      return "";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -125,23 +145,30 @@ class AppointmentConnectedCardState
             ),
           )
         : GestureDetector(
-            onTap: () {
+            onTap: () async {
               //cuộc hẹn kết thúc -> vào xem tin nhắn
-              if (widget.status == "Completed") {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) =>
-                            ChatScreen(appointment_id: widget.appointment_id)));
+              if (widget.isOnline != true) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                      content: Text(
+                    '📵 Cuộc hẹn này là trực tiếp nên không thể gửi tin nhắn.',
+                  )),
+                );
+                return;
+              }
+              final conversationId =
+                  await getConversationIdByAppointmentId(widget.appointment_id);
 
-                //cuộc hẹn được xác nhận rồi + tới giờ hẹn
-              } else if (widget.status == "Confirmed") {
-                if (isAppointmentTimeReached(widget.date, widget.time)) {
+              if (conversationId.isNotEmpty) {
+                if (widget.status == "Completed" ||
+                    (widget.status == "Confirmed" &&
+                        isAppointmentTimeReached(widget.date, widget.time))) {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (_) => ChatScreen(
-                              appointment_id: widget.appointment_id)));
+                              conversationId: conversationId,
+                              status: widget.status)));
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -149,6 +176,12 @@ class AppointmentConnectedCardState
                             'Chưa đến giờ hẹn. Vui lòng đợi đến ${widget.time} ${widget.date}')),
                   );
                 }
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                      content: Text(
+                          'Bác sĩ chưa bắt đầu. Không thể trò chuyện. \n Vui lòng liên hệ quản trị viên nếu đã tới giờ hẹn.')),
+                );
               }
             },
             child: Container(
@@ -296,7 +329,7 @@ class AppointmentConnectedCardState
                               "Thay đổi hình thức Tư vấn",
                               "Thông tin bác sĩ",
                               "Lịch sử thanh toán",
-                              "Ẩn lịch hẹn",
+                              // "Ẩn lịch hẹn",
                               "Xem đơn thuốc",
                               "Xem tổng kết"
                             ],
@@ -372,15 +405,15 @@ class AppointmentConnectedCardState
                                   );
 
                                   break;
-                                case "Ẩn lịch hẹn":
-                                  showOptionDialog(
-                                      context,
-                                      "Xác nhận",
-                                      "Bạn có chắc muốn ẩn lịch hẹn này không? Lịch hẹn sẽ không còn được hiển thị nữa!",
-                                      "Huỷ",
-                                      "Ẩn",
-                                      hideAppointment);
-                                  break;
+                                // case "Ẩn lịch hẹn":
+                                //   showOptionDialog(
+                                //       context,
+                                //       "Xác nhận",
+                                //       "Bạn có chắc muốn ẩn lịch hẹn này không? Lịch hẹn sẽ không còn được hiển thị nữa!",
+                                //       "Huỷ",
+                                //       "Ẩn",
+                                //       hideAppointment);
+                                //   break;
                                 case "Xem đơn thuốc":
                                   if (widget.status != "Completed") {
                                     ScaffoldMessenger.of(context).showSnackBar(
@@ -471,7 +504,7 @@ class AppointmentConnectedCardState
                               : SizedBox(),
                           SizedBox(width: screenWidth * 0.05),
                           ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () => sendMessageToAdmin(context),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFECF8FF), //
                               shape: RoundedRectangleBorder(

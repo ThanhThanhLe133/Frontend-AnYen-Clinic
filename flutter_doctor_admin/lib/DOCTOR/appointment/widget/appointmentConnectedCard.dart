@@ -10,6 +10,7 @@ import 'package:ayclinic_doctor_admin/dialog/Prescription.dart';
 import 'package:ayclinic_doctor_admin/dialog/SuccessDialog.dart';
 import 'package:ayclinic_doctor_admin/dialog/Summary_doctor.dart';
 import 'package:ayclinic_doctor_admin/dialog/option_dialog.dart';
+import 'package:ayclinic_doctor_admin/function.dart';
 import 'package:ayclinic_doctor_admin/makeRequest.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:ayclinic_doctor_admin/widget/buildMoreOption.dart';
@@ -90,6 +91,25 @@ class AppointmentConnectedCardState
     fetchPatient();
   }
 
+  Future<String> getConversationIdByAppointmentId(String appointmentId) async {
+    final response = await makeRequest(
+      url:
+          '$apiUrl/chat/conversation/get-by-appointment/?appointment_id=$appointmentId',
+      method: 'GET',
+    );
+
+    final responseData = jsonDecode(response.body);
+
+    if (response.statusCode == 200 && responseData['err'] == 0) {
+      final data = jsonDecode(response.body);
+      return data['data']['id'] ?? "";
+    } else {
+      // Handle error
+      print('Failed to fetch conversation ID: ${response.statusCode}');
+      return "";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -105,30 +125,43 @@ class AppointmentConnectedCardState
             ),
           )
         : GestureDetector(
-            onTap: () {
-              //cuộc hẹn kết thúc -> vào xem tin nhắn
-              if (widget.status == "Completed") {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) =>
-                            ChatScreen(appointment_id: widget.appointment_id)));
+            onTap: () async {
+              if (widget.isOnline != true) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                      content: Text(
+                    '📵 Cuộc hẹn này là trực tiếp nên không thể gửi tin nhắn.',
+                  )),
+                );
+                return;
+              }
+              final conversationId =
+                  await getConversationIdByAppointmentId(widget.appointment_id);
 
-                //cuộc hẹn được xác nhận rồi + tới giờ hẹn
-              } else if (widget.status == "Confirmed") {
-                if (isAppointmentTimeReached(widget.date, widget.time)) {
+              if (isAppointmentTimeReached(widget.date, widget.time)) {
+                if (conversationId.isNotEmpty) {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (_) => ChatScreen(
-                              appointment_id: widget.appointment_id)));
+                                appointmentId: widget.appointment_id,
+                                conversationId: conversationId,
+                                status: widget.status,
+                              )));
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text(
-                            'Chưa đến giờ hẹn. Vui lòng đợi đến ${widget.time} ${widget.date}')),
-                  );
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => ChatScreen(
+                                appointmentId: widget.appointment_id,
+                              )));
                 }
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                      content: Text(
+                          'Chưa đến giờ hẹn. Vui lòng đợi đến ${widget.time} ${widget.date}')),
+                );
               }
             },
             child: Container(
@@ -337,10 +370,8 @@ class AppointmentConnectedCardState
                                       ),
                                     );
                                   } else {
-                                    showInputSummaryDialog(
-                                      context,
-                                      widget.appointment_id,
-                                    );
+                                    showInputSummaryDialog(context,
+                                        widget.appointment_id, widget.isOnline);
                                   }
                                   //cuộc hẹn online phải kết thúc trong tin nhắn
                                   break;
@@ -393,7 +424,7 @@ class AppointmentConnectedCardState
                       ),
                       SizedBox(height: screenWidth * 0.03),
                       ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () => sendMessageToAdmin(context),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFECF8FF), //
                           shape: RoundedRectangleBorder(

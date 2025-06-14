@@ -52,10 +52,8 @@ void showOptionDialog(BuildContext context, String title, String content,
                   Expanded(
                     child: TextButton(
                       onPressed: () {
+                        action!();
                         Navigator.pop(context);
-                        if (action != null) {
-                          action();
-                        }
                       },
                       child: Text(
                         confirm,

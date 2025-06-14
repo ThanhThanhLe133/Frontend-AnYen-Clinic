@@ -153,6 +153,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               screenHeight: screenHeight,
               hintText: "Nhập mật khẩu",
               controller: passController,
+              isObscure: true,
             ),
             Align(
               alignment: Alignment.centerRight,

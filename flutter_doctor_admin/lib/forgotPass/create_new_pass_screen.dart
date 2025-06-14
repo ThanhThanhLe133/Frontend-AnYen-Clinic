@@ -90,6 +90,14 @@ class _CreateNewPassScreenState extends ConsumerState<CreateNewPassScreen> {
     super.dispose();
   }
 
+  bool isObscure = true;
+
+  void toggleObscure() {
+    setState(() {
+      isObscure = !isObscure;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -143,6 +151,7 @@ class _CreateNewPassScreenState extends ConsumerState<CreateNewPassScreen> {
               screenHeight: screenHeight,
               hintText: "Nhập mật khẩu",
               controller: passController,
+              isObscure: isObscure,
             ),
             SizedBox(height: screenHeight * 0.05),
             PasswordField(
@@ -150,6 +159,7 @@ class _CreateNewPassScreenState extends ConsumerState<CreateNewPassScreen> {
               screenHeight: screenHeight,
               hintText: "Xác thực mật khẩu",
               controller: passController,
+              isObscure: isObscure,
             ),
             SizedBox(height: screenHeight * 0.2),
             normalButton(

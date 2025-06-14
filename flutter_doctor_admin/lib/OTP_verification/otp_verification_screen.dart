@@ -141,9 +141,11 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
 
         List<String> roles = List<String>.from(responseData['roles']);
         if (roles.contains('admin')) {
+          await saveAdminState();
           showSuccess(context, DashboardAdmin(), "Tới trang chủ");
           ResetProvider();
         } else if (roles.contains('doctor')) {
+          await saveDoctorState();
           showSuccess(context, DashboardDoctor(), "Tới trang chủ");
           ResetProvider();
         } else {

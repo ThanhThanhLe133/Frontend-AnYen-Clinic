@@ -123,6 +123,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
+  bool isObscure = true;
+
+  void toggleObscure() {
+    setState(() {
+      isObscure = !isObscure;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -160,11 +168,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 height: screenHeight * 0.02,
               ),
               PasswordField(
-                screenWidth: screenWidth,
-                screenHeight: screenHeight,
-                hintText: "Nhập mật khẩu",
-                controller: passController,
-              ),
+                  screenWidth: screenWidth,
+                  screenHeight: screenHeight,
+                  hintText: "Nhập mật khẩu",
+                  controller: passController,
+                  isObscure: isObscure),
               Align(
                 alignment: Alignment.centerRight,
                 child: Padding(

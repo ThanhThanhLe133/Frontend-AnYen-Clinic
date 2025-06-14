@@ -62,7 +62,10 @@ void showSuccessDialog(
                       fontWeight: FontWeight.w600,
                       fontFamily: 'Inter-Medium'),
                 ),
-                child: Text(label),
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                ),
               ),
             ],
           ),

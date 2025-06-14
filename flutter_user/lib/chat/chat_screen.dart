@@ -1,31 +1,43 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:anyen_clinic/chat/CallScreen.dart';
+import 'package:anyen_clinic/chat/services/SignalingService.dart';
 import 'package:anyen_clinic/chat/widget/AudioPreview.dart';
 import 'package:anyen_clinic/chat/widget/buildCameraButton.dart';
 import 'package:anyen_clinic/chat/widget/buildMessageContent.dart';
 import 'package:anyen_clinic/chat/widget/buildMicButton.dart';
 import 'package:anyen_clinic/chat/widget/buildQuestionBubble.dart';
-import 'package:anyen_clinic/dialog/option_dialog.dart';
+import 'package:anyen_clinic/dialog/snackBar.dart';
+import 'package:anyen_clinic/function.dart';
+import 'package:anyen_clinic/makeRequest.dart';
 import 'package:anyen_clinic/widget/CustomBackButton.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:anyen_clinic/chat/CameraScreen.dart';
+import 'package:intl/intl.dart';
 import 'package:record/record.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:anyen_clinic/chat/websocket_service.dart';
+import 'package:anyen_clinic/storage.dart';
+import 'package:anyen_clinic/utils/jwt_utils.dart';
+import 'package:anyen_clinic/chat/models/message.dart';
+import 'package:anyen_clinic/chat/services/chat_service.dart';
 
-class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key, this.appointment_id});
-  final String? appointment_id;
+class ChatScreen extends ConsumerStatefulWidget {
+  const ChatScreen({super.key, this.conversationId, this.status});
+  final String? conversationId;
+  final String? status;
   @override
-  _ChatScreenState createState() => _ChatScreenState();
+  ConsumerState<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
-//image
+class _ChatScreenState extends ConsumerState<ChatScreen> {
+  //image
   final List<XFile> sentImages = [];
   XFile? image;
 
@@ -42,56 +54,221 @@ class _ChatScreenState extends State<ChatScreen> {
   final Map<String, Duration> audioDurations = {};
 
   final TextEditingController controller = TextEditingController();
-  final List<Map<String, dynamic>> messages = [
-    {'text': 'Chào em', 'isMe': false},
-    {'text': 'Dạ em chào bác sĩ', 'isMe': true},
-    {'text': 'Chào em', 'isMe': false},
-  ];
-
+  List<Map<String, dynamic>> messages = [];
   bool isOnline = true;
+  bool isConnecting = false;
+  bool isLoadingMessages = false;
   final ScrollController scrollController = ScrollController();
+  late WebSocketService webSocketService;
+  late ChatService chatService;
+  final signaling = SignalingService();
+
+  String conversationId = "";
+  String currentRoom = "";
+  String? currentUserId;
+
+  String timeJoined = "";
+  bool isJoined = false;
+  bool isCompleted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    chatService = ChatService();
+    setUp();
+  }
+
+  void setUp() async {
+    if (widget.status != null) {
+      isCompleted = widget.status == "Completed";
+    }
+    if (widget.conversationId != null) {
+      conversationId = widget.conversationId!;
+      initializeChat();
+    }
+  }
+
+  Future<void> initializeChat() async {
+    setState(() {
+      isConnecting = true;
+    });
+
+    try {
+      currentUserId = await jwtUtils.getUserId();
+      if (currentUserId == null) {
+        showErrorSnackBar('Failed to get user information', context);
+        return;
+      }
+
+      await loadMessages();
+
+      if (!isCompleted) await setupWebSocket();
+    } catch (e) {
+      showErrorSnackBar('Error initializing chat: $e', context);
+    } finally {
+      setState(() {
+        isConnecting = false;
+      });
+    }
+  }
+
+  Future<void> loadMessages() async {
+    if (isLoadingMessages) return;
+
+    setState(() {
+      isLoadingMessages = true;
+    });
+
+    try {
+      final responseJoin = await makeRequest(
+          url: '$apiUrl/chat/join-conversation',
+          method: 'PATCH',
+          body: {"conversation_id": conversationId});
+      if (responseJoin.statusCode == 200) {
+        final jsonJoin = jsonDecode(responseJoin.body);
+        print("joining conversation");
+        if (jsonJoin['err'] == 0) {
+          final response = await makeRequest(
+            url: '$apiUrl/chat/conversation/$conversationId/messages',
+            method: 'GET',
+          );
+
+          if (response.statusCode == 200) {
+            final jsonResponse = jsonDecode(response.body);
+
+            final data = jsonResponse['data'];
+
+            if (jsonResponse['success'] == true) {
+              setState(() {
+                messages.clear();
+
+                final List<Map<String, dynamic>> messagesData =
+                    List<Map<String, dynamic>>.from(data);
+
+                if (messagesData.isEmpty) {
+                  messages = [
+                    {
+                      "id": "",
+                      "conversation_id": "",
+                      "sender": "",
+                      "receiver": "",
+                      "content": "",
+                      "isRead": false,
+                      "message_type": "",
+                      "createdAt": "",
+                      "isMe": false,
+                    }
+                  ];
+                } else {
+                  final String firstMessageTimeString = data.first['createdAt'];
+                  final DateTime firstMessageTime =
+                      DateTime.parse(firstMessageTimeString);
+
+                  timeJoined =
+                      DateFormat('dd/MM/yyyy, HH:mm').format(firstMessageTime);
+                  messages = messagesData.map((message) {
+                    return {
+                      ...message,
+                      'isMe': message['sender'] == currentUserId,
+                    };
+                  }).toList();
+                }
+              });
+
+              scrollToBottom();
+            }
+          } else {
+            throw Exception('Failed to load messages: ${response.statusCode}');
+          }
+        } else {
+          // Join conversation thất bại, show lỗi
+          showErrorSnackBar(
+              'Join conversation failed: ${jsonJoin['mes']}', context);
+        }
+      } else {
+        throw Exception(
+            'Failed to join conversation: ${responseJoin.statusCode}');
+      }
+    } catch (e) {
+      showErrorSnackBar('Failed: $e', context);
+    } finally {
+      setState(() {
+        isLoadingMessages = false;
+      });
+    }
+  }
+
+  Future<void> setupWebSocket() async {
+    webSocketService = await getWebSocketService(conversationId, context);
+    webSocketService.setupWebSocket(currentUserId!, context, signaling);
+    try {
+      webSocketService.onChatMessage((data) {
+        setState(() {
+          if (data['sender'] != currentUserId) {
+            print('📨 Received chat message: $data');
+            messages.add({
+              'content': data['message'],
+              'isMe': false,
+              'sender': data['sender'],
+              'message_type': data['type'],
+              'createdAt':
+                  data['timestamp'] ?? DateTime.now().toIso8601String(),
+            });
+          }
+        });
+        scrollToBottom();
+      });
+    } catch (e) {
+      print('❌ Error setting up WebSocket: $e');
+      rethrow;
+    }
+  }
 
   void sendMessage() {
     if (controller.text.trim().isNotEmpty ||
         image != null ||
         recordedFilePath != null) {
-      setState(() {
-        if (controller.text.isNotEmpty) {
-          messages.add({'text': controller.text.trim(), 'isMe': true});
-        }
-        if (image != null) {
-          messages.add({
-            "text": null,
-            "isMe": true,
-            "imagePath": image!.path,
-          });
+      final timestamp = DateTime.now().toIso8601String();
 
-          image = null; // Xóa ảnh sau khi gửi
-        }
-        if (recordedFilePath != null) {
-          messages.add({
-            "text": null,
-            "isMe": true,
-            "audioPath": recordedFilePath,
-          });
-          print('FILE PATH $recordedFilePath');
-          recordedFilePath = null;
-        }
+      if (image != null) {
+        uploadImage(File(image!.path));
+      }
 
+      if (recordedFilePath != null) {
+        uploadAudio(File(recordedFilePath!));
+      }
+
+      if (controller.text.isNotEmpty) {
+        final messageText = controller.text.trim();
+        print('📤 Sending message: $messageText');
+
+        webSocketService.sendMessage(conversationId, messageText, "text");
+
+        setState(() {
+          messages.add({
+            'content': messageText,
+            'isMe': true,
+            'createdAt': timestamp,
+            'sender': currentUserId,
+            'type': "text"
+          });
+        });
         controller.clear();
-      });
+      }
 
       scrollToBottom();
     }
   }
 
   void scrollToBottom() {
-    Future.delayed(Duration(milliseconds: 100), () {
-      scrollController.animateTo(
-        scrollController.position.maxScrollExtent, // Cuộn đến cuối
-        duration: Duration(milliseconds: 300),
-        curve: Curves.easeOut, // Hiệu ứng cuộn
-      );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (scrollController.hasClients) {
+        scrollController.animateTo(
+          scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
     });
   }
 
@@ -109,26 +286,31 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> startRecording(BuildContext context) async {
-    final String uniqueId = Uuid().v4(); // Tạo ID ngẫu nhiên
+    final String uniqueId = Uuid().v4();
     final String path =
         "/data/user/0/com.example.anyen_clinic/cache/audio_$uniqueId.mp3";
 
     bool hasMicPermission = await audioRecorder.hasPermission();
 
     if (!hasMicPermission) {
-      debugPrint("❌ Không có quyền ghi âm, không thể bắt đầu ghi");
+      print("❌ No microphone permission");
+      showErrorSnackBar("Microphone permission required", context);
       return;
     }
+
     await audioRecorder.start(const RecordConfig(), path: path);
     setState(() {
       isRecording = true;
       recordedFilePath = path;
       recordDuration = Duration.zero;
     });
+
     recordTimer = Timer.periodic(Duration(seconds: 1), (timer) {
-      setState(() {
-        recordDuration = Duration(seconds: recordDuration.inSeconds + 1);
-      });
+      if (mounted) {
+        setState(() {
+          recordDuration = Duration(seconds: recordDuration.inSeconds + 1);
+        });
+      }
     });
 
     showRecordingDialog(context);
@@ -163,6 +345,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   final Map<String, Duration> currentPositions = {};
+
   void togglePlayPause(String? path) async {
     if (path == null) return;
 
@@ -177,9 +360,8 @@ class _ChatScreenState extends State<ChatScreen> {
         await audioPlayer.stop();
       }
       currentAudioPath = path;
-      currentPosition = Duration.zero; // Reset thời gian khi phát file mới
+      currentPosition = Duration.zero;
       await audioPlayer.setSource(DeviceFileSource(path));
-
       await audioPlayer.play(DeviceFileSource(path));
 
       setState(() {
@@ -187,16 +369,16 @@ class _ChatScreenState extends State<ChatScreen> {
         currentPositions[path] = Duration.zero;
       });
 
-      // Lắng nghe thời gian phát
       audioPlayer.onPositionChanged.listen((Duration position) {
-        if (currentAudioPath == path) {
+        if (currentAudioPath == path && mounted) {
           setState(() {
             currentPositions[path] = position;
           });
         }
       });
+
       audioPlayer.onPlayerComplete.listen((_) {
-        if (currentAudioPath == path) {
+        if (currentAudioPath == path && mounted) {
           setState(() {
             isPlaying = false;
             currentAudioPath = null;
@@ -218,25 +400,25 @@ class _ChatScreenState extends State<ChatScreen> {
   void showRecordingDialog(BuildContext context) {
     showDialog(
       context: context,
-      barrierDismissible: false, // Ngăn người dùng thoát
+      barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
-          title: Text("Đang ghi âm"),
+          title: Text("Recording"),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.mic, size: 50, color: Colors.red),
               SizedBox(height: 10),
-              Text("Đang ghi âm..."),
+              Text("Recording audio..."),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () async {
                 await stopRecording();
-                Navigator.of(context).pop(); // Đóng hộp thoại
+                Navigator.of(context).pop();
               },
-              child: Text("Dừng ghi âm"),
+              child: Text("Stop Recording"),
             ),
           ],
         );
@@ -246,8 +428,14 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
+    print('🧹 Disposing ChatScreen');
+
     scrollController.dispose();
     audioRecorder.dispose();
+    audioPlayer.dispose();
+    recordTimer?.cancel();
+    controller.dispose();
+
     super.dispose();
   }
 
@@ -294,14 +482,20 @@ class _ChatScreenState extends State<ChatScreen> {
                           margin: EdgeInsets.only(right: 5),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: isOnline ? Colors.green : Colors.grey,
+                            color: isConnecting
+                                ? Colors.orange
+                                : (isOnline ? Colors.green : Colors.grey),
                           ),
                         ),
                         Text(
-                          isOnline ? 'Đang online' : 'Đang offline',
+                          isConnecting
+                              ? 'Connecting...'
+                              : (isOnline ? 'Online' : 'Offline'),
                           style: TextStyle(
                             fontSize: 13,
-                            color: isOnline ? Colors.green : Colors.grey,
+                            color: isConnecting
+                                ? Colors.orange
+                                : (isOnline ? Colors.green : Colors.grey),
                           ),
                         ),
                       ],
@@ -322,30 +516,15 @@ class _ChatScreenState extends State<ChatScreen> {
             itemBuilder: (BuildContext context) => [
               PopupMenuItem<String>(
                 value: "Lịch sử thanh toán",
-                child: Text("Lịch sử thanh toán"),
+                child: Text("Payment History"),
               ),
               PopupMenuItem<String>(
                 value: "Xem thông tin bác sĩ",
-                child: Text("Xem thông tin bác sĩ"),
+                child: Text("Doctor Information"),
               ),
             ],
             onSelected: (String value) {
-              switch (value) {
-                case "Lịch sử thanh toán":
-                  // showPaymentHistoryDialog(
-                  //   context,
-                  //   "MOMO",
-                  //   true,
-                  //   -99000,
-                  //   DateTime(2025, 2, 23, 14, 58),
-                  // );
-                  break;
-                case "Xem thông tin bác sĩ":
-                  // showDoctorInfoDialog(context);
-                  break;
-                default:
-                  break;
-              }
+              // Handle menu selections
             },
           ),
         ],
@@ -364,9 +543,7 @@ class _ChatScreenState extends State<ChatScreen> {
           controller: scrollController,
           child: Column(
             children: [
-              SizedBox(
-                height: 10,
-              ),
+              SizedBox(height: 10),
               Align(
                 alignment: Alignment.topLeft,
                 child: Text(
@@ -377,97 +554,90 @@ class _ChatScreenState extends State<ChatScreen> {
                       color: Colors.black),
                 ),
               ),
-              SizedBox(
-                height: 10,
-              ),
+              SizedBox(height: 10),
               buildQuestionBubble(screenWidth),
-              SizedBox(
-                height: 10,
-              ),
-              Divider(
-                height: 1,
-              ),
-              SizedBox(
-                height: 10,
-              ),
+              SizedBox(height: 10),
+              Divider(height: 1),
+              SizedBox(height: 10),
               Align(
                 alignment: Alignment.topLeft,
                 child: Text(
-                  "Thời gian: 22/02/2025, 14h50",
+                  "Time: 22/02/2025, 14h50",
                   style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF40494F)),
                 ),
               ),
-              SizedBox(
-                height: 10,
-              ),
+              SizedBox(height: 10),
               Text(
-                "BS.CKI Macus Horizon đã tham gia cuộc trò chuyện",
+                "BS.CKI Macus Horizon has joined the conversation",
                 textAlign: TextAlign.left,
                 style: TextStyle(fontSize: 15, color: Color(0xFF9AA5AC)),
               ),
-              SizedBox(
-                height: 10,
-              ),
+              SizedBox(height: 10),
               ...messages.map((message) {
-                return buildChatBubble(
-                  message['text'] ?? "",
-                  message['isMe'] ?? false,
-                  imagePath: message["imagePath"] as String?,
-                  audioPath: message["audioPath"] as String?,
-                );
+                if (message['content'].isEmpty) {
+                  return SizedBox();
+                }
+                if (message['message_type'] == 'audio') {
+                  return buildChatBubble("", message['isMe'],
+                      time: formatTime(message['createdAt']));
+                } else if (message['message_type'] == 'image') {
+                  return buildChatBubble("", message['isMe'],
+                      time: formatTime(message['createdAt']));
+                } else {
+                  return buildChatBubble(message['content'], message['isMe'],
+                      time: formatTime(message['createdAt']));
+                }
               }),
-              SizedBox(
-                height: 20,
-              ),
+              SizedBox(height: 20),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: KeyboardVisibilityBuilder(
-        builder: (context, isKeyboardVisible) {
-          if (isKeyboardVisible) {
-            scrollToBottom();
-          }
-          return Padding(
-            padding: EdgeInsets.only(
-                bottom: isKeyboardVisible
-                    ? MediaQuery.of(context).viewInsets.bottom
-                    : 0), // Đẩy lên khi bàn phím mở
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border(
-                  top: BorderSide(color: Color(0xFFD9D9D9), width: 1),
-                ),
-              ),
-              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-              child: buildMessageInput(),
-            ),
-          );
-        },
-      ),
+      bottomNavigationBar: !isCompleted
+          ? KeyboardVisibilityBuilder(
+              builder: (context, isKeyboardVisible) {
+                if (isKeyboardVisible) {
+                  scrollToBottom();
+                }
+                return Padding(
+                  padding: EdgeInsets.only(
+                      bottom: isKeyboardVisible
+                          ? MediaQuery.of(context).viewInsets.bottom
+                          : 0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border(
+                        top: BorderSide(color: Color(0xFFD9D9D9), width: 1),
+                      ),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                    child: buildMessageInput(),
+                  ),
+                );
+              },
+            )
+          : null,
     );
   }
 
   Widget buildChatBubble(String message, bool isMe,
-      {String? imagePath, String? audioPath}) {
+      {String? imagePath, String? audioPath, String? time}) {
     return Row(
       mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
       children: [
         if (!isMe) ...[
-          CircleAvatar(
-            backgroundImage: AssetImage('assets/images/doctor.png'),
-          ),
+          CircleAvatar(backgroundImage: AssetImage('assets/images/doctor.png')),
           SizedBox(width: 16),
         ],
         if (isMe) ...[
           Padding(
             padding: EdgeInsets.only(right: 8, left: 64),
             child: Text(
-              "19:21",
+              time ?? "",
               style: TextStyle(fontSize: 13, color: Color(0xFF9AA5AC)),
             ),
           ),
@@ -500,7 +670,6 @@ class _ChatScreenState extends State<ChatScreen> {
               audioDurations: audioDurations,
               currentPositions: currentPositions,
               togglePlayPause: togglePlayPause,
-              getAudioDuration: getAudioDuration,
             ),
           ),
         ),
@@ -508,7 +677,7 @@ class _ChatScreenState extends State<ChatScreen> {
           Padding(
             padding: EdgeInsets.only(right: 64, left: 8),
             child: Text(
-              "19:21",
+              time ?? "",
               style: TextStyle(fontSize: 13, color: Color(0xFF9AA5AC)),
             ),
           ),
@@ -533,14 +702,14 @@ class _ChatScreenState extends State<ChatScreen> {
                   icon: Icon(Icons.cancel, color: Colors.red),
                   onPressed: () {
                     setState(() {
-                      image = null; // Xóa ảnh chưa gửi
+                      image = null;
                     });
                   },
                 ),
               ],
             ),
           ),
-        if (recordedFilePath != null) // Hiển thị file ghi âm
+        if (recordedFilePath != null)
           AudioPreview(
             isPlaying: isPlaying,
             currentAudioPath: currentAudioPath,
@@ -561,7 +730,7 @@ class _ChatScreenState extends State<ChatScreen> {
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Color(0xFFECF8FF),
-                hintText: 'Gõ nội dung...',
+                hintText: 'Type message...',
                 hintStyle: TextStyle(
                     fontSize: 16,
                     color: Color(0xFF9AA5AC),
@@ -586,11 +755,87 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ),
         IconButton(
-          icon: Icon(Icons.send_sharp, color: Colors.blue), // Màu icon
+          icon: Icon(Icons.send_sharp, color: Colors.blue),
           onPressed: () => sendMessage(),
           iconSize: 24,
         ),
       ],
     );
+  }
+
+  final timestamp = DateTime.now().toIso8601String();
+  Future<void> uploadImage(File imageFile) async {
+    try {
+      final response = await makeRequest(
+        url: '$apiUrl/chat/conversation/send-images',
+        method: 'POST',
+        body: {"conversation_id": conversationId},
+        file: imageFile,
+        fileFieldName: 'message',
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (!mounted) return;
+        setState(() {
+          messages.add({
+            "message_type": "image",
+            "isMe": true,
+            "content": image!.path,
+            "createdAt": timestamp,
+            "sender": currentUserId,
+          });
+          image = null;
+        });
+        webSocketService.sendMessage(conversationId, data['image'], "image");
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Lỗi! ${response.body}")));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(
+          SnackBar(content: Text("Đã xảy ra lỗi không mong muốn. $e")));
+    }
+  }
+
+  Future<void> uploadAudio(File audioFile) async {
+    try {
+      final response = await makeRequest(
+        url: '$apiUrl/chat/conversation/send-audios',
+        method: 'POST',
+        body: {"conversation_id": conversationId},
+        file: audioFile,
+        fileFieldName: 'message',
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (!mounted) return;
+        setState(() {
+          messages.add({
+            "text": null,
+            "isMe": true,
+            "content": recordedFilePath,
+            "message_type": "audio",
+            "createdAt": timestamp,
+            "sender": currentUserId,
+          });
+          recordedFilePath = null;
+        });
+        webSocketService.sendMessage(conversationId, data['audio'], "audio");
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Lỗi khi upload âm thanh!")));
+      }
+    } catch (e) {
+      debugPrint("Lỗi khi upload audio: $e");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Đã xảy ra lỗi không mong muốn.")));
+    }
   }
 }

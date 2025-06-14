@@ -70,7 +70,10 @@ void showSuccessDialog(
                     fontFamily: 'Inter-Medium',
                   ),
                 ),
-                child: Text(label),
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                ),
               ),
             ],
           ),

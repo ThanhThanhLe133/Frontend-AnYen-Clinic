@@ -50,10 +50,6 @@ void showIncomingCallPopup(BuildContext context) {
                   icon: Icon(Icons.call, color: Colors.green, size: 40),
                   onPressed: () {
                     Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => CallScreen()),
-                    );
                   },
                 ),
               ],

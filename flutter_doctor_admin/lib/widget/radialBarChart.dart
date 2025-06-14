@@ -1,58 +1,90 @@
+import 'package:ayclinic_doctor_admin/Provider/historyConsultProvider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 
 const Color secondaryColor = Colors.grey;
 const double defaultPadding = 16.0;
 
-class RadialBarChart extends StatefulWidget {
+class RadialBarChart extends ConsumerStatefulWidget {
   const RadialBarChart({
     super.key,
     required this.screenWidth,
-    required this.connectingAppointment,
-    required this.waitingAppointment,
+    required this.onlineAppointment,
+    required this.offlineAppointment,
     required this.month,
     required this.year,
   });
   final double screenWidth;
-  final int connectingAppointment;
-  final int waitingAppointment;
+  final int onlineAppointment;
+  final int offlineAppointment;
   final int month;
   final int year;
 
   @override
-  State<RadialBarChart> createState() => _RadialBarChartState();
+  ConsumerState<RadialBarChart> createState() => _RadialBarChartState();
 }
 
-class _RadialBarChartState extends State<RadialBarChart> {
-  @override
-  Widget build(BuildContext context) {
-    final Map<String, Color> labels = {
-      'Online': Color(0xFF119CF0),
-      'Trực tiếp': Color(0xFFDB5B8B),
-    };
-    final today = DateTime.now();
+class _RadialBarChartState extends ConsumerState<RadialBarChart> {
+  final Map<String, Color> labels = {
+    'Online': Color(0xFF119CF0),
+    'Trực tiếp': Color(0xFFDB5B8B),
+  };
+  final today = DateTime.now();
+  late double onlineAngle;
+  late double offlineAngle;
+  late double onlinePercent;
+  late double offlinePercent;
+  late int percentDaysPassed;
 
+  @override
+  void didUpdateWidget(covariant RadialBarChart oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.month != widget.month ||
+        oldWidget.year != widget.year ||
+        oldWidget.onlineAppointment != widget.onlineAppointment ||
+        oldWidget.offlineAppointment != widget.offlineAppointment) {
+      updateData();
+    }
+  }
+
+  void updateData() {
     // Tổng số ngày của tháng được truyền vào
     final totalDaysInMonth = DateTime(widget.year, widget.month + 1, 0).day;
 
-    // Nếu là tháng hiện tại => tính theo số ngày thực sự đã qua
-    final daysPassed =
-        (today.month == widget.month && today.year == widget.year)
-            ? today.day
-            : totalDaysInMonth;
-
-    final percentDaysPassed = (daysPassed / totalDaysInMonth * 100).round();
-
+    int daysPassed;
+    if (widget.year > today.year ||
+        (widget.year == today.year && widget.month > today.month)) {
+      // Tháng tương lai
+      daysPassed = 0;
+    } else if (widget.year == today.year && widget.month == today.month) {
+      // Tháng hiện tại
+      daysPassed = today.day;
+    } else {
+      // Tháng quá khứ
+      daysPassed = totalDaysInMonth;
+    }
+    percentDaysPassed = ((daysPassed / totalDaysInMonth) * 100).round();
     final total =
-        (widget.connectingAppointment + widget.waitingAppointment).toDouble();
-    final connectingPercent =
-        (total > 0 ? (widget.connectingAppointment / total) : 0).toDouble();
-    final waitingPercent =
-        (total > 0 ? (widget.waitingAppointment / total) : 0).toDouble();
+        (widget.offlineAppointment + widget.onlineAppointment).toDouble();
+    onlinePercent =
+        (total > 0 ? (widget.onlineAppointment / total) : 0).toDouble();
+    offlinePercent =
+        (total > 0 ? (widget.offlineAppointment / total) : 0).toDouble();
 
-    final connectingAngle = connectingPercent * 360;
-    final waitingAngle = waitingPercent * 360;
+    onlineAngle = onlinePercent * 360;
+    offlineAngle = offlinePercent * 360;
+  }
 
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    updateData();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.all(widget.screenWidth * 0.05),
       child: Row(
@@ -70,7 +102,7 @@ class _RadialBarChartState extends State<RadialBarChart> {
                       labelOffset: 0,
                       pointers: [
                         RangePointer(
-                          value: 20,
+                          value: percentDaysPassed.toDouble(),
                           cornerStyle: CornerStyle.bothCurve,
                           width: widget.screenWidth * 0.08,
                         ),
@@ -85,7 +117,7 @@ class _RadialBarChartState extends State<RadialBarChart> {
                       annotations: [
                         GaugeAnnotation(
                           widget: Text(
-                            '$percentDaysPassed%',
+                            '${percentDaysPassed.round()}%',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: widget.screenWidth * 0.04,
@@ -99,13 +131,13 @@ class _RadialBarChartState extends State<RadialBarChart> {
                     RadialAxis(
                       pointers: [
                         RangePointer(
-                          value: 20,
+                          value: onlinePercent,
                           color: Color(0xFF119CF0),
                           width: widget.screenWidth * 0.08,
                         ),
                       ],
                       startAngle: 0,
-                      endAngle: connectingAngle,
+                      endAngle: onlineAngle,
                       showAxisLine: false,
                       showTicks: false,
                       showLabels: false,
@@ -113,13 +145,13 @@ class _RadialBarChartState extends State<RadialBarChart> {
                     RadialAxis(
                       pointers: [
                         RangePointer(
-                          value: 30,
+                          value: offlinePercent,
                           color: Color(0xFFDB5B8B),
                           width: widget.screenWidth * 0.08,
                         ),
                       ],
-                      startAngle: connectingAngle,
-                      endAngle: connectingAngle + waitingAngle,
+                      startAngle: onlineAngle,
+                      endAngle: onlineAngle + offlineAngle,
                       showAxisLine: false,
                       showTicks: false,
                       showLabels: false,
@@ -137,29 +169,28 @@ class _RadialBarChartState extends State<RadialBarChart> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
-                children:
-                    labels.entries.map((entry) {
-                      return Row(
-                        children: [
-                          Container(
-                            width: widget.screenWidth * 0.04,
-                            height: widget.screenWidth * 0.04,
-                            decoration: BoxDecoration(
-                              color: entry.value,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          SizedBox(width: 8),
-                          Text(
-                            entry.key,
-                            style: TextStyle(
-                              fontSize: widget.screenWidth * 0.04,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ],
-                      );
-                    }).toList(),
+                children: labels.entries.map((entry) {
+                  return Row(
+                    children: [
+                      Container(
+                        width: widget.screenWidth * 0.04,
+                        height: widget.screenWidth * 0.04,
+                        decoration: BoxDecoration(
+                          color: entry.value,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        entry.key,
+                        style: TextStyle(
+                          fontSize: widget.screenWidth * 0.04,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
+                  );
+                }).toList(),
               ),
             ),
           ),

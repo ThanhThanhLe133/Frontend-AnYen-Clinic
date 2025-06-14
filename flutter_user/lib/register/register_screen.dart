@@ -112,6 +112,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     super.dispose();
   }
 
+  bool isObscure = true;
+
+  void toggleObscure() {
+    setState(() {
+      isObscure = !isObscure;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -152,6 +160,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               screenHeight: screenHeight,
               hintText: "Nhập mật khẩu",
               controller: passController,
+              isObscure: isObscure,
             ),
             SizedBox(
               width: screenWidth * 0.9,

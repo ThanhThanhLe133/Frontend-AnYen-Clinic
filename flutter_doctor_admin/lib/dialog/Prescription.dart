@@ -35,7 +35,7 @@ class _PrescriptionDialogState extends State<PrescriptionDialog> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      ).showSnackBar(SnackBar(content: Text('Lỗi ${response.body}')));
       Navigator.pop(context);
     } else {
       final data = jsonDecode(response.body);
@@ -58,55 +58,54 @@ class _PrescriptionDialogState extends State<PrescriptionDialog> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: EdgeInsets.all(screenWidth * 0.04),
-        child:
-            prescriptions.isEmpty
-                ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.event_busy, size: 30.0, color: Colors.grey),
-                      SizedBox(height: 10),
-                      Text(
-                        "Không có đơn thuốc",
-                        style: TextStyle(fontSize: 16, color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                )
-                : Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        child: prescriptions.isEmpty
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Center(
-                      child: Text(
-                        "Đơn thuốc",
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.055,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
-                        ),
-                      ),
-                    ),
+                    Icon(Icons.event_busy, size: 30.0, color: Colors.grey),
                     SizedBox(height: 10),
-                    ...prescriptions.map(
-                      (medicine) => _buildMedicineItem(medicine, screenWidth),
-                    ),
-                    SizedBox(height: 20),
-                    Divider(height: 1),
-                    SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        CustomButton(
-                          text: "ĐÓNG",
-                          isPrimary: false,
-                          screenWidth: screenWidth,
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                      ],
+                    Text(
+                      "Không có đơn thuốc",
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
                     ),
                   ],
                 ),
+              )
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Text(
+                      "Đơn thuốc",
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.055,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  ...prescriptions.map(
+                    (medicine) => _buildMedicineItem(medicine, screenWidth),
+                  ),
+                  SizedBox(height: 20),
+                  Divider(height: 1),
+                  SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      CustomButton(
+                        text: "ĐÓNG",
+                        isPrimary: false,
+                        screenWidth: screenWidth,
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
       ),
     );
   }

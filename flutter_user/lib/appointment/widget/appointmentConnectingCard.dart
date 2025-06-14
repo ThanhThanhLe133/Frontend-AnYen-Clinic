@@ -3,11 +3,13 @@ import 'dart:math';
 
 import 'package:anyen_clinic/appointment/details_doctor.dart';
 import 'package:anyen_clinic/appointment/changeDoctor/DialogToChangeDoctor.dart';
+import 'package:anyen_clinic/chat/chat_screen.dart';
 import 'package:anyen_clinic/dialog/ChangeConsultationDialog.dart';
 import 'package:anyen_clinic/dialog/EditDateAppointmentDialog.dart';
 import 'package:anyen_clinic/dialog/PaymentHistory.dart';
 import 'package:anyen_clinic/dialog/option_dialog.dart';
 import 'package:anyen_clinic/doctor/details_doctor_screen.dart';
+import 'package:anyen_clinic/function.dart';
 import 'package:anyen_clinic/makeRequest.dart';
 import 'package:anyen_clinic/provider/patient_provider.dart';
 import 'package:anyen_clinic/storage.dart';
@@ -304,7 +306,7 @@ class AppointmentConnectingCardState
                     ),
                     SizedBox(height: screenWidth * 0.03),
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () => sendMessageToAdmin(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFECF8FF), //
                         shape: RoundedRectangleBorder(

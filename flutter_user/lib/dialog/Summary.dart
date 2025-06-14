@@ -38,7 +38,7 @@ class _SummaryDialogState extends State<SummaryDialog> {
     } else {
       final data = jsonDecode(response.body);
       setState(() {
-        summary = data['data'];
+        summary = data['appointment'];
       });
     }
   }

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:ayclinic_doctor_admin/ADMIN/appointment/appointment_screen.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/function_admin.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/manage_doctor/details_doctor_screen.dart';
 import 'package:ayclinic_doctor_admin/dialog/patient_detail_screen.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/admin_review/review_doctor_screen.dart';
@@ -580,7 +581,10 @@ class AppointmentConnectedCardState
                               : Row(
                                   children: [
                                     ElevatedButton(
-                                      onPressed: () {},
+                                      onPressed: () => sendMessageToUser(
+                                        context,
+                                        widget.patient_id,
+                                      ),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor:
                                             const Color(0xFFECF8FF), //
@@ -610,7 +614,8 @@ class AppointmentConnectedCardState
                                     ),
                                     SizedBox(width: screenWidth * 0.02),
                                     ElevatedButton(
-                                      onPressed: () {},
+                                      onPressed: () => sendMessageToUser(
+                                          context, widget.doctor_id),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor:
                                             const Color(0xFFECF8FF), //

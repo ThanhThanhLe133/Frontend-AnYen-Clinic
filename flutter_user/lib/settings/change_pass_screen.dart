@@ -66,6 +66,14 @@ class _ChangePassScreenState extends ConsumerState<ChangePassScreen> {
     }
   }
 
+  bool isObscure = true;
+
+  void toggleObscure() {
+    setState(() {
+      isObscure = !isObscure;
+    });
+  }
+
   @override
   void dispose() {
     oldPassController.dispose();
@@ -126,6 +134,7 @@ class _ChangePassScreenState extends ConsumerState<ChangePassScreen> {
                 screenHeight: screenHeight,
                 hintText: "Nhập mật khẩu cũ",
                 controller: oldPassController,
+                isObscure: isObscure,
               ),
               SizedBox(height: screenHeight * 0.05),
               PasswordField(
@@ -133,6 +142,7 @@ class _ChangePassScreenState extends ConsumerState<ChangePassScreen> {
                 screenHeight: screenHeight,
                 hintText: "Nhập mật khẩu",
                 controller: newPassController,
+                isObscure: isObscure,
               ),
               SizedBox(height: screenHeight * 0.05),
               PasswordField(
@@ -140,6 +150,7 @@ class _ChangePassScreenState extends ConsumerState<ChangePassScreen> {
                 screenHeight: screenHeight,
                 hintText: "Xác thực mật khẩu",
                 controller: retypePassController,
+                isObscure: isObscure,
               ),
               SizedBox(height: screenHeight * 0.2),
               normalButton(

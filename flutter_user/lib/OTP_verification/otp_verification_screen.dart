@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:anyen_clinic/dialog/SuccessScreen.dart';
+import 'package:anyen_clinic/forgotPass/create_new_pass_screen.dart';
 import 'package:anyen_clinic/forgotPass/forgot_pass_screen.dart';
 import 'package:anyen_clinic/login/login_screen.dart';
 import 'package:anyen_clinic/provider/otp_provider.dart';
@@ -191,7 +192,7 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
   }
 
   Future<void> navigateToForgotPass() async {
-    showSuccess(context, ForgotPassScreen(), "Tạo mật khẩu mới");
+    showSuccess(context, CreateNewPassScreen(), "Tạo mật khẩu mới");
   }
 
   Future<void> setupFCM(String accessToken) async {
@@ -257,7 +258,6 @@ class _OTPVerificationScreenState extends ConsumerState<OTPVerificationScreen> {
         } else if (widget.source == "forgot") {
           await navigateToForgotPass();
         } else {
-          debugPrint('DDDDDDDDDD $phoneNumber');
           await callLoginAPI(phoneNumber, password);
         }
       } else {

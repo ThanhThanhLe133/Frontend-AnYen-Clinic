@@ -5,6 +5,7 @@ import 'package:ayclinic_doctor_admin/dialog/patient_detail_screen.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/appointment/appointment_screen.dart';
 import 'package:ayclinic_doctor_admin/dialog/SuccessDialog.dart';
 import 'package:ayclinic_doctor_admin/dialog/option_dialog.dart';
+import 'package:ayclinic_doctor_admin/function.dart';
 import 'package:ayclinic_doctor_admin/makeRequest.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:ayclinic_doctor_admin/widget/buildMoreOption.dart';
@@ -39,9 +40,6 @@ class AppointmentConnectingCardState
   Map<String, dynamic> patientProfile = {};
   Future<void> confirmAppointment() async {
     String appointmentId = widget.appointment_id;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Lỗi lưu dữ liệu $appointmentId.')));
     final response = await makeRequest(
       url: '$apiUrl/doctor/confirm-appointment',
       method: 'PATCH',
@@ -327,7 +325,7 @@ class AppointmentConnectingCardState
                           ),
                           SizedBox(width: screenWidth * 0.02),
                           ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () => sendMessageToAdmin(context),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFECF8FF), //
                               shape: RoundedRectangleBorder(

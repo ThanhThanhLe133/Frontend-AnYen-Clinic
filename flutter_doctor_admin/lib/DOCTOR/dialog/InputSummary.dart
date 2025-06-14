@@ -5,32 +5,58 @@ import 'package:ayclinic_doctor_admin/dialog/option_dialog.dart';
 import 'package:ayclinic_doctor_admin/makeRequest.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:ayclinic_doctor_admin/widget/buildButton.dart';
+import 'package:ayclinic_doctor_admin/widget/chat_widget/websocket_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-void showInputSummaryDialog(BuildContext context, String appointmentId) {
+void showInputSummaryDialog(
+    BuildContext context, String appointmentId, bool isOnline) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
-      return InputSummaryDialog(appointment_id: appointmentId);
+      return InputSummaryDialog(
+          appointment_id: appointmentId, isOnline: isOnline);
     },
   );
 }
 
-class InputSummaryDialog extends StatefulWidget {
-  const InputSummaryDialog({super.key, required this.appointment_id});
+class InputSummaryDialog extends ConsumerStatefulWidget {
+  const InputSummaryDialog(
+      {super.key, required this.appointment_id, required this.isOnline});
   final String appointment_id;
+  final bool isOnline;
 
   @override
-  State<InputSummaryDialog> createState() => _InputSummaryDialogState();
+  ConsumerState<InputSummaryDialog> createState() => _InputSummaryDialogState();
 }
 
-class _InputSummaryDialogState extends State<InputSummaryDialog> {
+class _InputSummaryDialogState extends ConsumerState<InputSummaryDialog> {
   TextEditingController descriptionController = TextEditingController();
   TextEditingController noteAdminController = TextEditingController();
+
+  Future<String> getConversationIdByAppointmentId(String appointmentId) async {
+    final response = await makeRequest(
+      url:
+          '$apiUrl/chat/conversation/get-by-appointment/?appointment_id=$appointmentId',
+      method: 'GET',
+    );
+
+    final responseData = jsonDecode(response.body);
+
+    if (response.statusCode == 200 && responseData['err'] == 0) {
+      final data = jsonDecode(response.body);
+      return data['data']['id'] ?? "";
+    } else {
+      // Handle error
+      print('Failed to fetch conversation ID: ${response.statusCode}');
+      return "";
+    }
+  }
 
   Future<void> completeAppointment() async {
     String description = descriptionController.text.trim();
     String noteForAdmin = noteAdminController.text.trim();
+
     try {
       final response = await makeRequest(
         url: '$apiUrl/doctor/complete-appointment',
@@ -45,10 +71,33 @@ class _InputSummaryDialogState extends State<InputSummaryDialog> {
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(
+        if (widget.isOnline) {
+          final conversationId =
+              await getConversationIdByAppointmentId(widget.appointment_id);
+
+          if (conversationId.isNotEmpty) {
+            final WebSocketService? webSocketService =
+                await getExistWebSocketService(conversationId);
+            if (webSocketService != null) {
+              webSocketService.unsubscribeFromConversation(conversationId);
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text("Đã kết thúc cuộc hẹn và đóng kết nối chat.")));
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("Cuộc trò chuyện chưa bắt đầu.")));
+            }
+            webSocketService!.dispose();
+            webSocketServiceMap.remove(conversationId);
+          }
+        } else {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text("Đã kết thúc cuộc hẹn.")));
+        }
+        showInputPrescriptionDialog(
           context,
-        ).showSnackBar(SnackBar(content: Text("Cuộc hẹn đã được kết thúc")));
-        showInputPrescriptionDialog(context, widget.appointment_id);
+          widget.appointment_id,
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(data['mes'] ?? "Lỗi kết thúc lịch hẹn")),
@@ -107,13 +156,11 @@ class _InputSummaryDialogState extends State<InputSummaryDialog> {
                   ),
                 ],
               ),
-
               SizedBox(height: screenWidth * 0.05),
               _buildLabel("Tổng kết"),
               SizedBox(height: screenWidth * 0.03),
               _buildTextField(50, 5, descriptionController),
               SizedBox(height: screenWidth * 0.03),
-
               Align(
                 alignment: Alignment.topLeft,
                 child: Text(
@@ -129,17 +176,16 @@ class _InputSummaryDialogState extends State<InputSummaryDialog> {
                   text: "Kết thúc tư vấn",
                   isPrimary: true,
                   screenWidth: screenWidth,
-                  onPressed:
-                      () => showOptionDialog(
-                        context,
-                        "Xác nhận kết thúc",
-                        "Bạn muốn xác nhận kết thúc ca tư vấn này?",
-                        "HUỶ",
-                        "ĐỒNG Ý",
-                        () {
-                          completeAppointment();
-                        },
-                      ),
+                  onPressed: () => showOptionDialog(
+                    context,
+                    "Xác nhận kết thúc",
+                    "Bạn muốn xác nhận kết thúc ca tư vấn này?",
+                    "HUỶ",
+                    "ĐỒNG Ý",
+                    () {
+                      completeAppointment();
+                    },
+                  ),
                 ),
               ),
             ],
@@ -185,7 +231,6 @@ Widget _buildTextField(
         borderRadius: BorderRadius.circular(8),
         borderSide: BorderSide(color: Color(0xFFD9D9D9), width: 1),
       ),
-
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(5),
         borderSide: BorderSide(color: Colors.blue, width: 1),

@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class MessageContent extends StatelessWidget {
   final String message;
@@ -13,7 +16,6 @@ class MessageContent extends StatelessWidget {
   final Map<String, Duration> audioDurations;
   final Map<String, Duration> currentPositions;
   final Function(String?) togglePlayPause;
-  final Future<Duration> Function(String) getAudioDuration;
 
   const MessageContent({
     super.key,
@@ -26,7 +28,6 @@ class MessageContent extends StatelessWidget {
     required this.audioDurations,
     required this.currentPositions,
     required this.togglePlayPause,
-    required this.getAudioDuration,
   });
 
   String formatDuration(Duration duration) {
@@ -47,30 +48,45 @@ class MessageContent extends StatelessWidget {
         ),
       );
     } else if (imagePath != null && imagePath!.isNotEmpty) {
+      final isNetwork =
+          imagePath!.startsWith('http') || imagePath!.startsWith('https');
       return ClipRRect(
         borderRadius: BorderRadius.circular(12),
-        child: Image.file(
-          File(imagePath!),
-          width: 150,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            debugPrint("Lỗi khi load ảnh: $error");
-            return Icon(Icons.broken_image, size: 50);
-          },
-        ),
+        child: isNetwork
+            ? Image.network(
+                imagePath!,
+                width: 150,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  debugPrint("Lỗi khi load ảnh mạng: $error");
+                  return Icon(Icons.broken_image, size: 50);
+                },
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return SizedBox(
+                    width: 150,
+                    height: 150,
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                },
+              )
+            : Image.file(
+                File(imagePath!),
+                width: 150,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  debugPrint("Lỗi khi load ảnh: $error");
+                  return Icon(Icons.broken_image, size: 50);
+                },
+              ),
       );
-    } else if (audioPath != null) {
+    } else if (audioPath != null && audioPath!.isNotEmpty) {
+      final isNetworkAudio = audioPath!.startsWith('http');
       return FutureBuilder<Duration>(
-        future: audioDurations.containsKey(audioPath)
-            ? Future.value(audioDurations[audioPath])
-            : getAudioDuration(audioPath!),
+        future: getAudioDuration(audioPath!, isNetworkAudio, audioDurations),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done &&
-              snapshot.hasData) {
-            audioDurations[audioPath!] = snapshot.data!;
-          }
-
-          Duration audioDuration = audioDurations[audioPath!] ?? Duration.zero;
+          final duration = snapshot.data ?? Duration.zero;
+          final currentPosition = currentPositions[audioPath!] ?? Duration.zero;
 
           return Row(
             mainAxisSize: MainAxisSize.min,
@@ -84,16 +100,41 @@ class MessageContent extends StatelessWidget {
                   color: Colors.white,
                 ),
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Text(
-                "${formatDuration(currentPositions[audioPath!] ?? Duration.zero)} / ${formatDuration(audioDuration)}",
-                style: TextStyle(fontSize: 14, color: Colors.white),
+                formatDuration(currentPosition),
+                style: const TextStyle(fontSize: 14, color: Colors.white),
               ),
             ],
           );
         },
       );
     }
+
     return SizedBox.shrink();
+  }
+}
+
+Future<Duration> getAudioDuration(
+    String path, bool isNetwork, Map<String, Duration> cache) async {
+  if (cache.containsKey(path)) return cache[path]!;
+
+  final player = AudioPlayer();
+  try {
+    if (isNetwork) {
+      await player.setSource(UrlSource(path));
+    } else {
+      await player.setSource(DeviceFileSource(path));
+    }
+
+    final duration = await player.getDuration() ?? Duration.zero;
+    cache[path] = duration;
+
+    await player.dispose();
+    return duration;
+  } catch (e) {
+    debugPrint('❌ Lỗi khi lấy thời lượng audio: $e');
+    await player.dispose();
+    return Duration.zero;
   }
 }
