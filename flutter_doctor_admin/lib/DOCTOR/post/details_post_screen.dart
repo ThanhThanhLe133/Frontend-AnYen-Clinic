@@ -35,6 +35,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   Future<void> handleSendComment() async {
     final content = _commentController.text.trim();
     if (content.isEmpty) return;
+
     final response = await makeRequest(
         url: '$apiUrl/doctor/create-comment',
         method: 'POST',

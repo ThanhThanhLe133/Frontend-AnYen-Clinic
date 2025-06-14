@@ -7,6 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 
+String formatTime(String dateString) {
+  DateTime datetime = DateTime.parse(dateString);
+  return DateFormat('HH:mm').format(datetime);
+}
+
 String formatDate(String? dateString) {
   if (dateString == null || dateString.isEmpty) return 'Unknown';
   DateTime parsedDate = DateTime.parse(dateString);

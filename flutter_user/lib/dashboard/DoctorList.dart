@@ -125,7 +125,8 @@ class _DoctorListState extends State<DoctorList> {
           return DoctorCardInListRow(
             screenWidth: screenWidth,
             screenHeight: screenHeight,
-            percentage: _displayedDoctors[index]['averageSatisfaction']!,
+            percentage:
+                _displayedDoctors[index]['averageSatisfaction'].toInt()!,
             name: _displayedDoctors[index]['name']!,
             specialty: _displayedDoctors[index]['specialization']!,
             workplace: _displayedDoctors[index]['workplace']!,

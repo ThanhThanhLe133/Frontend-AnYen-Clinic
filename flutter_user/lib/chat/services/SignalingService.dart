@@ -1,13 +1,18 @@
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 class SignalingService {
-  RTCPeerConnection? _peerConnection;
-  MediaStream? _localStream;
-  MediaStream? _remoteStream;
+  bool isNegotiated = false;
+  RTCPeerConnection? peerConnection;
+  MediaStream? localStream;
+  MediaStream? remoteStream;
 
   final Map<String, dynamic> configuration = {
     'iceServers': [
       {'urls': 'stun:stun.l.google.com:19302'},
+      {'urls': 'stun:stun1.l.google.com:19302'},
+      {'urls': 'stun:stun2.l.google.com:19302'},
+      {'urls': 'stun:stun3.l.google.com:19302'},
+      {'urls': 'stun:stun4.l.google.com:19302'},
     ],
   };
 
@@ -19,32 +24,60 @@ class SignalingService {
     'optional': [],
   };
 
+  Function(MediaStream)? onAddRemoteStream;
+
   // Khởi tạo PeerConnection, lấy stream local và add track
-  Future<void> init() async {
+  Future<void> init({MediaStream? local}) async {
     try {
-      _peerConnection = await createPeerConnection(configuration);
-
-      // Lấy media stream (audio + video)
-      _localStream = await navigator.mediaDevices.getUserMedia({
-        'audio': true,
-        'video': true,
-      });
-      // Khi có track từ remote peer gửi đến, lưu lại remote stream
-      _localStream!.getTracks().forEach((track) {
-        _peerConnection!.addTrack(track, _localStream!);
-      });
-
-      _peerConnection!.onTrack = (RTCTrackEvent event) {
-        if (event.streams.isNotEmpty) {
-          _remoteStream = event.streams[0];
+      peerConnection = await createPeerConnection(configuration);
+      peerConnection!.onConnectionState = (RTCPeerConnectionState state) {
+        print('🚀 Connection state changed to: $state');
+        if (state == RTCPeerConnectionState.RTCPeerConnectionStateConnecting) {
+          print('✅ Peer is attempting to connect');
+        }
+        if (state == RTCPeerConnectionState.RTCPeerConnectionStateFailed ||
+            state ==
+                RTCPeerConnectionState.RTCPeerConnectionStateDisconnected ||
+            state == RTCPeerConnectionState.RTCPeerConnectionStateClosed) {
+          print('❌ Connection failed or closed');
         }
       };
 
-      // Lắng nghe ICE candidate để gửi qua signaling server
-      _peerConnection!.onIceCandidate = (RTCIceCandidate candidate) {
-        if (onSendIceCandidate != null) {
-          onSendIceCandidate!(candidate);
+      peerConnection!.onIceConnectionState = (RTCIceConnectionState state) {
+        print('🚀 ICE Connection state changed: $state');
+      };
+
+      // Nếu chưa truyền stream từ ngoài vào thì tự khởi tại đây
+      localStream = local ??
+          await navigator.mediaDevices
+              .getUserMedia({'audio': true, 'video': true});
+
+      // Thêm track từ local stream vào peer
+      for (var track in localStream!.getTracks()) {
+        peerConnection!.addTrack(track, localStream!);
+      }
+      // onLocalStream?.call(localStream!); // Nếu bạn muốn thông báo UI
+
+      // Lắng nghe khi phía remote gửi track
+      peerConnection!.onTrack = (RTCTrackEvent event) {
+        if (event.track.kind == 'video') {
+          print('✅ Đã nhận được video track từ phía gửi');
         }
+        if (event.streams.isNotEmpty) {
+          remoteStream = event.streams[0];
+          onAddRemoteStream?.call(remoteStream!);
+          print(
+              '✅ Remote stream có ${remoteStream!.getVideoTracks().length} video track');
+        }
+        if (remoteStream != null) {
+          int videoTrackCount = remoteStream!.getVideoTracks().length;
+          print('➥ Stream từ phía gửi có $videoTrackCount video track');
+        }
+      };
+      // Lắng nghe ICE candidate để gửi qua signaling
+      peerConnection!.onIceCandidate = (RTCIceCandidate candidate) {
+        print('🚀 ICE Candidate được tạo: ${candidate.toMap()}');
+        onSendIceCandidate?.call(candidate);
       };
     } catch (e) {
       print('❌ Lỗi trong signaling.init(): $e');
@@ -53,30 +86,27 @@ class SignalingService {
 
   void Function(RTCIceCandidate)? onSendIceCandidate;
 
-  Function(MediaStream)? onAddRemoteStream;
-
   Future<void> addCandidate(Map<String, dynamic> candidateMap) async {
     final candidate = RTCIceCandidate(
       candidateMap['candidate'],
       candidateMap['sdpMid'],
       candidateMap['sdpMLineIndex'],
     );
-    await _peerConnection!.addCandidate(candidate);
+    await peerConnection!.addCandidate(candidate);
   }
 
   // Tạo offer SDP
   Future<Map<String, dynamic>> createOffer() async {
+    if (isNegotiated) {
+      print('⚠ Đã đàm phán, không gửi thêm offer');
+      return {};
+    }
     try {
-      if (_peerConnection == null) {
-        throw Exception("PeerConnection is null");
-      }
-
-      final offer = await _peerConnection!.createOffer(constraints);
-      await _peerConnection!.setLocalDescription(offer);
+      RTCSessionDescription offer = await peerConnection!.createOffer();
+      await peerConnection!.setLocalDescription(offer);
       return offer.toMap();
-    } catch (e, stack) {
+    } catch (e) {
       print('❌ Lỗi khi tạo offer: $e');
-      print(stack);
       rethrow;
     }
   }
@@ -84,65 +114,67 @@ class SignalingService {
   // Tạo answer SDP (đáp lại offer)
   Future<Map<String, dynamic>> createAnswer() async {
     try {
-      if (_peerConnection == null) {
-        throw Exception("PeerConnection is null");
+      if (isNegotiated) {
+        print("⚠️ Negotiation in progress, skipping createAnswer");
+        return {};
       }
+      isNegotiated = true;
 
-      final answer = await _peerConnection!.createAnswer(constraints);
-      await _peerConnection!.setLocalDescription(answer);
+      RTCSessionDescription answer = await peerConnection!.createAnswer();
+      await peerConnection!.setLocalDescription(answer);
+
+      isNegotiated = false;
       return answer.toMap();
-    } catch (e, stack) {
-      print('❌ Lỗi khi tạo answer: $e');
-      print(stack);
+    } catch (e) {
+      isNegotiated = false;
+      print("❌ Error creating answer: $e");
       rethrow;
     }
   }
 
+  bool _remoteDescSet = false;
   // Đặt remote description (offer hoặc answer nhận được từ đối phương)
   Future<void> setRemoteDescription(Map<String, dynamic> session) async {
-    try {
-      if (_peerConnection == null) {
-        throw Exception("PeerConnection is null");
-      }
-
-      final desc = RTCSessionDescription(session['sdp'], session['type']);
-      await _peerConnection!.setRemoteDescription(desc);
-    } catch (e) {
-      print('❌ Lỗi khi set remote description: $e');
-      rethrow;
-    }
+    final desc = RTCSessionDescription(session['sdp'], session['type']);
+    await peerConnection!.setRemoteDescription(desc);
+    _remoteDescSet = true;
+    print("✅ Đã đặt Remote Description.");
   }
 
-  // Lấy stream video/audio local để hiển thị trên UI (video preview)
-  MediaStream? get localStream => _localStream;
+  MediaStream? get getLocalStream => localStream;
+  set setLocalStream(MediaStream? stream) {
+    localStream = stream;
+  }
 
-  // Lấy stream video/audio remote để hiển thị trên UI (video đối phương)
-  MediaStream? get remoteStream => _remoteStream;
+  MediaStream? get getRemoteStream => remoteStream;
+  set setRemoteStream(MediaStream? stream) {
+    remoteStream = stream;
+  }
 
   void toggleMicrophone(bool enabled) {
-    if (_localStream == null) return;
+    if (localStream == null) return;
 
-    for (var track in _localStream!.getAudioTracks()) {
+    for (var track in localStream!.getAudioTracks()) {
       track.enabled = enabled;
     }
   }
 
   // Bật/tắt camera (video)
   void toggleCamera(bool enabled) {
-    if (_localStream == null) return;
+    if (localStream == null) return;
 
-    for (var track in _localStream!.getVideoTracks()) {
+    for (var track in localStream!.getVideoTracks()) {
       track.enabled = enabled;
     }
   }
 
   // Đóng kết nối và giải phóng tài nguyên
   Future<void> close() async {
-    await _peerConnection?.close();
-    await _localStream?.dispose();
-    await _remoteStream?.dispose();
-    _peerConnection = null;
-    _localStream = null;
-    _remoteStream = null;
+    await peerConnection?.close();
+    await localStream?.dispose();
+    await remoteStream?.dispose();
+    peerConnection = null;
+    localStream = null;
+    remoteStream = null;
   }
 }

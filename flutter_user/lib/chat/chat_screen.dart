@@ -8,12 +8,13 @@ import 'package:anyen_clinic/chat/widget/buildCameraButton.dart';
 import 'package:anyen_clinic/chat/widget/buildMessageContent.dart';
 import 'package:anyen_clinic/chat/widget/buildMicButton.dart';
 import 'package:anyen_clinic/chat/widget/buildQuestionBubble.dart';
+import 'package:anyen_clinic/dialog/snackBar.dart';
+import 'package:anyen_clinic/function.dart';
 import 'package:anyen_clinic/makeRequest.dart';
 import 'package:anyen_clinic/widget/CustomBackButton.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:anyen_clinic/chat/CameraScreen.dart';
 import 'package:intl/intl.dart';
@@ -28,8 +29,9 @@ import 'package:anyen_clinic/chat/models/message.dart';
 import 'package:anyen_clinic/chat/services/chat_service.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
-  const ChatScreen({super.key, this.conversationId});
+  const ChatScreen({super.key, this.conversationId, this.status});
   final String? conversationId;
+  final String? status;
   @override
   ConsumerState<ChatScreen> createState() => _ChatScreenState();
 }
@@ -67,15 +69,46 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   String timeJoined = "";
   bool isJoined = false;
+  bool isCompleted = false;
 
   @override
   void initState() {
     super.initState();
-    webSocketService = ref.read(webSocketServiceProvider);
     chatService = ChatService();
+    setUp();
+  }
+
+  void setUp() async {
+    if (widget.status != null) {
+      isCompleted = widget.status == "Completed";
+    }
     if (widget.conversationId != null) {
       conversationId = widget.conversationId!;
       initializeChat();
+    }
+  }
+
+  Future<void> initializeChat() async {
+    setState(() {
+      isConnecting = true;
+    });
+
+    try {
+      currentUserId = await jwtUtils.getUserId();
+      if (currentUserId == null) {
+        showErrorSnackBar('Failed to get user information', context);
+        return;
+      }
+
+      await loadMessages();
+
+      if (!isCompleted) await setupWebSocket();
+    } catch (e) {
+      showErrorSnackBar('Error initializing chat: $e', context);
+    } finally {
+      setState(() {
+        isConnecting = false;
+      });
     }
   }
 
@@ -149,14 +182,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           }
         } else {
           // Join conversation thất bại, show lỗi
-          showErrorSnackBar('Join conversation failed: ${jsonJoin['mes']}');
+          showErrorSnackBar(
+              'Join conversation failed: ${jsonJoin['mes']}', context);
         }
       } else {
         throw Exception(
             'Failed to join conversation: ${responseJoin.statusCode}');
       }
     } catch (e) {
-      showErrorSnackBar('Failed: $e');
+      showErrorSnackBar('Failed: $e', context);
     } finally {
       setState(() {
         isLoadingMessages = false;
@@ -164,103 +198,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
-  Future<void> initializeChat() async {
-    setState(() {
-      isConnecting = true;
-    });
-
-    try {
-      // Get user ID
-      currentUserId = await jwtUtils.getUserId();
-      if (currentUserId == null) {
-        showErrorSnackBar('Failed to get user information');
-        return;
-      }
-
-      await loadMessages();
-
-      await setupWebSocket();
-    } catch (e) {
-      showErrorSnackBar('Error initializing chat: $e');
-    } finally {
-      setState(() {
-        isConnecting = false;
-      });
-    }
-  }
-
-  Future<void> refreshToken() async {
-    // Get access token
-    String? refreshToken = await getRefreshToken();
-    final refreshRes = await http.post(
-      Uri.parse('$apiUrl/auth/refresh-token'),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"refresh_token": refreshToken}),
-    );
-
-    if (refreshRes.statusCode == 200) {
-      final respond = jsonDecode(refreshRes.body);
-      final newAccessToken = respond['access_token'];
-      final newRefreshToken = respond['refresh_token'];
-
-      // Lưu token mới
-      if (newAccessToken != null) await saveAccessToken(newAccessToken);
-      if (newRefreshToken != null) await saveRefreshToken(newRefreshToken);
-    } else {
-      showErrorSnackBar('Failed to get refresh token: ${refreshRes.body}');
-      throw Exception('Failed to refresh token: ${refreshRes.body}');
-    }
-    await setupWebSocket();
-  }
-
   Future<void> setupWebSocket() async {
+    webSocketService = await getWebSocketService(conversationId, context);
+    webSocketService.setupWebSocket(currentUserId!, context, signaling);
     try {
-      String? accessToken = await getAccessToken();
-      String token = accessToken!.replaceFirst("Bearer ", "");
-
-      await webSocketService.connect(
-        token,
-        onConnect: () async {
-          setState(() {
-            isOnline = true;
-          });
-
-          print('✅ WebSocket connected successfullyyyyy');
-          webSocketService.subscribeToConversation(
-            conversationId,
-            ack: (response) {
-              print('🏠 subscribeToConversation response: $response');
-              if (response != null && response['error'] != null) {
-                showErrorSnackBar('Error joining room: ${response['error']}');
-              } else {
-                showSuccessSnackBar('Joined room: $conversationId');
-              }
-            },
-          );
-
-          showSuccessSnackBar('Connected to chat server');
-        },
-        onError: (error) {
-          print('❌ WebSocket connection error: $error');
-          String errorMessage = 'Connection error';
-          if (error is SocketException) {
-            errorMessage =
-                'Cannot connect to server. Please check if the server is running.';
-          } else {
-            errorMessage = error.toString();
-          }
-          showErrorSnackBar(errorMessage, showRetry: true);
-        },
-        onDisconnect: () {
-          print('🔌 WebSocket disconnected');
-          setState(() {
-            isOnline = false;
-          });
-          showErrorSnackBar('Disconnected from chat server', showRetry: true);
-        },
-      );
-
-      // Listen for incoming messages
       webSocketService.onChatMessage((data) {
         setState(() {
           if (data['sender'] != currentUserId) {
@@ -277,53 +218,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         });
         scrollToBottom();
       });
-
-      // receive call
-      webSocketService.onReceiveCall((data) async {
-        final String fromSocketId = data['sender'];
-        final Map<String, dynamic> signal = data['signal'];
-
-        if (fromSocketId != currentUserId) {
-          showIncomingCallPopup(context, signal);
-        }
-      });
-
-      webSocketService.onCallUnreceived((data) async {
-        if (data['sender'] != currentUserId) {
-          Navigator.of(context, rootNavigator: true)
-              .maybePop(); // Đóng popup nếu đang mở
-          showInfoSnackBar('Cuộc gọi bị nhỡ');
-        }
-      });
-      //answer a call
-      // webSocketService.onCallAnswered((data) {
-      //   print('✅ Call was answered');
-      //   if (data['sender'] != currentUserId) {
-      //     showInfoSnackBar('Call has been answered');
-      //   }
-      // });
-
-      // Listen for user joined events
-      webSocketService.onUserJoined((data) {
-        print('👋 User joined: $data');
-        if (data['sender'] != currentUserId) {
-          showInfoSnackBar('A user joined the chat');
-        }
-      });
-
-      // Listen for user left events
-      webSocketService.onUserLeft((data) {
-        print('👋 User left: $data');
-        if (data['sender'] != currentUserId) {
-          showInfoSnackBar('A user left the chat');
-        }
-      });
-
-      // Listen for errors
-      webSocketService.onError((error) {
-        print('❌ WebSocket error: $error');
-        showErrorSnackBar('Chat error: $error');
-      });
     } catch (e) {
       print('❌ Error setting up WebSocket: $e');
       rethrow;
@@ -334,25 +228,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (controller.text.trim().isNotEmpty ||
         image != null ||
         recordedFilePath != null) {
-      //isOnline này là của user còn lại
-      // if (!isOnline) {
-      //   showErrorSnackBar('Not connected to server chat');
-      //   return;
-      // }
-
       final timestamp = DateTime.now().toIso8601String();
 
-      // Handle image sending
       if (image != null) {
         uploadImage(File(image!.path));
       }
 
-      // Handle audio sending
       if (recordedFilePath != null) {
         uploadAudio(File(recordedFilePath!));
       }
 
-      // Send text message
       if (controller.text.isNotEmpty) {
         final messageText = controller.text.trim();
         print('📤 Sending message: $messageText');
@@ -376,59 +261,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   void scrollToBottom() {
-    if (scrollController.hasClients) {
-      Future.delayed(Duration(milliseconds: 10), () {
-        if (scrollController.hasClients) {
-          scrollController.animateTo(
-            scrollController.position.maxScrollExtent,
-            duration: Duration(milliseconds: 30),
-            curve: Curves.easeOut,
-          );
-        }
-      });
-    }
-  }
-
-  void showErrorSnackBar(String message,
-      {bool showRetry = kFlutterMemoryAllocationsEnabled}) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        action: showRetry
-            ? SnackBarAction(
-                label: 'Retry',
-                textColor: Colors.white,
-                onPressed: () {
-                  refreshToken();
-                },
-              )
-            : null,
-      ),
-    );
-  }
-
-  void showSuccessSnackBar(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
-
-  void showInfoSnackBar(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.blue,
-        duration: Duration(seconds: 2),
-      ),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (scrollController.hasClients) {
+        scrollController.animateTo(
+          scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   Future<void> openCamera(BuildContext context) async {
@@ -453,7 +294,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     if (!hasMicPermission) {
       print("❌ No microphone permission");
-      showErrorSnackBar("Microphone permission required");
+      showErrorSnackBar("Microphone permission required", context);
       return;
     }
 
@@ -548,118 +389,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
-  Future<void> answerCall(Map<String, dynamic> signal) async {
-    final response = await makeRequest(
-      url:
-          '$apiUrl/chat/conversation/get-conversation/?conversation_id=$conversationId',
-      method: 'GET',
-    );
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final conversation = data['data'];
-
-      late String? otherUserId;
-
-      if (currentUserId == conversation['user1']) {
-        otherUserId = conversation['user2'];
-      } else {
-        otherUserId = conversation['user1'];
-      }
-
-      if (otherUserId == null || otherUserId.isEmpty) {
-        showInfoSnackBar('⏳ Chưa có ai tham gia cuộc trò chuyện này');
-        return;
-      }
-      try {
-        await signaling.init();
-        await signaling.setRemoteDescription(signal);
-
-        final answer = await signaling.createAnswer();
-        webSocketService.answerCall(conversationId, answer);
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => CallScreen(
-                    roomId: conversationId,
-                    signaling: signaling,
-                  )),
-        );
-      } catch (e) {
-        print("❌ Error while creating answer: $e");
-        showInfoSnackBar("❌ Không thể tạo answer: $e");
-      }
-    } else {
-      print("❌ Lỗi khi lấy thông tin cuộc trò chuyện: ${response.statusCode}");
-      showInfoSnackBar('❌ Không thể lấy thông tin cuộc trò chuyện');
-    }
-  }
-
-  void showIncomingCallPopup(
-      BuildContext context, Map<String, dynamic> signal) {
-    showDialog(
-      context: context,
-      barrierDismissible: false, // Không cho đóng khi bấm ra ngoài
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          contentPadding: EdgeInsets.zero,
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Hình đại diện người gọi
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: CircleAvatar(
-                  radius: 40,
-                  backgroundImage: NetworkImage(
-                    "https://i.pravatar.cc/150?img=3",
-                  ), // Ảnh giả lập
-                ),
-              ),
-              Text(
-                "Cuộc gọi đến",
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-              SizedBox(height: 5),
-              Text(
-                "Nguyễn Văn A",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 20),
-
-              // Nút nhận & từ chối cuộc gọi
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.call_end, color: Colors.red, size: 40),
-                    onPressed: () {
-                      Navigator.pop(context);
-                      webSocketService.declineCall(conversationId);
-                      showInfoSnackBar("🚫 Bạn đã từ chối cuộc gọi");
-                    },
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.call, color: Colors.green, size: 40),
-                    onPressed: () async {
-                      Navigator.pop(context);
-                      answerCall(signal);
-                    },
-                  ),
-                ],
-              ),
-              SizedBox(height: 10),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   void removeRecordedAudio() {
     setState(() {
       recordedFilePath = null;
@@ -700,9 +429,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   void dispose() {
     print('🧹 Disposing ChatScreen');
-
-    webSocketService.unsubscribeFromConversation(conversationId);
-    webSocketService.dispose();
 
     scrollController.dispose();
     audioRecorder.dispose();
@@ -855,22 +581,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   return SizedBox();
                 }
                 if (message['message_type'] == 'audio') {
-                  return buildChatBubble(
-                    "",
-                    message['isMe'],
-                    audioPath: message['content'],
-                  );
+                  return buildChatBubble("", message['isMe'],
+                      time: formatTime(message['createdAt']));
                 } else if (message['message_type'] == 'image') {
-                  return buildChatBubble(
-                    "",
-                    message['isMe'],
-                    imagePath: message['content'],
-                  );
+                  return buildChatBubble("", message['isMe'],
+                      time: formatTime(message['createdAt']));
                 } else {
-                  return buildChatBubble(
-                    message['content'],
-                    message['isMe'],
-                  );
+                  return buildChatBubble(message['content'], message['isMe'],
+                      time: formatTime(message['createdAt']));
                 }
               }),
               SizedBox(height: 20),
@@ -878,34 +596,36 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: KeyboardVisibilityBuilder(
-        builder: (context, isKeyboardVisible) {
-          if (isKeyboardVisible) {
-            scrollToBottom();
-          }
-          return Padding(
-            padding: EdgeInsets.only(
-                bottom: isKeyboardVisible
-                    ? MediaQuery.of(context).viewInsets.bottom
-                    : 0),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border(
-                  top: BorderSide(color: Color(0xFFD9D9D9), width: 1),
-                ),
-              ),
-              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-              child: buildMessageInput(),
-            ),
-          );
-        },
-      ),
+      bottomNavigationBar: !isCompleted
+          ? KeyboardVisibilityBuilder(
+              builder: (context, isKeyboardVisible) {
+                if (isKeyboardVisible) {
+                  scrollToBottom();
+                }
+                return Padding(
+                  padding: EdgeInsets.only(
+                      bottom: isKeyboardVisible
+                          ? MediaQuery.of(context).viewInsets.bottom
+                          : 0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border(
+                        top: BorderSide(color: Color(0xFFD9D9D9), width: 1),
+                      ),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                    child: buildMessageInput(),
+                  ),
+                );
+              },
+            )
+          : null,
     );
   }
 
   Widget buildChatBubble(String message, bool isMe,
-      {String? imagePath, String? audioPath}) {
+      {String? imagePath, String? audioPath, String? time}) {
     return Row(
       mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
       children: [
@@ -917,7 +637,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           Padding(
             padding: EdgeInsets.only(right: 8, left: 64),
             child: Text(
-              "19:21",
+              time ?? "",
               style: TextStyle(fontSize: 13, color: Color(0xFF9AA5AC)),
             ),
           ),
@@ -957,7 +677,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           Padding(
             padding: EdgeInsets.only(right: 64, left: 8),
             child: Text(
-              "19:21",
+              time ?? "",
               style: TextStyle(fontSize: 13, color: Color(0xFF9AA5AC)),
             ),
           ),

@@ -67,7 +67,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    webSocketService = ref.read(webSocketServiceProvider);
+    // webSocketService = ref.read(webSocketServiceProvider);
     chatService = ChatService();
     if (widget.conversationId != null) {
       initializeChat();

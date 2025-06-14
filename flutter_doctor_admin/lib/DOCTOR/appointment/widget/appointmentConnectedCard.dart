@@ -146,6 +146,7 @@ class AppointmentConnectedCardState
                           builder: (_) => ChatScreen(
                                 appointmentId: widget.appointment_id,
                                 conversationId: conversationId,
+                                status: widget.status,
                               )));
                 } else {
                   Navigator.push(
@@ -369,10 +370,8 @@ class AppointmentConnectedCardState
                                       ),
                                     );
                                   } else {
-                                    showInputSummaryDialog(
-                                      context,
-                                      widget.appointment_id,
-                                    );
+                                    showInputSummaryDialog(context,
+                                        widget.appointment_id, widget.isOnline);
                                   }
                                   //cuộc hẹn online phải kết thúc trong tin nhắn
                                   break;

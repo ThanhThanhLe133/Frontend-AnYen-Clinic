@@ -166,8 +166,9 @@ class AppointmentConnectedCardState
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (_) =>
-                              ChatScreen(conversationId: conversationId)));
+                          builder: (_) => ChatScreen(
+                              conversationId: conversationId,
+                              status: widget.status)));
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(

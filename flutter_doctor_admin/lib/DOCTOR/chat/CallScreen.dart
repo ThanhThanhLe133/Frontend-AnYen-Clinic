@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:ayclinic_doctor_admin/DOCTOR/chat/signalingService.dart';
+import 'package:ayclinic_doctor_admin/DOCTOR/chat/SignalingService.dart';
+import 'package:ayclinic_doctor_admin/dialog/snackBar.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:ayclinic_doctor_admin/utils/jwt_utils.dart';
 import 'package:ayclinic_doctor_admin/widget/chat_widget/websocket_service.dart';
@@ -11,14 +12,21 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:http/http.dart' as http;
 
 class CallScreen extends ConsumerStatefulWidget {
-  const CallScreen({super.key, required this.roomId, required this.signaling});
+  const CallScreen(
+      {super.key,
+      required this.roomId,
+      required this.signaling,
+      required this.isVideoCall,
+      required this.webSocketService});
   final String roomId;
   final SignalingService signaling;
+  final bool isVideoCall;
+  final WebSocketService webSocketService;
   @override
-  ConsumerState<CallScreen> createState() => _CallScreenState();
+  ConsumerState<CallScreen> createState() => CallScreenState();
 }
 
-class _CallScreenState extends ConsumerState<CallScreen> {
+class CallScreenState extends ConsumerState<CallScreen> {
   int seconds = 0;
   Timer? timer;
   bool isVideoOn = true;
@@ -31,27 +39,43 @@ class _CallScreenState extends ConsumerState<CallScreen> {
 
   RTCVideoRenderer localRenderer = RTCVideoRenderer();
   RTCVideoRenderer remoteRenderer = RTCVideoRenderer();
-  late BuildContext rootContext;
+  static BuildContext? rootContext;
+  double localVideoPosX = 20;
+  double localVideoPosY = 20;
 
   @override
   void initState() {
     super.initState();
-    webSocketService = ref.read(webSocketServiceProvider);
     signaling = widget.signaling;
+    remoteRenderer.initialize();
+    localRenderer.initialize();
+
+    isVideoOn = widget.isVideoCall;
+    webSocketService = widget.webSocketService;
     startTimer();
     initEverything();
   }
 
-  Future<void> initEverything() async {
-    await initRenderers();
+  static void close() {
+    if (rootContext != null) {
+      Navigator.of(rootContext!).pop();
+    }
+  }
 
+  Future<void> initEverything() async {
     currentUserId = await jwtUtils.getUserId();
     if (currentUserId == null) {
-      showErrorSnackBar('Failed to get user information');
+      showErrorSnackBar('Failed to get user information', context);
       return;
     }
 
-    await setupWebSocket();
+    // await setupWebSocket();
+    if (signaling.localStream != null) {
+      localRenderer.srcObject = signaling.localStream;
+    }
+    if (signaling.remoteStream != null) {
+      remoteRenderer.srcObject = signaling.remoteStream;
+    }
   }
 
   @override
@@ -62,144 +86,9 @@ class _CallScreenState extends ConsumerState<CallScreen> {
     super.dispose();
   }
 
-  Future<void> initRenderers() async {
-    await localRenderer.initialize();
-    await remoteRenderer.initialize();
-  }
-
-  Future<void> setupWebSocket() async {
-    try {
-      if (signaling.localStream != null) {
-        localRenderer.srcObject = signaling.localStream;
-      }
-
-      signaling.onAddRemoteStream = (MediaStream remoteStream) {
-        setState(() {
-          remoteRenderer.srcObject = remoteStream;
-        });
-      };
-
-      signaling.onSendIceCandidate = (RTCIceCandidate candidate) {
-        showSuccessSnackBar('sending call');
-        webSocketService.sendIceCandidate(widget.roomId, candidate);
-      };
-
-      // Lắng nghe ICE candidate từ server
-      webSocketService.onReceiveIceCandidate((data) {
-        showSuccessSnackBar('receive call');
-        if (data['candidate'] != null) {
-          signaling.addCandidate(data['candidate']);
-        } else {
-          print('❌ Candidate data invalid or missing');
-        }
-      });
-
-      // Listen for end call
-      webSocketService.onEndCall((data) {
-        showInfoSnackBar('Cuộc gọi kết thúc!');
-        if (data['sender'] != currentUserId) {
-          endCall(rootContext, false);
-        }
-      });
-
-      // Listen for user joined events
-      webSocketService.onUserJoined((data) {
-        print('👋 User joined: $data');
-        if (data['sender'] != currentUserId) {
-          showInfoSnackBar('A user joined the chat');
-        }
-      });
-
-      // Listen for user left events
-      webSocketService.onUserLeft((data) {
-        print('👋 User left: $data');
-        if (data['sender'] != currentUserId) {
-          showInfoSnackBar('A user left the chat');
-        }
-      });
-
-      // Listen for errors
-      webSocketService.onError((error) {
-        print('❌ WebSocket error: $error');
-        showErrorSnackBar('Chat error: $error');
-      });
-    } catch (e) {
-      print('❌ Error setting up WebSocket: $e');
-      rethrow;
-    }
-  }
-
-  Future<void> refreshToken() async {
-    // Get access token
-    String? refreshToken = await getRefreshToken();
-    final refreshRes = await http.post(
-      Uri.parse('$apiUrl/auth/refresh-token'),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"refresh_token": refreshToken}),
-    );
-
-    if (refreshRes.statusCode == 200) {
-      final respond = jsonDecode(refreshRes.body);
-      final newAccessToken = respond['access_token'];
-      final newRefreshToken = respond['refresh_token'];
-
-      // Lưu token mới
-      if (newAccessToken != null) await saveAccessToken(newAccessToken);
-      if (newRefreshToken != null) await saveRefreshToken(newRefreshToken);
-      showErrorSnackBar('get refresh token: ${refreshRes.body}');
-    } else {
-      showErrorSnackBar('Failed to get refresh token: ${refreshRes.body}');
-      throw Exception('Failed to refresh token: ${refreshRes.body}');
-    }
-    await setupWebSocket();
-  }
-
   Future<void> endCall(BuildContext context, bool isSender) async {
-    signaling.close();
-    if (isSender) webSocketService.endCall(widget.roomId);
-
+    if (isSender) webSocketService.endCall();
     Navigator.pop(context);
-  }
-
-  void showErrorSnackBar(String message, {bool showRetry = false}) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-        action: showRetry
-            ? SnackBarAction(
-                label: 'Retry',
-                textColor: Colors.white,
-                onPressed: () {
-                  refreshToken();
-                },
-              )
-            : null,
-      ),
-    );
-  }
-
-  void showSuccessSnackBar(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
-
-  void showInfoSnackBar(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.blue,
-        duration: Duration(seconds: 2),
-      ),
-    );
   }
 
   void startTimer() {
@@ -235,56 +124,95 @@ class _CallScreenState extends ConsumerState<CallScreen> {
         centerTitle: true,
         backgroundColor: Colors.blue[50],
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      body: Stack(
         children: [
-          Spacer(),
-          isVideoOn
-              ? Expanded(
-                  child: Stack(
-                    children: [
-                      RTCVideoView(remoteRenderer,
-                          objectFit:
-                              RTCVideoViewObjectFit.RTCVideoViewObjectFitCover),
-                      Positioned(
-                        right: 20,
-                        top: 20,
-                        width: 100,
-                        height: 150,
-                        child: RTCVideoView(localRenderer, mirror: true),
-                      ),
-                    ],
+          // video của đối phương full màn hoặc ảnh nếu không video
+          widget.isVideoCall
+              ? Positioned.fill(
+                  child: Container(
+                    color: Colors.black,
+                    child: RTCVideoView(
+                      remoteRenderer,
+                      mirror: false,
+                      objectFit:
+                          RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                    ),
                   ),
                 )
-              : Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircleAvatar(
-                      radius: screenWidth * 0.25,
-                      backgroundImage: AssetImage("assets/images/user.png"),
-                      backgroundColor: Color(0xFF119CF0),
-                    ),
-                    SizedBox(height: screenWidth * 0.03),
-                    Text(
-                      "User1",
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.06,
-                        fontWeight: FontWeight.bold,
+              : Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircleAvatar(
+                        radius: screenWidth * 0.25,
+                        backgroundImage: AssetImage("assets/images/user.png"),
+                        backgroundColor: Color(0xFF119CF0),
                       ),
-                    ),
-                    SizedBox(height: screenWidth * 0.03),
-                    Text(
-                      formatTime(seconds),
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.05,
-                        color: Colors.grey[700],
-                      ),
-                    ),
-                  ],
+                      SizedBox(height: screenWidth * 0.03),
+                    ],
+                  ),
                 ),
-          Spacer(),
-          Padding(
-            padding: EdgeInsets.only(bottom: screenWidth * 0.1),
+          // video của bạn, draggable ở phía trên
+          Positioned(
+            left: localVideoPosX,
+            top: localVideoPosY,
+            width: 120,
+            height: 160,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(15),
+                child: isVideoOn
+                    ? RTCVideoView(
+                        localRenderer,
+                        mirror: true,
+                        objectFit:
+                            RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                      )
+                    : Container(
+                        color: Colors.black87,
+                        child: Center(
+                          child: Icon(Icons.videocam_off, color: Colors.white),
+                        ),
+                      ),
+              ),
+            ),
+          ),
+
+          Positioned(
+            bottom: 140, // cao hơn nút khoảng 100px
+            left: 0,
+            right: 0,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "User1",
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.06,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: screenWidth * 0.03),
+                Text(
+                  formatTime(seconds),
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.05,
+                    color: Colors.grey[400],
+                  ),
+                )
+              ],
+            ),
+          ),
+
+          Positioned(
+            bottom: 40,
+            left: 0,
+            right: 0,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -295,11 +223,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
                     setState(() {
                       isVideoOn = !isVideoOn;
                     });
-                    if (isVideoOn) {
-                      signaling.toggleCamera(true);
-                    } else {
-                      signaling.toggleCamera(false);
-                    }
+                    signaling.toggleCamera(isVideoOn);
                   },
                   screenWidth,
                 ),
@@ -309,13 +233,9 @@ class _CallScreenState extends ConsumerState<CallScreen> {
                   isMuted ? Colors.grey : Colors.blue,
                   () {
                     setState(() {
-                      isMuted = !isMuted; // Đảo trạng thái Mute
+                      isMuted = !isMuted;
                     });
-                    if (isMuted) {
-                      signaling.toggleMicrophone(false);
-                    } else {
-                      signaling.toggleMicrophone(true);
-                    }
+                    signaling.toggleMicrophone(!isMuted);
                   },
                   screenWidth,
                 ),
@@ -325,7 +245,7 @@ class _CallScreenState extends ConsumerState<CallScreen> {
                 }, screenWidth),
               ],
             ),
-          ),
+          )
         ],
       ),
     );

@@ -6,6 +6,11 @@ import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+String formatTime(String dateString) {
+  DateTime datetime = DateTime.parse(dateString);
+  return DateFormat('HH:mm').format(datetime);
+}
+
 String formatDate(String? dateString) {
   if (dateString == null || dateString.isEmpty) return 'Unknown';
   DateTime parsedDate = DateTime.parse(dateString);

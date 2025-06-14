@@ -49,11 +49,12 @@ class MainApp extends StatelessWidget {
           bodySmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
         ),
       ),
-      home: isLoggedIn
+      home: !isLoggedIn
           ? LoginScreen()
           : isDoctor
               ? DashboardDoctor()
               : DashboardAdmin(),
+      // home: LoginScreen(),
     );
   }
 }

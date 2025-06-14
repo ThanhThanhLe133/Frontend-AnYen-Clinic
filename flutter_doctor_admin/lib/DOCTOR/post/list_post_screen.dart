@@ -167,18 +167,21 @@ class _ListPostScreenState extends State<ListPostScreen> {
             ),
       floatingActionButton: Stack(
         children: [
-          FloatingActionButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => NewPostScreen(),
-                ),
-              );
-            },
-            backgroundColor: Colors.blue,
-            shape: const CircleBorder(),
-            child: Icon(Icons.add, color: Colors.white),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => NewPostScreen(),
+                  ),
+                );
+              },
+              backgroundColor: Colors.blue,
+              shape: const CircleBorder(),
+              child: Icon(Icons.add, color: Colors.white),
+            ),
           ),
           MenuDoctor(),
         ],
