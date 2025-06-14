@@ -1,47 +1,11 @@
+import 'dart:convert';
+import 'package:anyen_clinic/makeRequest.dart';
+import 'package:anyen_clinic/psychological_test/psychological_test_result_screen.dart';
+import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/QuestionCardInList.dart';
 import 'package:anyen_clinic/widget/menu.dart';
 import 'package:flutter/material.dart';
 import 'psychological_test_screen.dart';
-
-const List<Map<String, dynamic>> questions = [
-  {
-    'title': 'Bài kiểm tra trầm cảm',
-    'isComplete': false,
-    'questionCount': '6 câu hỏi',
-    'buttonText': 'LÀM LẠI',
-    'description':
-        'Hãy đọc kỹ từng nhóm câu và chọn một câu mô tả đúng nhất về cảm xúc của bạn trong hai tuần qua.',
-  },
-  {
-    'title': 'Bài kiểm tra lo âu',
-    'isComplete': false,
-    'questionCount': '6 câu hỏi',
-    'buttonText': 'LÀM',
-    'description':
-        'Trong 2 tuần qua, bạn cảm thấy những điều sau đây với mức độ nào?',
-  },
-  {
-    'title': 'Trắc nghiệm căng thẳng',
-    'isComplete': true,
-    'questionCount': '6 câu hỏi',
-    'buttonText': 'LÀM',
-    'description': 'Trắc nghiệm giúp bạn đánh giá mức độ căng thẳng hiện tại.',
-  },
-  {
-    'title': 'Trắc nghiệm EQ',
-    'isComplete': true,
-    'questionCount': '5 câu hỏi',
-    'buttonText': 'LÀM',
-    'description': 'Trắc nghiệm đo lường khả năng kiểm soát cảm xúc của bạn.',
-  },
-  {
-    'title': 'Đánh giá giấc ngủ',
-    'isComplete': true,
-    'questionCount': '4 câu hỏi',
-    'buttonText': 'LÀM',
-    'description': 'Đánh giá nhanh tình trạng rối loạn giấc ngủ.',
-  },
-];
 
 class PsychologicalTestHomeScreen extends StatefulWidget {
   const PsychologicalTestHomeScreen({super.key});
@@ -52,6 +16,51 @@ class PsychologicalTestHomeScreen extends StatefulWidget {
 }
 
 class _QuestionListScreenState extends State<PsychologicalTestHomeScreen> {
+  List<dynamic> questionSets = [];
+  List<dynamic> questionSetAnswered = [];
+
+  Future<void> fetchQuestions() async {
+    final response = await makeRequest(
+      url: '$apiUrl/patient/test', // Đúng URL API bạn có
+      method: 'GET',
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      print(response.body);
+      setState(() {
+        questionSets = data;
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Không thể tải danh sách trắc nghiệm chưa làm")),
+      );
+    }
+
+    final responseAnswered = await makeRequest(
+      url: '$apiUrl/patient/test/results', // Đúng URL API bạn có
+      method: 'GET',
+    );
+    if (responseAnswered.statusCode == 200) {
+      final data = jsonDecode(responseAnswered.body);
+      print(responseAnswered.body);
+      setState(() {
+        questionSetAnswered = data;
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Không thể tải danh sách trắc nghiệm đã làm")),
+      );
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchQuestions();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -86,31 +95,137 @@ class _QuestionListScreenState extends State<PsychologicalTestHomeScreen> {
         ),
       ),
       floatingActionButton: Menu(),
+      // body: Padding(
+      //   padding: EdgeInsets.symmetric(
+      //       horizontal: screenWidth * 0.05, vertical: screenWidth * 0.05),
+      //   child: ListView.builder(
+      //     itemCount: questionSets.length,
+      //     itemBuilder: (context, index) {
+      //       final question = questionSets[index];
+      //       return QuestionCardInList(
+      //         screenWidth: screenWidth,
+      //         screenHeight: screenHeight,
+      //         title: question['test_name'] ?? 'Không có tiêu đề',
+      //         testId: question['test_id'].toString(),
+      //         isComplete:
+      //             false, // nếu chưa có backend check, tạm thời cho false
+      //         questionCount: '${question['total_questions']} câu hỏi',
+      //         buttonText: 'LÀM',
+      //         description: '',
+      //         onPressed: () {
+      //           Navigator.push(
+      //             context,
+      //             MaterialPageRoute(
+      //               builder: (context) {
+      //                 // Kiểm tra dữ liệu từ question và đảm bảo rằng test_id tồn tại
+      //                 final String testId = question['test_id'] != null
+      //                     ? question['test_id'].toString()
+      //                     : '';
+      //
+      //                 // Kiểm tra xem testId có hợp lệ không
+      //                 if (testId.isEmpty) {
+      //                   // Nếu testId không hợp lệ, hiển thị thông báo lỗi hoặc xử lý thêm
+      //                   return Scaffold(
+      //                     body: Center(child: Text('Lỗi: testId không hợp lệ')),
+      //                   );
+      //                 }
+      //
+      //                 return PsychologicalTestScreen(
+      //                   title: question['test_name'] ??
+      //                       'Bài kiểm tra', // Sử dụng test_name hoặc mặc định
+      //                   testId: testId, // Truyền testId hợp lệ
+      //                 );
+      //               },
+      //             ),
+      //           );
+      //         },
+      //       );
+      //     },
+      //   ),
+      // ),
       body: Padding(
-        padding: EdgeInsets.symmetric(
-            horizontal: screenWidth * 0.05, vertical: screenWidth * 0.05),
-        child: ListView.builder(
-          itemCount: questions.length,
-          itemBuilder: (context, index) {
-            final question = questions[index];
-            return QuestionCardInList(
-              screenWidth: screenWidth,
-              screenHeight: screenHeight,
-              title: question['title'] ?? '',
-              isComplete: question['isComplete'] ?? '',
-              questionCount: question['questionCount'] ?? '',
-              buttonText: question['buttonText'] ?? '',
-              description: question['description'] ?? '',
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => PsychologicalTestScreen(
-                              title: question['title'] ?? '',
-                            )));
-              },
-            );
-          },
+        padding: EdgeInsets.all(screenWidth * 0.05),
+        child: ListView(
+          children: [
+            const Text("📝 Bài kiểm tra chưa làm",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            questionSets.isEmpty
+                ? const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text('Chưa có bài kiểm tra nào.',
+                        style: TextStyle(color: Colors.grey)),
+                  )
+                : ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: questionSets.length,
+                    itemBuilder: (context, index) {
+                      final question = questionSets[index];
+                      return QuestionCardInList(
+                        screenWidth: screenWidth,
+                        screenHeight: screenHeight,
+                        title: question['test_name'] ?? 'Không có tiêu đề',
+                        testId: question['test_id'].toString(),
+                        isComplete: false,
+                        questionCount: '${question['total_questions']} câu hỏi',
+                        buttonText: 'LÀM',
+                        description: '',
+                        onPressed: () {
+                          final testId = question['test_id']?.toString() ?? '';
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PsychologicalTestScreen(
+                                title: question['test_name'] ?? 'Bài kiểm tra',
+                                testId: testId,
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+            const SizedBox(height: 20),
+            const Text("✅ Bài kiểm tra đã hoàn thành",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            questionSetAnswered.isEmpty
+                ? const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text('Chưa làm bài kiểm tra nào.',
+                        style: TextStyle(color: Colors.grey)),
+                  )
+                : ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: questionSetAnswered.length,
+                    itemBuilder: (context, index) {
+                      final question = questionSetAnswered[index];
+                      return QuestionCardInList(
+                        screenWidth: screenWidth,
+                        screenHeight: screenHeight,
+                        title: question['test_name'] ?? 'Không có tiêu đề',
+                        testId: question['test_id'].toString(),
+                        isComplete: true,
+                        questionCount: '${question['total_questions']} câu hỏi',
+                        buttonText: 'XEM LẠI',
+                        description: 'Đã hoàn thành',
+                        onPressed: () {
+                          final testId = question['test_id']?.toString() ?? '';
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  PsychologicalTestResultScreen(
+                                title: question['test_name'] ?? 'Bài kiểm tra',
+                                testId: testId,
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+          ],
         ),
       ),
     );

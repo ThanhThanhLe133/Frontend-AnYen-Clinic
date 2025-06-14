@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:ayclinic_doctor_admin/makeRequest.dart';
+import 'package:ayclinic_doctor_admin/storage.dart';
 
 class PsychologicalTestScreen extends StatefulWidget {
   final String title;
+  final String testId;
 
-  const PsychologicalTestScreen({
-    super.key,
-    this.title = "Bài kiểm tra trầm cảm",
-  });
+  const PsychologicalTestScreen(
+      {super.key, this.title = "Bài kiểm tra trầm cảm", required this.testId});
 
   @override
   _PsychologicalTestScreenState createState() =>
@@ -15,64 +17,27 @@ class PsychologicalTestScreen extends StatefulWidget {
 
 class _PsychologicalTestScreenState extends State<PsychologicalTestScreen> {
   int currentQuestionIndex = 0; // Bắt đầu từ câu hỏi đầu tiên
+  List<dynamic> questions = [];
+  late String testId;
 
-  // ***** THÊM DỮ LIỆU CÂU HỎI ĐỂ ĐỦ 6 CÂU *****
-  List<Map<String, dynamic>> questions = [
-    {
-      'question': 'Tâm trạng buồn bã',
-      'answers': [
-        'Tôi không cảm thấy buồn',
-        'Thỉnh thoảng tôi cảm thấy buồn',
-        'Tôi thường xuyên buồn và khó thoát khỏi cảm giác đó',
-        'Tôi luôn buồn bã và không thể chịu đựng nổi',
-      ],
-    },
-    {
-      'question': 'Cảm giác bi quan',
-      'answers': [
-        'Tôi không hề bi quan về tương lai',
-        'Tôi cảm thấy bi quan về tương lai hơn trước đây',
-        'Tôi không trông đợi điều gì tốt đẹp sẽ đến với mình',
-        'Tôi cảm thấy tương lai vô vọng và mọi thứ sẽ không thể cải thiện',
-      ],
-    },
-    {
-      'question': 'Cảm giác thất bại',
-      'answers': [
-        'Tôi không cảm thấy mình là người thất bại',
-        'Tôi đã thất bại nhiều hơn những người khác',
-        'Nhìn lại cuộc đời, tôi thấy mình có quá nhiều thất bại',
-        'Tôi cảm thấy mình là một người hoàn toàn thất bại',
-      ],
-    },
-    {
-      'question': 'Mất hứng thú',
-      'answers': [
-        'Tôi vẫn có được sự thích thú như trước đây',
-        'Tôi không còn thích thú mọi thứ như trước đây',
-        'Tôi không còn thấy thích thú với bất cứ điều gì nữa',
-        'Tôi hoàn toàn không hài lòng và chán nản với mọi thứ',
-      ],
-    },
-    {
-      'question': 'Cảm giác tội lỗi',
-      'answers': [
-        'Tôi không cảm thấy có lỗi đặc biệt',
-        'Tôi cảm thấy có lỗi về nhiều điều tôi đã làm hoặc lẽ ra nên làm',
-        'Tôi cảm thấy khá tội lỗi trong phần lớn thời gian',
-        'Tôi cảm thấy cực kỳ tội lỗi mọi lúc',
-      ],
-    },
-    {
-      'question': 'Ý nghĩ tự tử',
-      'answers': [
-        'Tôi không có bất kỳ ý nghĩ nào về việc tự làm hại bản thân',
-        'Tôi có những ý nghĩ về việc tự làm hại bản thân, nhưng tôi sẽ không thực hiện chúng',
-        'Tôi muốn tự tử',
-        'Tôi sẽ tự tử nếu có cơ hội',
-      ],
-    },
-  ];
+  Future<void> fetchQuestions() async {
+    final response = await makeRequest(
+      url: '$apiUrl/admin/test/${testId}', // URL trả về JSON như bạn gửi
+      method: 'GET',
+    );
+
+    if (response.statusCode != 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Lỗi tải câu hỏi.")),
+      );
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        questions = data; // Gán thẳng danh sách
+      });
+      print(response.body);
+    }
+  }
 
   // Hàm xử lý chuyển câu hỏi tiếp theo
   void nextQuestion() {
@@ -90,6 +55,13 @@ class _PsychologicalTestScreenState extends State<PsychologicalTestScreen> {
         currentQuestionIndex--;
       });
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    testId = widget.testId; // Gán giá trị testId từ widget cha
+    fetchQuestions(); // Gọi hàm tải câu hỏi
   }
 
   @override
@@ -216,7 +188,7 @@ class _PsychologicalTestScreenState extends State<PsychologicalTestScreen> {
                 borderRadius: BorderRadius.circular(15.0),
               ),
               child: Text(
-                questions[currentQuestionIndex]['question'],
+                questions[currentQuestionIndex]['question_text'],
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: screenWidth * 0.05,
@@ -244,7 +216,8 @@ class _PsychologicalTestScreenState extends State<PsychologicalTestScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
-                      questions[currentQuestionIndex]['answers'][index],
+                      questions[currentQuestionIndex]['answers'][index]
+                          ['answer_text'],
                       style: TextStyle(
                         fontSize: screenWidth * 0.043,
                         color: Colors.black87,

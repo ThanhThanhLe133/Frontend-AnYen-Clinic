@@ -5,6 +5,7 @@ class QuestionCardInList extends StatelessWidget {
   final double screenWidth;
   final double screenHeight;
   final String title;
+  final String testId;
   final bool isComplete;
   final String buttonText;
   final String questionCount;
@@ -16,6 +17,7 @@ class QuestionCardInList extends StatelessWidget {
     required this.screenWidth,
     required this.screenHeight,
     required this.title,
+    required this.testId,
     required this.isComplete,
     required this.buttonText,
     required this.questionCount,
@@ -50,12 +52,19 @@ class QuestionCardInList extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    title,
-                    style: TextStyle(
+                  Expanded(
+                    // hoặc dùng Flexible
+                    child: Text(
+                      title,
+                      style: TextStyle(
                         fontSize: screenWidth * 0.045,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF119CF0)),
+                        color: Color(0xFF119CF0),
+                      ),
+                      overflow: TextOverflow
+                          .ellipsis, // hoặc wrap nếu muốn xuống dòng
+                      maxLines: 2, // hoặc 1 tùy thiết kế
+                    ),
                   ),
                   Container(
                     padding: EdgeInsets.symmetric(
@@ -115,6 +124,7 @@ class QuestionCardInList extends StatelessWidget {
                             MaterialPageRoute(
                                 builder: (context) => PsychologicalTestScreen(
                                       title: title ?? '',
+                                      testId: testId,
                                     )));
                       },
                       icon: Icon(

@@ -4,27 +4,28 @@ import 'package:anyen_clinic/makeRequest.dart';
 import 'package:flutter/material.dart';
 import 'psychological_test_home_screen.dart';
 
-class PsychologicalTestScreen extends StatefulWidget {
+class PsychologicalTestResultScreen extends StatefulWidget {
   final String title; // <-- Giữ lại để có thể tùy chỉnh tiêu đề nếu cần
   final String testId;
-  const PsychologicalTestScreen(
+  const PsychologicalTestResultScreen(
       {super.key, this.title = "Bài kiểm tra", required this.testId});
 
   @override
-  _PsychologicalTestScreenState createState() =>
-      _PsychologicalTestScreenState();
+  _PsychologicalTestResultScreenState createState() =>
+      _PsychologicalTestResultScreenState();
 }
 
-class _PsychologicalTestScreenState extends State<PsychologicalTestScreen> {
+class _PsychologicalTestResultScreenState
+    extends State<PsychologicalTestResultScreen> {
   int currentQuestionIndex = 0; // Bắt đầu từ câu hỏi đầu tiên (index 0)
-  int selectedAnswerIndex = -1; // Chưa chọn câu trả lời nào
   List<dynamic> questions = [];
   List<Map<String, String>> selectedAnswers = [];
   late String testId;
 
   Future<void> fetchQuestions() async {
     final response = await makeRequest(
-      url: '$apiUrl/patient/test/${testId}', // URL trả về JSON như bạn gửi
+      url:
+          '$apiUrl/patient/test/results/${testId}', // URL trả về JSON như bạn gửi
       method: 'GET',
     );
 
@@ -41,35 +42,33 @@ class _PsychologicalTestScreenState extends State<PsychologicalTestScreen> {
   }
 
   // Hàm cập nhật câu trả lời
-  void onAnswerSelected(int index) {
-    setState(() {
-      selectedAnswerIndex = index;
-
-      String questionId = questions[currentQuestionIndex]['question_id'];
-      String answerId =
-          questions[currentQuestionIndex]['answers'][index]['answer_id'];
-
-      // Cập nhật hoặc thêm vào selectedAnswers
-      int existingIndex = selectedAnswers
-          .indexWhere((item) => item['question_id'] == questionId);
-      if (existingIndex != -1) {
-        selectedAnswers[existingIndex]['answer_id'] = answerId;
-      } else {
-        selectedAnswers.add({
-          'question_id': questionId,
-          'answer_id': answerId,
-        });
-      }
-    });
-  }
+  // void onAnswerSelected(int index) {
+  //   setState(() {
+  //     selectedAnswerIndex = index;
+  //
+  //     String questionId = questions[currentQuestionIndex]['question_id'];
+  //     String answerId =
+  //         questions[currentQuestionIndex]['answers'][index]['answer_id'];
+  //
+  //     // Cập nhật hoặc thêm vào selectedAnswers
+  //     int existingIndex = selectedAnswers
+  //         .indexWhere((item) => item['question_id'] == questionId);
+  //     if (existingIndex != -1) {
+  //       selectedAnswers[existingIndex]['answer_id'] = answerId;
+  //     } else {
+  //       selectedAnswers.add({
+  //         'question_id': questionId,
+  //         'answer_id': answerId,
+  //       });
+  //     }
+  //   });
+  // }
 
   // Hàm xử lý chuyển câu hỏi tiếp theo
   void nextQuestion() {
-    if (selectedAnswerIndex != -1 &&
-        currentQuestionIndex < questions.length - 1) {
+    if (currentQuestionIndex < questions.length - 1) {
       setState(() {
         currentQuestionIndex++;
-        selectedAnswerIndex = -1; // Đặt lại câu trả lời khi chuyển câu hỏi mới
       });
     }
   }
@@ -81,73 +80,48 @@ class _PsychologicalTestScreenState extends State<PsychologicalTestScreen> {
         currentQuestionIndex--;
         // Có thể muốn khôi phục câu trả lời đã chọn trước đó nếu lưu trữ,
         // nhưng hiện tại reset lại giống nextQuestion
-        selectedAnswerIndex = -1;
       });
     }
   }
 
-  // Hàm xử lý hoàn thành
   Future<void> completeTest() async {
-    if (selectedAnswerIndex == -1) return;
-
-    try {
-      final response = await makeRequest(
-        url: '$apiUrl/patient/test/submit-answers',
-        method: 'POST',
-        body: {
-          'test_id': testId,
-          'answers': selectedAnswers,
-        },
-      );
-
-      if (response.statusCode == 201) {
-        // Thành công
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text("Hoàn thành bài kiểm tra"),
-              content: Text("Bạn đã hoàn thành bài kiểm tra tâm lý."),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => PsychologicalTestHomeScreen()),
-                      (route) => false,
-                    );
-                  },
-                  child: Text("OK"),
-                ),
-              ],
-            );
-          },
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Trở về trang chủ"),
+          content: Text("Bạn đã xem lại hết bài kiểm tra tâm lý."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => PsychologicalTestHomeScreen()),
+                  (route) => false,
+                );
+              },
+              child: Text("OK"),
+            ),
+          ],
         );
-      } else {
-        throw Exception('Lỗi khi gửi câu trả lời');
-      }
-    } catch (e) {
-      print("Lỗi gửi API: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi khi gửi bài kiểm tra.')),
-      );
-    }
+      },
+    );
   }
 
   // Hàm xử lý cho nút FAB hoặc nút "Sau" ở trên
   void _handleNextOrComplete() {
-    if (selectedAnswerIndex == -1) {
-      // Optional: Hiển thị thông báo yêu cầu chọn câu trả lời
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Vui lòng chọn một câu trả lời.'),
-          duration: Duration(seconds: 1),
-        ),
-      );
-      return;
-    }
+    // if (selectedAnswerIndex == -1) {
+    //   // Optional: Hiển thị thông báo yêu cầu chọn câu trả lời
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     SnackBar(
+    //       content: Text('Vui lòng chọn một câu trả lời.'),
+    //       duration: Duration(seconds: 1),
+    //     ),
+    //   );
+    //   return;
+    // }
     if (currentQuestionIndex < questions.length - 1) {
       nextQuestion();
     } else {
@@ -167,7 +141,8 @@ class _PsychologicalTestScreenState extends State<PsychologicalTestScreen> {
     double screenWidth = MediaQuery.of(context).size.width;
     bool isLastQuestion = currentQuestionIndex == questions.length - 1;
     bool canGoBack = currentQuestionIndex > 0;
-    bool canGoForward = selectedAnswerIndex != -1; // Có thể đi tiếp nếu đã chọn
+    bool canGoForward = currentQuestionIndex <=
+        questions.length - 1; // Có thể đi tiếp nếu đã chọn
 
     if (questions.isEmpty) {
       return Scaffold(
@@ -295,7 +270,7 @@ class _PsychologicalTestScreenState extends State<PsychologicalTestScreen> {
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                   ),
-                  child: Text(isLastQuestion ? 'Hoàn thành' : 'Sau'),
+                  child: Text(isLastQuestion ? 'Trở về' : 'Sau'),
                 ),
               ],
             ),
@@ -312,7 +287,7 @@ class _PsychologicalTestScreenState extends State<PsychologicalTestScreen> {
                 borderRadius: BorderRadius.circular(15.0), // Bo góc nhiều hơn
               ),
               child: Text(
-                questions[currentQuestionIndex]['question_text'],
+                questions[currentQuestionIndex]['question']['question_text'],
                 textAlign: TextAlign.center, // Căn giữa text câu hỏi
                 style: TextStyle(
                   fontSize: screenWidth * 0.05, // Cỡ chữ câu hỏi
@@ -323,55 +298,78 @@ class _PsychologicalTestScreenState extends State<PsychologicalTestScreen> {
             ),
             SizedBox(height: 30),
 
-            // Các câu trả lời (dùng Container thay vì RadioListTile)
-            Expanded(
-              // Sử dụng Expanded để các câu trả lời chiếm không gian còn lại
-              child: ListView.builder(
-                // Dùng ListView để có thể scroll nếu không đủ chỗ
-                itemCount: questions[currentQuestionIndex]['answers'].length,
-                itemBuilder: (context, index) {
-                  bool isSelected = selectedAnswerIndex == index;
-                  String answerText = questions[currentQuestionIndex]['answers']
-                      [index]['answer_text'];
-                  return GestureDetector(
-                    onTap: () => onAnswerSelected(index),
-                    child: Container(
-                      margin: const EdgeInsets.only(
-                          bottom: 15.0), // Khoảng cách giữa các câu trả lời
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 18.0,
-                          horizontal: 15.0), // Padding bên trong
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? Color(0xFF007AFF).withOpacity(0.3)
-                            : Color(0xFFE0F2FE), // Màu nền khác nhau khi chọn
-                        borderRadius:
-                            BorderRadius.circular(12.0), // Bo góc câu trả lời
-                        border: Border.all(
-                          color: isSelected
-                              ? Color(0xFF007AFF)
-                              : Colors.transparent, // Viền xanh khi được chọn
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Text(
-                        answerText,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.04, // Cỡ chữ câu trả lời
-                          color: isSelected
-                              ? Colors.black
-                              : Colors.black87, // Màu chữ khi chọn
-                          fontWeight:
-                              isSelected ? FontWeight.w500 : FontWeight.normal,
-                        ),
-                      ),
-                    ),
-                  );
-                },
+            Container(
+              margin: const EdgeInsets.only(bottom: 15.0),
+              padding:
+                  const EdgeInsets.symmetric(vertical: 18.0, horizontal: 15.0),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Color(0xFF007AFF)
+                    .withOpacity(0.3), // Hiển thị như là đã chọn
+                borderRadius: BorderRadius.circular(12.0),
+                border: Border.all(
+                  color: Color(0xFF007AFF),
+                  width: 1.5,
+                ),
+              ),
+              child: Text(
+                questions[currentQuestionIndex]['answer']['answer_text'],
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: screenWidth * 0.04,
+                  color: Colors.black,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
+            // // Các câu trả lời (dùng Container thay vì RadioListTile)
+            // Expanded(
+            //   // Sử dụng Expanded để các câu trả lời chiếm không gian còn lại
+            //   child: ListView.builder(
+            //     // Dùng ListView để có thể scroll nếu không đủ chỗ
+            //     itemCount: questions[currentQuestionIndex]['answers'].length,
+            //     itemBuilder: (context, index) {
+            //       bool isSelected = false;
+            //       String answerText = questions[currentQuestionIndex]['answers']
+            //           [index]['answer_text'];
+            //       return GestureDetector(
+            //         child: Container(
+            //           margin: const EdgeInsets.only(
+            //               bottom: 15.0), // Khoảng cách giữa các câu trả lời
+            //           padding: const EdgeInsets.symmetric(
+            //               vertical: 18.0,
+            //               horizontal: 15.0), // Padding bên trong
+            //           width: double.infinity,
+            //           decoration: BoxDecoration(
+            //             color: isSelected
+            //                 ? Color(0xFF007AFF).withOpacity(0.3)
+            //                 : Color(0xFFE0F2FE), // Màu nền khác nhau khi chọn
+            //             borderRadius:
+            //                 BorderRadius.circular(12.0), // Bo góc câu trả lời
+            //             border: Border.all(
+            //               color: isSelected
+            //                   ? Color(0xFF007AFF)
+            //                   : Colors.transparent, // Viền xanh khi được chọn
+            //               width: 1.5,
+            //             ),
+            //           ),
+            //           child: Text(
+            //             answerText,
+            //             textAlign: TextAlign.center,
+            //             style: TextStyle(
+            //               fontSize: screenWidth * 0.04, // Cỡ chữ câu trả lời
+            //               color: isSelected
+            //                   ? Colors.black
+            //                   : Colors.black87, // Màu chữ khi chọn
+            //               fontWeight:
+            //                   isSelected ? FontWeight.w500 : FontWeight.normal,
+            //             ),
+            //           ),
+            //         ),
+            //       );
+            //     },
+            //   ),
+            // ),
             // Spacer(), // Bỏ Spacer và các nút cũ ở dưới
           ],
         ),

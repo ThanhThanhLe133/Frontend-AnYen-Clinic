@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:ayclinic_doctor_admin/ADMIN/psychological_test/psychological_test_home_screen.dart';
+import 'dart:convert';
+import 'package:ayclinic_doctor_admin/makeRequest.dart';
+import 'package:ayclinic_doctor_admin/storage.dart';
 
 class PsychologicalAddQuestionsScreen extends StatefulWidget {
-  final String testTitle;
+  final String testId;
 
-  const PsychologicalAddQuestionsScreen({super.key, required this.testTitle});
+  const PsychologicalAddQuestionsScreen({super.key, required this.testId});
 
   @override
   State<PsychologicalAddQuestionsScreen> createState() =>
@@ -15,9 +18,39 @@ class _PsychologicalAddQuestionsScreenState
     extends State<PsychologicalAddQuestionsScreen> {
   final TextEditingController _questionController = TextEditingController();
   final TextEditingController _answerController = TextEditingController();
+  late String testName = widget.testId;
 
   final List<Map<String, dynamic>> _questions = [];
   final List<String> _currentAnswers = [];
+
+  Future<void> submitQuestionToAPI(
+      String question, List<String> answers) async {
+    try {
+      print('Câu hỏi: $question');
+      print('Đáp án: $answers');
+      print(json.encode({
+        "question_text": question,
+        "answers": answers,
+      }));
+
+      final response = await makeRequest(
+        url: '$apiUrl/admin/test/${widget.testId}/questions',
+        method: 'POST',
+        body: {
+          "question_text": question,
+          "answers": List<String>.from(answers),
+        },
+      );
+
+      if (response.statusCode == 201) {
+        _showSnackBar("Câu hỏi đã được thêm thành công.");
+      } else {
+        _showSnackBar("Lỗi khi thêm câu hỏi.");
+      }
+    } catch (e) {
+      _showSnackBar("Lỗi kết nối khi thêm câu hỏi.");
+    }
+  }
 
   void _addAnswer() {
     final answer = _answerController.text.trim();
@@ -32,6 +65,7 @@ class _PsychologicalAddQuestionsScreenState
   void _addQuestion() {
     final question = _questionController.text.trim();
     if (question.isNotEmpty && _currentAnswers.isNotEmpty) {
+      submitQuestionToAPI(question, _currentAnswers);
       setState(() {
         _questions.add({
           'question': question,
@@ -65,27 +99,26 @@ class _PsychologicalAddQuestionsScreenState
   void _showCompletionDialog() {
     showDialog(
       context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: const Text('Hoàn tất'),
-            content: Text(
-              'Bạn đã tạo thành công bài kiểm tra "${widget.testTitle}" với ${_questions.length} câu hỏi.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(ctx).pop();
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (_) => const PsychologicalTestHomeScreen(),
-                    ),
-                    (route) => false,
-                  );
-                },
-                child: const Text('OK'),
-              ),
-            ],
+      builder: (ctx) => AlertDialog(
+        title: const Text('Hoàn tất'),
+        content: Text(
+          'Bạn đã tạo thành công bài kiểm tra với ${_questions.length} câu hỏi.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (_) => const PsychologicalTestHomeScreen(),
+                ),
+                (route) => false,
+              );
+            },
+            child: const Text('OK'),
           ),
+        ],
+      ),
     );
   }
 
@@ -110,17 +143,17 @@ class _PsychologicalAddQuestionsScreenState
           ),
           const SizedBox(height: 10),
           ..._currentAnswers.asMap().entries.map(
-            (entry) => ListTile(
-              leading: const Icon(Icons.check_circle, color: Colors.green),
-              title: Text(entry.value),
-              trailing: IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
-                onPressed: () {
-                  setState(() => _currentAnswers.removeAt(entry.key));
-                },
+                (entry) => ListTile(
+                  leading: const Icon(Icons.check_circle, color: Colors.green),
+                  title: Text(entry.value),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () {
+                      setState(() => _currentAnswers.removeAt(entry.key));
+                    },
+                  ),
+                ),
               ),
-            ),
-          ),
         ],
       ),
     );
@@ -143,10 +176,9 @@ class _PsychologicalAddQuestionsScreenState
             title: Text(item['question']),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children:
-                  (item['answers'] as List<String>)
-                      .map((ans) => Text('- $ans'))
-                      .toList(),
+              children: (item['answers'] as List<String>)
+                  .map((ans) => Text('- $ans'))
+                  .toList(),
             ),
             trailing: IconButton(
               icon: const Icon(Icons.delete, color: Colors.red),
@@ -198,7 +230,7 @@ class _PsychologicalAddQuestionsScreenState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Bài kiểm tra: ${widget.testTitle}',
+              'Bài kiểm tra đang tạo',
               style: TextStyle(
                 fontSize: screenWidth * 0.045,
                 fontWeight: FontWeight.w600,

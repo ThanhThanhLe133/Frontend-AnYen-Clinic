@@ -141,13 +141,12 @@ class _PsychologicalTestHomeScreenState
                     questionCount: question['questionCount'] ?? '',
                     description: question['description'] ?? '',
                     onPressed: () {
-Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (context) => ViewAnswersScreen(
-    ),
-  ),
-);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ViewAnswersScreen(),
+                        ),
+                      );
                     },
                     questions: [],
                   );

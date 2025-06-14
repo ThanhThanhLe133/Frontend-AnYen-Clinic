@@ -2,36 +2,9 @@ import 'package:ayclinic_doctor_admin/widget/QuestionCardInList.dart';
 import 'package:flutter/material.dart';
 import 'psychological_review_screen.dart';
 import 'psychological_add_test_screen.dart';
-
-const List<Map<String, dynamic>> questions = [
-  {
-    'title': 'Bài kiểm tra trầm cảm',
-    'questionCount': '6 câu hỏi',
-    'description':
-        'Hãy đọc kỹ từng nhóm câu và chọn một câu mô tả đúng nhất về cảm xúc của bạn trong hai tuần qua.',
-  },
-  {
-    'title': 'Bài kiểm tra lo âu',
-    'questionCount': '6 câu hỏi',
-    'description':
-        'Trong 2 tuần qua, bạn cảm thấy những điều sau đây với mức độ nào?',
-  },
-  {
-    'title': 'Trắc nghiệm căng thẳng',
-    'questionCount': '6 câu hỏi',
-    'description': 'Trắc nghiệm giúp bạn đánh giá mức độ căng thẳng hiện tại.',
-  },
-  {
-    'title': 'Trắc nghiệm EQ',
-    'questionCount': '5 câu hỏi',
-    'description': 'Trắc nghiệm đo lường khả năng kiểm soát cảm xúc của bạn.',
-  },
-  {
-    'title': 'Đánh giá giấc ngủ',
-    'questionCount': '4 câu hỏi',
-    'description': 'Đánh giá nhanh tình trạng rối loạn giấc ngủ.',
-  },
-];
+import 'dart:convert';
+import 'package:ayclinic_doctor_admin/makeRequest.dart';
+import 'package:ayclinic_doctor_admin/storage.dart';
 
 class PsychologicalTestHomeScreen extends StatefulWidget {
   const PsychologicalTestHomeScreen({super.key});
@@ -43,6 +16,34 @@ class PsychologicalTestHomeScreen extends StatefulWidget {
 
 class _PsychologicalTestHomeScreenState
     extends State<PsychologicalTestHomeScreen> {
+  List<dynamic> questionSets = [];
+
+  Future<void> fetchTest() async {
+    final response = await makeRequest(
+      url: '$apiUrl/admin/test/all-test', // Đúng URL API bạn có
+      method: 'GET',
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      print(response.body);
+      setState(() {
+        questionSets = data;
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Không thể tải danh sách trắc nghiệm")),
+      );
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchTest();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -80,26 +81,48 @@ class _PsychologicalTestHomeScreenState
           vertical: screenWidth * 0.05,
         ),
         child: ListView.builder(
-          itemCount: questions.length,
+          itemCount: questionSets.length,
           itemBuilder: (context, index) {
-            final question = questions[index];
+            final question = questionSets[index];
+            // return QuestionCardInList(
+            //   screenWidth: screenWidth,
+            //   screenHeight: screenHeight,
+            //   title: question['title'] ?? '',
+            //   questionCount: question['questionCount'] ?? '',
+            //   description: question['description'] ?? '',
+            //   onPressed: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //         builder: (context) => PsychologicalTestScreen(
+            //           title: question['title'] ?? '',
+            //         ),
+            //       ),
+            //     );
+            //   },
+            // );
             return QuestionCardInList(
               screenWidth: screenWidth,
               screenHeight: screenHeight,
-              title: question['title'] ?? '',
-              questionCount: question['questionCount'] ?? '',
-              description: question['description'] ?? '',
+              title: question['test_name'] ?? 'Không có tiêu đề',
+              testId: question['test_id'].toString(),
+              questionCount: '${question['total_questions']} câu hỏi',
+              description: '',
               onPressed: () {
+                final testId = question['test_id']?.toString() ?? '';
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder:
-                        (context) => PsychologicalTestScreen(
-                          title: question['title'] ?? '',
-                        ),
+                    builder: (context) => PsychologicalTestScreen(
+                      title: question['test_name'] ?? 'Bài kiểm tra',
+                      testId: testId,
+                    ),
                   ),
                 );
               },
+              onDeleted: () => setState(() {
+                questionSets.removeAt(index);
+              }),
             );
           },
         ),
