@@ -286,39 +286,44 @@ class WebSocketService {
       });
 
       onCallUnreceived((data) async {
+        signaling.close();
         if (data['sender'] != currentUserId) {
           Navigator.of(context).pop();
           showInfoSnackBar('Cuộc gọi bị nhỡ', context);
         }
-        signaling.close();
+
         cancelTimeout();
       });
 
       onCallDeclined((data) {
+        signaling.close();
         print('✅ Call was declined');
         if (data['sender'] != currentUserId) {
           Navigator.of(context).pop();
           showInfoSnackBar('📴 Người nhận đã từ chối cuộc gọi', context);
         }
-        signaling.close();
+
         cancelTimeout();
       });
 
-      onEndCall((data) {
+      onEndCall((data) async {
+        await signaling.close();
+        signaling.onAddRemoteStream = null;
+        signaling.onSendIceCandidate = null;
         print('✅ Call was ended');
         if (data['sender'] != currentUserId) {
           CallScreenState.close();
         }
-        signaling.close();
         showInfoSnackBar('📴 Cuộc gọi đã kết thúc', context);
       });
 
       onEndCreatingCall((data) {
+        signaling.close();
         if (data['sender'] != currentUserId) {
           closeIncomingCallDialog();
         }
         showInfoSnackBar('📴 Cuộc gọi đã kết thúc', context);
-        signaling.close();
+
         cancelTimeout();
       });
 
@@ -413,7 +418,7 @@ class WebSocketService {
       // Lắng nghe candidate từ phía calling
       onReceiveIceCandidate((data) {
         if (data['from'] != currentUserId) {
-          showSuccessSnackBar('receive call', context);
+          // showSuccessSnackBar('receive call', context);
           if (data['candidate'] != null) {
             signaling.addCandidate(data['candidate']);
           } else {

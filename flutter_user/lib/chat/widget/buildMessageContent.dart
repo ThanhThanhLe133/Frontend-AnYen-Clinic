@@ -80,6 +80,7 @@ class MessageContent extends StatelessWidget {
       );
     } else if (audioPath != null && audioPath!.isNotEmpty) {
       final isNetworkAudio = audioPath!.startsWith('http');
+
       return FutureBuilder<Duration>(
         future: getAudioDuration(audioPath!, isNetworkAudio, audioDurations),
         builder: (context, snapshot) {

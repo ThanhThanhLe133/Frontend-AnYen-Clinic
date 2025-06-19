@@ -296,7 +296,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     showCallingPopup(context);
 
-    timeoutTimer = Timer(Duration(seconds: 200), () {
+    timeoutTimer = Timer(Duration(seconds: 10), () {
       print('❌ Không ai trả lời trong 10s, gọi callUnreceived');
       webSocketService.callUnreceived();
       Navigator.of(context).pop();
@@ -316,7 +316,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
       webSocketService.onReceiveIceCandidate((data) {
         if (data['from'] != currentUserId) {
-          showSuccessSnackBar('receive call', context);
+          // showSuccessSnackBar('receive call', context);
           if (data['candidate'] != null) {
             signaling.addCandidate(data['candidate']);
           } else {

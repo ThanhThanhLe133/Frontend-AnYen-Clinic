@@ -89,25 +89,27 @@ Future<http.Response> makeRequest({
 
   try {
     http.Response res = await sendRequest(token: accessToken);
-    final decoded = jsonDecode(res.body);
+    final body = jsonDecode(res.body);
 
-    // Chỉ kiểm tra 'err' nếu dữ liệu là Map
-    if (decoded is Map<String, dynamic> &&
-        decoded['err'] == 2 &&
+    if (body is Map<String, dynamic> &&
+        body['err'] == 2 &&
         refreshToken != null) {
       final refreshRes = await http.post(
         Uri.parse('$apiUrl/auth/refresh-token'),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({"refresh_token": refreshToken}),
       );
+
       if (refreshRes.statusCode == 200) {
         final respond = jsonDecode(refreshRes.body);
         final newAccessToken = respond['access_token'];
         final newRefreshToken = respond['refresh_token'];
 
+        // Lưu token mới
         if (newAccessToken != null) await saveAccessToken(newAccessToken);
         if (newRefreshToken != null) await saveRefreshToken(newRefreshToken);
 
+        // Thử lại request
         res = await sendRequest(token: newAccessToken);
       } else {
         throw Exception('Failed to refresh token: ${refreshRes.body}');

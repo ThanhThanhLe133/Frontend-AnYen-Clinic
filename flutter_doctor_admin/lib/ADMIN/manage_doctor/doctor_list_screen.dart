@@ -146,7 +146,8 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
               screenHeight: screenHeight,
               name: _displayedDoctors[index]['name']!,
               specialty: _displayedDoctors[index]['specialization']!,
-              percentage: _displayedDoctors[index]['averageSatisfaction'],
+              percentage:
+                  _displayedDoctors[index]['averageSatisfaction'].toInt(),
               workplace: _displayedDoctors[index]['workplace']!,
               imageUrl: _displayedDoctors[index]['avatar_url']!,
               doctorId: _displayedDoctors[index]['doctorId'],

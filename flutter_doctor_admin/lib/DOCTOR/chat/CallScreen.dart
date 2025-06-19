@@ -87,8 +87,12 @@ class CallScreenState extends ConsumerState<CallScreen> {
   }
 
   Future<void> endCall(BuildContext context, bool isSender) async {
+    await signaling.close();
     if (isSender) webSocketService.endCall();
-    Navigator.pop(context);
+
+    if (context.mounted) {
+      Navigator.pop(context);
+    }
   }
 
   void startTimer() {
@@ -183,7 +187,7 @@ class CallScreenState extends ConsumerState<CallScreen> {
           ),
 
           Positioned(
-            bottom: 140, // cao hơn nút khoảng 100px
+            bottom: 140,
             left: 0,
             right: 0,
             child: Column(

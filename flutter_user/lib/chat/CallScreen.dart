@@ -113,8 +113,12 @@ class CallScreenState extends ConsumerState<CallScreen> {
   // }
 
   Future<void> endCall(BuildContext context, bool isSender) async {
+    await signaling.close();
     if (isSender) webSocketService.endCall();
-    Navigator.pop(context);
+
+    if (context.mounted) {
+      Navigator.pop(context);
+    }
   }
 
   void startTimer() {
@@ -153,7 +157,7 @@ class CallScreenState extends ConsumerState<CallScreen> {
       body: Stack(
         children: [
           // video của đối phương full màn hoặc ảnh nếu không video
-          remoteRenderer.srcObject != null
+          widget.isVideoCall
               ? Positioned.fill(
                   child: Container(
                     color: Colors.black,

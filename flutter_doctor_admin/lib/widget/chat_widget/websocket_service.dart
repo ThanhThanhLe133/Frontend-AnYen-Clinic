@@ -274,20 +274,23 @@ class WebSocketService {
       //   }
       // });
 
-      onEndCall((data) {
+      onEndCall((data) async {
+        await signaling.close();
+        signaling.onAddRemoteStream = null;
+        signaling.onSendIceCandidate = null;
         print('✅ Call was ended');
         if (data['sender'] != currentUserId) {
           CallScreenState.close();
         }
-        signaling.close();
         showInfoSnackBar('📴 Cuộc gọi đã kết thúc', context);
       });
 
       onEndCreatingCall((data) {
+        signaling.close();
         if (data['sender'] != currentUserId) {
           closeIncomingCallDialog();
         }
-        signaling.close();
+
         showInfoSnackBar('📴 Cuộc gọi đã kết thúc', context);
       });
 

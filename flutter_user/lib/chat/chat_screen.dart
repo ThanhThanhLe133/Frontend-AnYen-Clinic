@@ -126,7 +126,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           body: {"conversation_id": conversationId});
       if (responseJoin.statusCode == 200) {
         final jsonJoin = jsonDecode(responseJoin.body);
-        print("joining conversation");
         if (jsonJoin['err'] == 0) {
           final response = await makeRequest(
             url: '$apiUrl/chat/conversation/$conversationId/messages',
@@ -582,9 +581,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 }
                 if (message['message_type'] == 'audio') {
                   return buildChatBubble("", message['isMe'],
+                      audioPath: message['content'],
                       time: formatTime(message['createdAt']));
                 } else if (message['message_type'] == 'image') {
                   return buildChatBubble("", message['isMe'],
+                      imagePath: message['content'],
                       time: formatTime(message['createdAt']));
                 } else {
                   return buildChatBubble(message['content'], message['isMe'],
@@ -688,7 +689,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   Widget buildMessageInput() {
     return Row(
-      mainAxisSize: MainAxisSize.min,
+      mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         if (image != null)
@@ -702,7 +703,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   icon: Icon(Icons.cancel, color: Colors.red),
                   onPressed: () {
                     setState(() {
-                      image = null;
+                      image = null; // Xóa ảnh chưa gửi
                     });
                   },
                 ),
@@ -719,43 +720,42 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             togglePlayPause: togglePlayPause,
             removeRecordedAudio: removeRecordedAudio,
           ),
-        if (image == null)
-          buildCameraButton(openCamera: openCamera, context: context),
-        if (recordedFilePath == null)
-          buildMicButton(startRecording: startRecording, context: context),
-        if (recordedFilePath == null || image == null)
-          Expanded(
-            child: TextField(
-              controller: controller,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Color(0xFFECF8FF),
-                hintText: 'Type message...',
-                hintStyle: TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF9AA5AC),
-                    fontWeight: FontWeight.w400),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                contentPadding:
-                    EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  borderSide: BorderSide(color: Colors.blue, width: 2),
-                ),
+        buildCameraButton(openCamera: openCamera, context: context),
+        buildMicButton(startRecording: startRecording, context: context),
+        SizedBox(width: 8),
+        Expanded(
+          child: TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Color(0xFFECF8FF),
+              hintText: 'Gõ nội dung...',
+              hintStyle: TextStyle(
+                fontSize: 16,
+                color: Color(0xFF9AA5AC),
+                fontWeight: FontWeight.w400,
               ),
-              onSubmitted: (value) {
-                sendMessage();
-              },
-              onTap: () {
-                scrollToBottom();
-              },
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide.none,
+                borderRadius: BorderRadius.circular(24),
+              ),
+              contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(24),
+                borderSide: BorderSide(color: Colors.blue, width: 2),
+              ),
             ),
+            onSubmitted: (value) {
+              sendMessage();
+            },
+            onTap: () {
+              scrollToBottom();
+            },
           ),
+        ),
+        SizedBox(width: 8),
         IconButton(
-          icon: Icon(Icons.send_sharp, color: Colors.blue),
+          icon: Icon(Icons.send_sharp, color: Colors.blue), // Màu icon
           onPressed: () => sendMessage(),
           iconSize: 24,
         ),

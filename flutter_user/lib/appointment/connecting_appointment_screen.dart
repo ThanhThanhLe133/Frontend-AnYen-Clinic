@@ -31,7 +31,7 @@ class _ConnectingAppointmentScreenState
     if (response.statusCode != 200) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      ).showSnackBar(SnackBar(content: Text(response.body)));
       Navigator.pop(context);
     } else {
       final data = jsonDecode(response.body);

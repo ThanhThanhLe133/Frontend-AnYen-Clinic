@@ -36,7 +36,7 @@ class _DoctorListState extends State<DoctorList> {
       final data = jsonDecode(response.body);
       setState(() {
         doctors = List<Map<String, dynamic>>.from(data['data'])
-            .where((doctor) => doctor['averageSatisfaction'] >= 80)
+            .where((doctor) => doctor['averageSatisfaction'] >= 70)
             .toList();
       });
     }
@@ -131,6 +131,7 @@ class _DoctorListState extends State<DoctorList> {
             specialty: _displayedDoctors[index]['specialization']!,
             workplace: _displayedDoctors[index]['workplace']!,
             imageUrl: _displayedDoctors[index]['avatar_url']!,
+            doctorId: _displayedDoctors[index]['doctorId'],
           );
         },
       ),
