@@ -21,7 +21,7 @@ class _QuestionListScreenState extends State<PsychologicalTestHomeScreen> {
 
   Future<void> fetchQuestions() async {
     final response = await makeRequest(
-      url: '$apiUrl/patient/test', // Đúng URL API bạn có
+      url: '$apiUrl/patient/test',
       method: 'GET',
     );
     if (response.statusCode == 200) {

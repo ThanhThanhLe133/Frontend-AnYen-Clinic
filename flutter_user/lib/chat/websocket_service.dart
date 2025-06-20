@@ -327,10 +327,8 @@ class WebSocketService {
         cancelTimeout();
       });
 
-      // Listen for errors
       onError((error) {
         print('❌ WebSocket error: $error');
-        // showErrorSnackBar('Chat error: $error');
         showErrorSnackBar(error, context, showRetry: true);
       });
     } catch (e) {

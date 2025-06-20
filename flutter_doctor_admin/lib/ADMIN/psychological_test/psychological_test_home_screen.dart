@@ -20,7 +20,7 @@ class _PsychologicalTestHomeScreenState
 
   Future<void> fetchTest() async {
     final response = await makeRequest(
-      url: '$apiUrl/admin/test/all-test', // Đúng URL API bạn có
+      url: '$apiUrl/admin/test/all-test',
       method: 'GET',
     );
     if (response.statusCode == 200) {

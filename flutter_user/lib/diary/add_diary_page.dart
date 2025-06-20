@@ -77,10 +77,18 @@ class _AddDiaryScreenState extends State<AddDiaryScreen> {
       method: 'POST',
       body: newDiary,
     );
+    final data = jsonDecode(response.body);
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(data['mes'])));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Đã tạo nhật ký!')),
+      );
+    }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Đã tạo nhật ký!')),
-    );
     Navigator.pop(context, newDiary);
   }
 

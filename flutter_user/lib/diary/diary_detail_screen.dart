@@ -82,7 +82,7 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
     };
 
     final response = await makeRequest(
-      url: '$apiUrl/patient/diary/${diaryId}',
+      url: '$apiUrl/patient/diary/$diaryId',
       method: 'PUT',
       body: updatedDiary,
     );
@@ -120,8 +120,8 @@ class _DiaryDetailScreenState extends State<DiaryDetailScreen> {
     );
 
     if (response.statusCode == 200) {
-      Navigator.pop(context); // đóng dialog
-      Navigator.pop(context, true); // quay lại màn hình trước
+      Navigator.pop(context);
+      Navigator.pop(context, true);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Đã xóa nhật ký!')),
       );

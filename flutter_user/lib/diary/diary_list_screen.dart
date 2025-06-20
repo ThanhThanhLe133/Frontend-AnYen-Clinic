@@ -45,14 +45,14 @@ class _DiaryListScreenState extends State<DiaryListScreen> {
 
   Future<void> fetchDiary() async {
     final response = await makeRequest(
-      url: '$apiUrl/patient/diary', // Đúng URL API bạn có
+      url: '$apiUrl/patient/diary/',
       method: 'GET',
     );
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       print(response.body);
       setState(() {
-        diaries = data;
+        diaries = data['data'] ?? [];
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
