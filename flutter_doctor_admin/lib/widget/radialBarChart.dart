@@ -67,10 +67,8 @@ class _RadialBarChartState extends ConsumerState<RadialBarChart> {
     percentDaysPassed = ((daysPassed / totalDaysInMonth) * 100).round();
     final total =
         (widget.offlineAppointment + widget.onlineAppointment).toDouble();
-    onlinePercent =
-        (total > 0 ? (widget.onlineAppointment / total) : 0).toDouble();
-    offlinePercent =
-        (total > 0 ? (widget.offlineAppointment / total) : 0).toDouble();
+    onlinePercent = total > 0 ? widget.onlineAppointment / total : 0;
+    offlinePercent = total > 0 ? widget.offlineAppointment / total : 0;
 
     onlineAngle = onlinePercent * 360;
     offlineAngle = offlinePercent * 360;
@@ -95,69 +93,78 @@ class _RadialBarChartState extends ConsumerState<RadialBarChart> {
             flex: 3,
             child: SizedBox(
               height: widget.screenWidth * 0.5,
-              child: SizedBox(
-                child: SfRadialGauge(
-                  axes: <RadialAxis>[
-                    RadialAxis(
-                      labelOffset: 0,
-                      pointers: [
-                        RangePointer(
-                          value: percentDaysPassed.toDouble(),
-                          cornerStyle: CornerStyle.bothCurve,
-                          width: widget.screenWidth * 0.08,
-                        ),
-                      ],
-                      axisLineStyle: AxisLineStyle(
-                        thickness: widget.screenWidth * 0.08,
+              child: SfRadialGauge(
+                axes: <RadialAxis>[
+                  // Nền số ngày đã qua
+                  RadialAxis(
+                    minimum: 0,
+                    maximum: 100,
+                    labelOffset: 0,
+                    pointers: [
+                      RangePointer(
+                        value: percentDaysPassed.toDouble(),
+                        cornerStyle: CornerStyle.bothCurve,
+                        width: widget.screenWidth * 0.08,
+                        color: Colors.transparent,
                       ),
-                      startAngle: 0,
-                      endAngle: 360,
-                      showTicks: false,
-                      showLabels: false,
-                      annotations: [
-                        GaugeAnnotation(
-                          widget: Text(
-                            '${percentDaysPassed.round()}%',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: widget.screenWidth * 0.04,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          positionFactor: 0.2,
-                        ),
-                      ],
+                    ],
+                    axisLineStyle: AxisLineStyle(
+                      thickness: widget.screenWidth * 0.08,
+                      color: Colors.grey.withOpacity(0.2),
                     ),
-                    RadialAxis(
-                      pointers: [
-                        RangePointer(
-                          value: onlinePercent,
-                          color: Color(0xFF119CF0),
-                          width: widget.screenWidth * 0.08,
+                    startAngle: 0,
+                    endAngle: 360,
+                    showTicks: false,
+                    showLabels: false,
+                    annotations: [
+                      GaugeAnnotation(
+                        widget: Text(
+                          '${percentDaysPassed.round()}%',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: widget.screenWidth * 0.04,
+                            color: Colors.grey,
+                          ),
                         ),
-                      ],
+                        positionFactor: 0.2,
+                      ),
+                    ],
+                  ),
+
+                  // Online
+                  if (onlinePercent > 0)
+                    RadialAxis(
                       startAngle: 0,
                       endAngle: onlineAngle,
                       showAxisLine: false,
                       showTicks: false,
                       showLabels: false,
-                    ),
-                    RadialAxis(
                       pointers: [
                         RangePointer(
-                          value: offlinePercent,
-                          color: Color(0xFFDB5B8B),
+                          value: 100,
+                          color: Color(0xFF119CF0),
                           width: widget.screenWidth * 0.08,
                         ),
                       ],
+                    ),
+
+                  // Offline
+                  if (offlinePercent > 0)
+                    RadialAxis(
                       startAngle: onlineAngle,
                       endAngle: onlineAngle + offlineAngle,
                       showAxisLine: false,
                       showTicks: false,
                       showLabels: false,
+                      pointers: [
+                        RangePointer(
+                          value: 100,
+                          color: Color(0xFFDB5B8B),
+                          width: widget.screenWidth * 0.08,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                ],
               ),
             ),
           ),

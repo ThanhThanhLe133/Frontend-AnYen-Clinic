@@ -22,6 +22,7 @@ class _HistoryConsultingState extends ConsumerState<HistoryConsulting> {
   late int totalAppointments = 0;
   late int onlineAppointment = 0;
   late int offlineAppointment = 0;
+
   Future<void> fetchAppointment() async {
     final response = await makeRequest(
       url: '$apiUrl/doctor/get-all-appointments',

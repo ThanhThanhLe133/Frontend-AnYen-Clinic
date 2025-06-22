@@ -1,16 +1,89 @@
+import 'dart:convert';
+
+import 'package:anyen_clinic/makeRequest.dart';
+import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/widget/radialBarChart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
-class EmotionHistory extends StatefulWidget {
+class EmotionHistory extends ConsumerStatefulWidget {
   const EmotionHistory({super.key});
 
   @override
-  State<EmotionHistory> createState() => _EmotionHistoryState();
+  ConsumerState<EmotionHistory> createState() => _EmotionHistoryState();
 }
 
-class _EmotionHistoryState extends State<EmotionHistory> {
-  int selectedMonth = DateTime.now().month;
-  int selectedYear = DateTime.now().year;
+class _EmotionHistoryState extends ConsumerState<EmotionHistory> {
+  late int selectedMonth;
+  late int selectedYear;
+
+  List<dynamic> diaries = [];
+  int totalDiaries = 0;
+  int stressDiaries = 0;
+  int happyDiaries = 0;
+  int sadDiaries = 0;
+  int relaxDiaries = 0;
+
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedMonth = DateTime.now().month;
+    selectedYear = DateTime.now().year;
+    fetchDiary();
+  }
+
+  Future<void> fetchDiary() async {
+    final response = await makeRequest(
+      url: '$apiUrl/patient/diary/',
+      method: 'GET',
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      print(response.body);
+      setState(() {
+        diaries = data['data'] ?? [];
+
+        final currentdiary = diaries.where((diary) {
+          final time = diary['created_at'];
+          DateTime? dateTime;
+          if (time is String) {
+            try {
+              dateTime = DateTime.parse(time);
+            } catch (e) {
+              return false;
+            }
+          } else if (time is DateTime) {
+            dateTime = time;
+          }
+
+          if (dateTime == null) return false;
+
+          return dateTime.month == selectedMonth &&
+              dateTime.year == selectedYear;
+        }).toList();
+
+        totalDiaries = currentdiary.length;
+
+        stressDiaries =
+            currentdiary.where((diary) => diary['mood'] == 'stress').length;
+        happyDiaries =
+            currentdiary.where((diary) => diary['mood'] == 'happy').length;
+        sadDiaries =
+            currentdiary.where((diary) => diary['mood'] == 'sad').length;
+        relaxDiaries =
+            currentdiary.where((diary) => diary['mood'] == 'relax').length;
+
+        isLoading = false;
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Không thể tải danh sách nhật ký")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,6 +159,7 @@ class _EmotionHistoryState extends State<EmotionHistory> {
                       setState(() {
                         selectedMonth = value!;
                       });
+                      fetchDiary();
                     },
                   ),
                 ),
@@ -119,14 +193,29 @@ class _EmotionHistoryState extends State<EmotionHistory> {
                     onChanged: (value) {
                       setState(() {
                         selectedYear = value!;
-                        // yearController.text=value!.toString();
                       });
+                      fetchDiary();
                     },
                   ),
                 ),
               ],
             ),
-            RadialBarChart(screenWidth: screenWidth),
+            isLoading
+                ? const Center(
+                    child: SpinKitWaveSpinner(
+                      color: Colors.blue,
+                      size: 50.0,
+                    ),
+                  )
+                : RadialBarChart(
+                    screenWidth: screenWidth,
+                    happyDiaries: happyDiaries,
+                    relaxDiaries: relaxDiaries,
+                    sadDiaries: sadDiaries,
+                    stressDiaries: stressDiaries,
+                    year: selectedYear,
+                    month: selectedMonth,
+                  )
           ],
         ),
       ),
