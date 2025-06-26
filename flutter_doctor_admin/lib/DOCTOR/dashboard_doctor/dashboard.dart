@@ -70,7 +70,7 @@ class _DashboardState extends ConsumerState<DashboardDoctor> {
             .length;
 
         //số ca tư vấn offline
-        onlineAppointment = appointments
+        offlineAppointment = appointments
             .where(
                 (appointment) => appointment['appointment_type'] == "Offline")
             .toList()

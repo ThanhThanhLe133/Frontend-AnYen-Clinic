@@ -1,7 +1,5 @@
 import 'package:ayclinic_doctor_admin/ADMIN/widget/menu_admin.dart';
-import 'package:ayclinic_doctor_admin/ADMIN/message/finish_screen.dart';
-import 'package:ayclinic_doctor_admin/ADMIN/message/waiting_screen.dart';
-import 'package:ayclinic_doctor_admin/widget/statusWidget.dart';
+import 'package:ayclinic_doctor_admin/ADMIN/message/ListMessageScreen.dart';
 import 'package:flutter/material.dart';
 
 class MessageScreen extends StatefulWidget {
@@ -51,23 +49,7 @@ class _MessageScreenState extends State<MessageScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            StatusWidget(
-              text1: "Đang chờ",
-              text2: "Đã kết thúc",
-              initialChosen: unfinished,
-              onToggle: (bool chosen) {
-                setState(() {
-                  unfinished = chosen;
-                });
-              },
-            ),
-            SizedBox(height: screenHeight * 0.05),
-            Expanded(
-              child:
-                  unfinished
-                      ? const UnfinishedMessageScreen()
-                      : const FinishedMessageScreen(),
-            ),
+            Expanded(child: ListMessageScreen()),
           ],
         ),
       ),

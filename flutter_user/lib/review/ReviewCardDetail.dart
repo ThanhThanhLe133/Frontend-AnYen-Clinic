@@ -174,6 +174,7 @@ class _ReviewCardDetailState extends State<ReviewCardDetail> {
                   widget.reviewText,
                   style: TextStyle(fontSize: widget.screenWidth * 0.035),
                   softWrap: true,
+                  textAlign: TextAlign.start,
                   maxLines: null,
                 ),
                 Padding(

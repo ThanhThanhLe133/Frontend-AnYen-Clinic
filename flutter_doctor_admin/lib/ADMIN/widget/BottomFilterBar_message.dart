@@ -5,16 +5,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class BottomFilterBarMessage extends ConsumerStatefulWidget {
-  const BottomFilterBarMessage({super.key, required this.screenWidth});
+  const BottomFilterBarMessage({
+    super.key,
+    required this.screenWidth,
+    required this.doctorSet,
+    required this.patientSet,
+  });
 
   final double screenWidth;
+  final Set<Map<String, dynamic>> doctorSet;
+  final Set<Map<String, dynamic>> patientSet;
 
   @override
   _BottomFilterBarState createState() => _BottomFilterBarState();
 }
 
 class _BottomFilterBarState extends ConsumerState<BottomFilterBarMessage> {
-  late DateTime selectedDate;
+  DateTime? selectedDate;
 
   bool isComplete = false;
   bool isOnline = false;
@@ -23,7 +30,6 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBarMessage> {
   @override
   void initState() {
     super.initState();
-    selectedDate = DateTime.now();
   }
 
   @override
@@ -69,7 +75,7 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBarMessage> {
   Future<void> _showDatePicker(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: selectedDate,
+      initialDate: selectedDate ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
@@ -77,6 +83,7 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBarMessage> {
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
+        ref.read(dateTimeProvider.notifier).setDate(picked);
       });
     }
   }
@@ -100,7 +107,9 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBarMessage> {
                 isTitle1: ref.watch(isNewestProvider),
                 onSelected: (selectedValue) {
                   ref.read(isNewestProvider.notifier).state =
-                      (selectedValue == 'Mới nhất');
+                      selectedValue == null
+                          ? null
+                          : (selectedValue == 'Mới nhất');
                 },
               ),
             ],
@@ -132,7 +141,10 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBarMessage> {
                         selectedValue;
                   });
                 },
-                dropdownItems: [],
+                dropdownItems: [
+                  {'id': 'all', 'name': 'Tất cả'},
+                  ...widget.doctorSet,
+                ],
               ),
               FilterItemList(
                 title1: 'Bệnh nhân',
@@ -143,26 +155,10 @@ class _BottomFilterBarState extends ConsumerState<BottomFilterBarMessage> {
                         selectedValue;
                   });
                 },
-                dropdownItems: [],
-              ),
-              FilterItemWidget(
-                title1: 'Tư vấn online',
-                title2: 'Tư vấn trực tiếp',
-                isTitle1: ref.watch(isOnlineProvider),
-                onSelected: (selectedValue) {
-                  ref.read(isOnlineProvider.notifier).state =
-                      (selectedValue == 'Tư vấn online');
-                },
-              ),
-              FilterItemWidget(
-                title1: 'Đã huỷ',
-                isTitle1: ref.watch(isCancelProvider),
-                onSelected: (selectedValue) {
-                  setState(() {
-                    ref.read(isOnlineProvider.notifier).state =
-                        selectedValue == 'Đã huỷ';
-                  });
-                },
+                dropdownItems: [
+                  {'id': 'all', 'name': 'Tất cả'},
+                  ...widget.patientSet,
+                ],
               ),
             ],
           ),

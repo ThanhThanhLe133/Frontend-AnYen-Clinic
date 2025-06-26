@@ -167,8 +167,10 @@ class AppointmentConnectedCardState
                       context,
                       MaterialPageRoute(
                           builder: (_) => ChatScreen(
-                              conversationId: conversationId,
-                              status: widget.status)));
+                                conversationId: conversationId,
+                                status: widget.status,
+                                doctorId: widget.doctor_id,
+                              )));
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -405,15 +407,6 @@ class AppointmentConnectedCardState
                                   );
 
                                   break;
-                                // case "Ẩn lịch hẹn":
-                                //   showOptionDialog(
-                                //       context,
-                                //       "Xác nhận",
-                                //       "Bạn có chắc muốn ẩn lịch hẹn này không? Lịch hẹn sẽ không còn được hiển thị nữa!",
-                                //       "Huỷ",
-                                //       "Ẩn",
-                                //       hideAppointment);
-                                //   break;
                                 case "Xem đơn thuốc":
                                   if (widget.status != "Completed") {
                                     ScaffoldMessenger.of(context).showSnackBar(

@@ -12,7 +12,6 @@ import 'package:ayclinic_doctor_admin/widget/buildMoreOption.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:intl/date_time_patterns.dart';
 
 class AppointmentConnectingCard extends ConsumerStatefulWidget {
   const AppointmentConnectingCard({

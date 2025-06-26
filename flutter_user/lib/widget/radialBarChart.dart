@@ -92,13 +92,10 @@ class _RadialBarChartState extends ConsumerState<RadialBarChart> {
     relaxPercent = total > 0 ? widget.relaxDiaries / total : 0;
     sadPercent = total > 0 ? widget.sadDiaries / total : 0;
     stressPercent = total > 0 ? widget.stressDiaries / total : 0;
-    print(
-        'happyPercent: $happyPercent, relaxPercent: $relaxPercent, sadPercent: $sadPercent, stressPercent: $stressPercent');
     happyAngle = happyPercent * 360;
     relaxAngle = relaxPercent * 360;
     sadAngle = sadPercent * 360;
     stressAngle = stressPercent * 360;
-    print('relaxAngle: $relaxAngle');
   }
 
   @override

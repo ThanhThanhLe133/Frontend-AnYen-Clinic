@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:anyen_clinic/chat/CallScreen.dart';
 import 'package:anyen_clinic/chat/services/SignalingService.dart';
 import 'package:anyen_clinic/chat/widget/AudioPreview.dart';
 import 'package:anyen_clinic/chat/widget/buildCameraButton.dart';
 import 'package:anyen_clinic/chat/widget/buildMessageContent.dart';
 import 'package:anyen_clinic/chat/widget/buildMicButton.dart';
-import 'package:anyen_clinic/chat/widget/buildQuestionBubble.dart';
+import 'package:anyen_clinic/dialog/PaymentHistory.dart';
 import 'package:anyen_clinic/dialog/snackBar.dart';
+import 'package:anyen_clinic/doctor/details_doctor_screen.dart';
 import 'package:anyen_clinic/function.dart';
 import 'package:anyen_clinic/makeRequest.dart';
 import 'package:anyen_clinic/widget/CustomBackButton.dart';
@@ -25,13 +25,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:anyen_clinic/chat/websocket_service.dart';
 import 'package:anyen_clinic/storage.dart';
 import 'package:anyen_clinic/utils/jwt_utils.dart';
-import 'package:anyen_clinic/chat/models/message.dart';
 import 'package:anyen_clinic/chat/services/chat_service.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
-  const ChatScreen({super.key, this.conversationId, this.status});
+  const ChatScreen({
+    super.key,
+    this.conversationId,
+    this.status,
+    this.doctorId,
+  });
   final String? conversationId;
   final String? status;
+  final String? doctorId;
   @override
   ConsumerState<ChatScreen> createState() => _ChatScreenState();
 }
@@ -63,6 +68,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   late ChatService chatService;
   final signaling = SignalingService();
 
+  Map<String, dynamic> patient = {};
+  Map<String, dynamic> doctorProfile = {};
+  bool get isDoctor => widget.doctorId != null;
+
   String conversationId = "";
   String currentRoom = "";
   String? currentUserId;
@@ -78,6 +87,43 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     setUp();
   }
 
+  Future<void> fetchDoctor() async {
+    String doctorId = widget.doctorId!;
+    final response = await makeRequest(
+      url: '$apiUrl/get/get-doctor/?userId=$doctorId',
+      method: 'GET',
+    );
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        doctorProfile = data['data'];
+      });
+    }
+  }
+
+  Future<void> fetchProfile() async {
+    final response = await makeRequest(
+        url: '$apiUrl/get/get-patient-profile/', method: 'GET');
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        patient = data['data'];
+      });
+    }
+  }
+
   void setUp() async {
     if (widget.status != null) {
       isCompleted = widget.status == "Completed";
@@ -85,6 +131,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (widget.conversationId != null) {
       conversationId = widget.conversationId!;
       initializeChat();
+    }
+    if (isDoctor) {
+      await fetchDoctor();
     }
   }
 
@@ -158,6 +207,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       "isMe": false,
                     }
                   ];
+                  timeJoined =
+                      DateFormat('dd/MM/yyyy, HH:mm').format(DateTime.now());
                 } else {
                   final String firstMessageTimeString = data.first['createdAt'];
                   final DateTime firstMessageTime =
@@ -456,7 +507,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               CircleAvatar(
-                backgroundImage: AssetImage('assets/images/doctor.png'),
+                backgroundImage: isDoctor
+                    ? NetworkImage(doctorProfile['avatar_url'])
+                    : AssetImage('assets/images/user.png') as ImageProvider,
               ),
               SizedBox(width: screenWidth * 0.02),
               Flexible(
@@ -464,7 +517,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'BS.CKI Macus Horizon',
+                      isDoctor ? doctorProfile['name'] : "Quản trị viên",
                       softWrap: true,
                       maxLines: null,
                       overflow: TextOverflow.visible,
@@ -506,26 +559,35 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ),
         ),
         actions: [
-          PopupMenuButton<String>(
-            icon: Icon(Icons.list, color: Colors.black),
-            color: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+          if (isDoctor)
+            PopupMenuButton<String>(
+              icon: Icon(Icons.list, color: Colors.black),
+              color: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              itemBuilder: (BuildContext context) => [
+                PopupMenuItem<String>(
+                  value: "Xem thông tin bác sĩ",
+                  child: Text("Doctor Information"),
+                ),
+              ],
+              onSelected: (String value) {
+                switch (value) {
+                  case "Thông tin bác sĩ":
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            DoctorDetailScreen(doctorId: widget.doctorId!),
+                      ),
+                    );
+                    break;
+                  default:
+                    break;
+                }
+              },
             ),
-            itemBuilder: (BuildContext context) => [
-              PopupMenuItem<String>(
-                value: "Lịch sử thanh toán",
-                child: Text("Payment History"),
-              ),
-              PopupMenuItem<String>(
-                value: "Xem thông tin bác sĩ",
-                child: Text("Doctor Information"),
-              ),
-            ],
-            onSelected: (String value) {
-              // Handle menu selections
-            },
-          ),
         ],
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(1.0),
@@ -546,22 +608,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               Align(
                 alignment: Alignment.topLeft,
                 child: Text(
-                  "Câu hỏi",
-                  style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black),
-                ),
-              ),
-              SizedBox(height: 10),
-              buildQuestionBubble(screenWidth),
-              SizedBox(height: 10),
-              Divider(height: 1),
-              SizedBox(height: 10),
-              Align(
-                alignment: Alignment.topLeft,
-                child: Text(
-                  "Time: 22/02/2025, 14h50",
+                  "Thời gian: $timeJoined",
                   style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
@@ -570,7 +617,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               ),
               SizedBox(height: 10),
               Text(
-                "BS.CKI Macus Horizon has joined the conversation",
+                "Tham gia cuộc trò chuyện",
                 textAlign: TextAlign.left,
                 style: TextStyle(fontSize: 15, color: Color(0xFF9AA5AC)),
               ),
@@ -580,15 +627,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   return SizedBox();
                 }
                 if (message['message_type'] == 'audio') {
-                  return buildChatBubble("", message['isMe'],
+                  return buildChatBubble("", message['isMe'], isDoctor,
                       audioPath: message['content'],
                       time: formatTime(message['createdAt']));
                 } else if (message['message_type'] == 'image') {
-                  return buildChatBubble("", message['isMe'],
+                  return buildChatBubble("", message['isMe'], isDoctor,
                       imagePath: message['content'],
                       time: formatTime(message['createdAt']));
                 } else {
-                  return buildChatBubble(message['content'], message['isMe'],
+                  return buildChatBubble(
+                      message['content'], message['isMe'], isDoctor,
                       time: formatTime(message['createdAt']));
                 }
               }),
@@ -625,13 +673,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 
-  Widget buildChatBubble(String message, bool isMe,
+  Widget buildChatBubble(String message, bool isMe, bool isDoctor,
       {String? imagePath, String? audioPath, String? time}) {
     return Row(
       mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
       children: [
         if (!isMe) ...[
-          CircleAvatar(backgroundImage: AssetImage('assets/images/doctor.png')),
+          CircleAvatar(
+              backgroundImage: isDoctor
+                  ? NetworkImage(doctorProfile['avatar_url'])
+                  : AssetImage('assets/images/user.png') as ImageProvider),
           SizedBox(width: 16),
         ],
         if (isMe) ...[

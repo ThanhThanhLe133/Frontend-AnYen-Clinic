@@ -20,7 +20,6 @@ void main() async {
   final bool isLoggedIn = await getLogin();
 
   runApp(ProviderScope(child: MainApp(isLoggedIn: isLoggedIn)));
-  print('loginnnnn không? $isLoggedIn');
 }
 
 class MainApp extends StatelessWidget {
@@ -29,6 +28,7 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: globalNavigatorKey,
       title: 'My App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -39,7 +39,10 @@ class MainApp extends StatelessWidget {
           bodySmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
         ),
       ),
-      home: isLoggedIn ? Dashboard() : LoginScreen(),
+      home: isLoggedIn ? Dashboard() : const LoginScreen(),
     );
   }
 }
+
+final GlobalKey<NavigatorState> globalNavigatorKey =
+    GlobalKey<NavigatorState>();

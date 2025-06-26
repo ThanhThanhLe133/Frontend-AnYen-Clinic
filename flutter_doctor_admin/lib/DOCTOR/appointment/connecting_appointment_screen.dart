@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:ayclinic_doctor_admin/DOCTOR/widget/BottomFilterBarConnecting.dart';
 import 'package:ayclinic_doctor_admin/Provider/FilterOptionProvider.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/appointment/widget/appointmentConnectingCard.dart';
+import 'package:ayclinic_doctor_admin/function.dart';
 import 'package:ayclinic_doctor_admin/makeRequest.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:flutter/material.dart';
@@ -88,16 +89,6 @@ class _ConnectingAppointmentScreenState
     fetchAppointment();
   }
 
-  String _getFormattedDate(String appointmentTime) {
-    DateTime dateTime = DateTime.parse(appointmentTime);
-    return "${dateTime.day}/${dateTime.month}/${dateTime.year}";
-  }
-
-  String _getFormattedTime(String appointmentTime) {
-    DateTime dateTime = DateTime.parse(appointmentTime);
-    return "${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}";
-  }
-
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
@@ -128,10 +119,10 @@ class _ConnectingAppointmentScreenState
                   isOnline: filteredAppointments[index]['appointment_type'] ==
                       "Online",
                   patient_id: filteredAppointments[index]['patient_id'],
-                  date: _getFormattedDate(
+                  date: getFormattedDate(
                     filteredAppointments[index]['appointment_time'],
                   ),
-                  time: _getFormattedTime(
+                  time: getFormattedTime(
                     filteredAppointments[index]['appointment_time'],
                   ),
                   question: filteredAppointments[index]['question'],

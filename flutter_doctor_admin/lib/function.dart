@@ -29,6 +29,16 @@ String formatDateComment(String? dateString) {
   return DateFormat('dd/MM/yyyy - HH:mm', 'vi').format(parsedDate);
 }
 
+String getFormattedDate(String appointmentTime) {
+  DateTime dateTime = DateTime.parse(appointmentTime);
+  return "${dateTime.day}/${dateTime.month}/${dateTime.year}";
+}
+
+String getFormattedTime(String appointmentTime) {
+  DateTime dateTime = DateTime.parse(appointmentTime);
+  return "${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}";
+}
+
 String formatCurrency(String totalMoney) {
   final money =
       num.tryParse(totalMoney.replaceAll('.', '').replaceAll(',', '')) ?? 0;

@@ -3,13 +3,9 @@ import 'dart:math';
 
 import 'package:ayclinic_doctor_admin/DOCTOR/chat/chat_screen.dart';
 import 'package:ayclinic_doctor_admin/dialog/patient_detail_screen.dart';
-import 'package:ayclinic_doctor_admin/DOCTOR/appointment/appointment_screen.dart';
-import 'package:ayclinic_doctor_admin/DOCTOR/dialog/InputPrescription.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/dialog/InputSummary.dart';
 import 'package:ayclinic_doctor_admin/dialog/Prescription.dart';
-import 'package:ayclinic_doctor_admin/dialog/SuccessDialog.dart';
 import 'package:ayclinic_doctor_admin/dialog/Summary_doctor.dart';
-import 'package:ayclinic_doctor_admin/dialog/option_dialog.dart';
 import 'package:ayclinic_doctor_admin/function.dart';
 import 'package:ayclinic_doctor_admin/makeRequest.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
@@ -147,6 +143,7 @@ class AppointmentConnectedCardState
                                 appointmentId: widget.appointment_id,
                                 conversationId: conversationId,
                                 status: widget.status,
+                                patientId: widget.patient_id,
                               )));
                 } else {
                   Navigator.push(

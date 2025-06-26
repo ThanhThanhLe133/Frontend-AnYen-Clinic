@@ -3,10 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:ayclinic_doctor_admin/DOCTOR/chat/CallScreen.dart';
+import 'package:ayclinic_doctor_admin/dialog/patient_detail_screen.dart';
 import 'package:ayclinic_doctor_admin/dialog/snackBar.dart';
 import 'package:ayclinic_doctor_admin/function.dart';
-import 'package:ayclinic_doctor_admin/widget/chat_widget/models/message.dart';
 import 'package:ayclinic_doctor_admin/DOCTOR/chat/CameraScreen.dart';
 import 'package:ayclinic_doctor_admin/widget/chat_widget/services/chat_service.dart';
 import 'package:ayclinic_doctor_admin/widget/chat_widget/websocket_service.dart';
@@ -17,29 +16,31 @@ import 'package:ayclinic_doctor_admin/widget/widget_chat/AudioPreview.dart';
 import 'package:ayclinic_doctor_admin/widget/widget_chat/buildCameraButton.dart';
 import 'package:ayclinic_doctor_admin/widget/widget_chat/buildMessageContent.dart';
 import 'package:ayclinic_doctor_admin/widget/widget_chat/buildMicButton.dart';
-import 'package:ayclinic_doctor_admin/widget/widget_chat/buildQuestionBubble.dart';
 import 'package:ayclinic_doctor_admin/dialog/option_dialog.dart';
 import 'package:ayclinic_doctor_admin/widget/CustomBackButton.dart';
 import 'package:ayclinic_doctor_admin/widget/buildButton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:record/record.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
-import 'package:ayclinic_doctor_admin/widget/chat_widget/models/message.dart';
 
 import 'SignalingService.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen(
-      {super.key, this.appointmentId, this.conversationId, this.status});
+      {super.key,
+      this.appointmentId,
+      this.conversationId,
+      this.patientId,
+      this.status});
   final String? appointmentId;
   final String? conversationId;
   final String? status;
+  final String? patientId;
   @override
   ConsumerState<ChatScreen> createState() => _ChatScreenState();
 }
@@ -75,9 +76,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   var signaling = SignalingService();
   bool isCompleted = false;
 
-  late BuildContext rootContext;
+  Map<String, dynamic> patientProfile = {};
+  Map<String, dynamic> doctor = {};
 
-  //xử lý nút tham gia (nếu chưa có conversationId)
+  late BuildContext rootContext;
+  bool get isPatient => widget.patientId != null;
+
+  //nếu chưa có conversationId
   bool isJoined = false;
   String timeJoined = "";
   @override
@@ -95,6 +100,45 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (widget.conversationId != null) {
       conversationId = widget.conversationId!;
       initializeChat();
+    }
+    if (isPatient) {
+      await fetchPatient();
+    }
+  }
+
+  Future<void> fetchPatient() async {
+    String patientId = widget.patientId!;
+    final response = await makeRequest(
+      url: '$apiUrl/get/get-patient-profile/?patientId=$patientId',
+      method: 'GET',
+    );
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        patientProfile = data['data'];
+      });
+    }
+  }
+
+  Future<void> fetchProfile() async {
+    final response = await makeRequest(url: '$apiUrl/get/user', method: 'GET');
+    if (response.statusCode != 200) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Lỗi tải dữ liệu.")));
+      Navigator.pop(context);
+    } else {
+      final data = jsonDecode(response.body);
+      setState(() {
+        doctor = data['data'];
+      });
     }
   }
 
@@ -158,6 +202,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   "isMe": false,
                 }
               ];
+              timeJoined =
+                  DateFormat('dd/MM/yyyy, HH:mm').format(DateTime.now());
             } else {
               final String firstMessageTimeString = data.first['createdAt'];
               final DateTime firstMessageTime =
@@ -554,7 +600,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     child: CircleAvatar(
                       radius: 40,
                       backgroundImage:
-                          NetworkImage("https://i.pravatar.cc/150?img=3"),
+                          NetworkImage(patientProfile['avatar_url']),
                     ),
                   ),
                   Text(
@@ -563,7 +609,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ),
                   SizedBox(height: 5),
                   Text(
-                    "Nguyễn Văn ABC",
+                    patientProfile['fullname'],
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 20),
@@ -622,7 +668,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               CircleAvatar(
-                backgroundImage: AssetImage('assets/images/user.png'),
+                backgroundImage: isPatient
+                    ? NetworkImage(patientProfile['avatar_url'])
+                    : AssetImage('assets/images/user.png') as ImageProvider,
               ),
               SizedBox(width: screenWidth * 0.02),
               Flexible(
@@ -630,7 +678,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'User1',
+                      isPatient ? patientProfile['fullname'] : "Quản trị viên",
                       softWrap: true,
                       maxLines: null,
                       overflow: TextOverflow.visible,
@@ -670,71 +718,72 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ),
         ),
         actions: [
-          if (isJoined)
+          if (isJoined && isPatient)
             IconButton(
               icon: Icon(Icons.call, size: 18, color: Colors.blue),
               onPressed: () async {
                 await createCall(context, false);
               },
             ),
-          if (isJoined)
+          if (isJoined && isPatient)
             IconButton(
               icon: Icon(Icons.videocam, size: 18, color: Colors.blue),
               onPressed: () async {
                 await createCall(context, true);
               },
             ),
-          PopupMenuButton<String>(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+          if (isPatient)
+            PopupMenuButton<String>(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              icon: Icon(Icons.list, color: Colors.black),
+              elevation: 4,
+              color: Colors.white,
+              itemBuilder: (BuildContext context) => [
+                PopupMenuItem<String>(
+                  value: "Xem thông tin bệnh nhân",
+                  child: Text("Xem thông tin bệnh nhân"),
+                ),
+                PopupMenuItem<String>(
+                  value: "Kết thúc tư vấn",
+                  child: Text("Kết thúc tư vấn"),
+                ),
+                PopupMenuItem<String>(
+                  value: "Yêu cầu xem kết quả trắc nghiệm",
+                  child: Text("Yêu cầu xem kết quả trắc nghiệm"),
+                ),
+              ],
+              onSelected: (String value) {
+                switch (value) {
+                  case "Xem thông tin bệnh nhân":
+                    showPatientDetailScreen(context, widget.patientId!);
+                    break;
+                  case "Kết thúc tư vấn":
+                    showOptionDialog(
+                      context,
+                      "Xác nhận kết thúc",
+                      "Bạn muốn xác nhận kết thúc ca tư vấn này?",
+                      "HUỶ",
+                      "ĐỒNG Ý",
+                      null,
+                    );
+                    break;
+                  case "Yêu cầu xem kết quả trắc nghiệm":
+                    showOptionDialog(
+                      context,
+                      "Yêu cầu xem KQ trắc nghiệm",
+                      "Bạn có chắc chắn muốn yêu cầu xem kết quả trắc nghiệm tâm lý của bệnh nhân này?",
+                      "HUỶ",
+                      "ĐỒNG Ý",
+                      null,
+                    );
+                    break;
+                  default:
+                    break;
+                }
+              },
             ),
-            icon: Icon(Icons.list, color: Colors.black),
-            elevation: 4,
-            color: Colors.white,
-            itemBuilder: (BuildContext context) => [
-              PopupMenuItem<String>(
-                value: "Xem thông tin bệnh nhân",
-                child: Text("Xem thông tin bệnh nhân"),
-              ),
-              PopupMenuItem<String>(
-                value: "Kết thúc tư vấn",
-                child: Text("Kết thúc tư vấn"),
-              ),
-              PopupMenuItem<String>(
-                value: "Yêu cầu xem kết quả trắc nghiệm",
-                child: Text("Yêu cầu xem kết quả trắc nghiệm"),
-              ),
-            ],
-            onSelected: (String value) {
-              switch (value) {
-                case "Xem thông tin bệnh nhân":
-                  // showPatientInfoDialog(context);
-                  break;
-                case "Kết thúc tư vấn":
-                  showOptionDialog(
-                    context,
-                    "Xác nhận kết thúc",
-                    "Bạn muốn xác nhận kết thúc ca tư vấn này?",
-                    "HUỶ",
-                    "ĐỒNG Ý",
-                    null,
-                  );
-                  break;
-                case "Yêu cầu xem kết quả trắc nghiệm":
-                  showOptionDialog(
-                    context,
-                    "Yêu cầu xem KQ trắc nghiệm",
-                    "Bạn có chắc chắn muốn yêu cầu xem kết quả trắc nghiệm tâm lý của bệnh nhân này?",
-                    "HUỶ",
-                    "ĐỒNG Ý",
-                    null,
-                  );
-                  break;
-                default:
-                  break;
-              }
-            },
-          ),
         ],
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(1.0),
@@ -749,20 +798,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           child: Column(
             children: [
               SizedBox(height: 10),
-              Align(
-                alignment: Alignment.topLeft,
-                child: Text(
-                  "Câu hỏi",
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-              ),
-              SizedBox(height: 10),
-              buildQuestionBubble(screenWidth),
-              SizedBox(height: 10),
               if (!isJoined) ...[
                 if (!isCompleted)
                   CustomButton(
@@ -773,8 +808,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ),
               ],
               if (isJoined) ...[
-                Divider(height: 1),
-                SizedBox(height: 10),
                 Align(
                   alignment: Alignment.topLeft,
                   child: Text(
@@ -798,15 +831,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     return SizedBox();
                   }
                   if (message['message_type'] == 'audio') {
-                    return buildChatBubble("", message['isMe'],
+                    return buildChatBubble("", message['isMe'], isPatient,
                         audioPath: message['content'],
                         time: formatTime(message['createdAt']));
                   } else if (message['message_type'] == 'image') {
-                    return buildChatBubble("", message['isMe'],
+                    return buildChatBubble("", message['isMe'], isPatient,
                         imagePath: message['content'],
                         time: formatTime(message['createdAt']));
                   } else {
-                    return buildChatBubble(message['content'], message['isMe'],
+                    return buildChatBubble(
+                        message['content'], message['isMe'], isPatient,
                         time: formatTime(message['createdAt']));
                   }
                 }),
@@ -848,13 +882,16 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 
-  Widget buildChatBubble(String message, bool isMe,
+  Widget buildChatBubble(String message, bool isMe, bool isPatient,
       {String? imagePath, String? audioPath, String? time}) {
     return Row(
       mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
       children: [
         if (!isMe) ...[
-          CircleAvatar(backgroundImage: AssetImage('assets/images/user.png')),
+          CircleAvatar(
+              backgroundImage: isPatient
+                  ? NetworkImage(patientProfile['avatar_url'])
+                  : AssetImage('assets/images/user.png') as ImageProvider),
           SizedBox(width: 16),
         ],
         if (isMe) ...[
@@ -927,7 +964,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   icon: Icon(Icons.cancel, color: Colors.red),
                   onPressed: () {
                     setState(() {
-                      image = null; // Xóa ảnh chưa gửi
+                      image = null;
                     });
                   },
                 ),

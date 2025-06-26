@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:anyen_clinic/login/login_screen.dart';
+import 'package:anyen_clinic/main.dart';
 import 'package:anyen_clinic/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart' as ref;
 
 Future<http.Response> makeRequest({
   required String url,
@@ -89,10 +92,10 @@ Future<http.Response> makeRequest({
 
   try {
     http.Response res = await sendRequest(token: accessToken);
-    final body = jsonDecode(res.body);
+    final bodyRefresh = jsonDecode(res.body);
 
-    if (body is Map<String, dynamic> &&
-        body['err'] == 2 &&
+    if (bodyRefresh is Map<String, dynamic> &&
+        bodyRefresh['err'] == 2 &&
         refreshToken != null) {
       final refreshRes = await http.post(
         Uri.parse('$apiUrl/auth/refresh-token'),
@@ -118,6 +121,27 @@ Future<http.Response> makeRequest({
 
     return res;
   } catch (e) {
+    final navigator = globalNavigatorKey.currentState;
+
+    if (navigator != null) {
+      final context = navigator.overlay!.context;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.',
+            textAlign: TextAlign.center,
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+
+      navigator.pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        (route) => false,
+      );
+    }
+
     throw Exception('Request failed: $e');
   }
 }

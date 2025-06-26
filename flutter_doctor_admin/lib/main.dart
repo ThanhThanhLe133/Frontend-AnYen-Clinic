@@ -19,9 +19,7 @@ void main() async {
   final bool isLoggedIn = await getLogin();
   final bool isDoctor = await getDoctorState();
   final bool isAdmin = await getAdminState();
-  print('login nè $isLoggedIn');
-  print('doctor nè $isDoctor');
-  print('admin nè $isAdmin');
+
   runApp(ProviderScope(
       child: MainApp(
           isLoggedIn: isLoggedIn, isDoctor: isDoctor, isAdmin: isAdmin)));
@@ -39,6 +37,7 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: globalNavigatorKey,
       title: 'My App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -50,7 +49,7 @@ class MainApp extends StatelessWidget {
         ),
       ),
       home: !isLoggedIn
-          ? LoginScreen()
+          ? const LoginScreen()
           : isDoctor
               ? DashboardDoctor()
               : DashboardAdmin(),
@@ -58,3 +57,6 @@ class MainApp extends StatelessWidget {
     );
   }
 }
+
+final GlobalKey<NavigatorState> globalNavigatorKey =
+    GlobalKey<NavigatorState>();

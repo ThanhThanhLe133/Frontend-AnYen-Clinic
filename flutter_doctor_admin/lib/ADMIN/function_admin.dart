@@ -5,7 +5,7 @@ import 'package:ayclinic_doctor_admin/makeRequest.dart';
 import 'package:ayclinic_doctor_admin/storage.dart';
 import 'package:flutter/material.dart';
 
-Future<void> sendMessageToUser(context, userId2) async {
+Future<void> sendMessageToUser(context, userId2, name, avatarUrl) async {
   final response = await makeRequest(
       url: '$apiUrl/chat/create-conversation',
       method: 'POST',
@@ -18,7 +18,11 @@ Future<void> sendMessageToUser(context, userId2) async {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => ChatScreen(conversationId: responseData['data']['id']),
+        builder: (_) => ChatScreen(
+          conversationId: responseData['data']['id'],
+          name: name,
+          avatarUrl: avatarUrl,
+        ),
       ),
     );
   }

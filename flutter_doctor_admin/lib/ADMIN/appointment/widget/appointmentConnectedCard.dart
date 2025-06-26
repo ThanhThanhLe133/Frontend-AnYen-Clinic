@@ -584,6 +584,8 @@ class AppointmentConnectedCardState
                                       onPressed: () => sendMessageToUser(
                                         context,
                                         widget.patient_id,
+                                        patientProfile['name'],
+                                        patientProfile['avatar_url'],
                                       ),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor:
@@ -615,7 +617,10 @@ class AppointmentConnectedCardState
                                     SizedBox(width: screenWidth * 0.02),
                                     ElevatedButton(
                                       onPressed: () => sendMessageToUser(
-                                          context, widget.doctor_id),
+                                          context,
+                                          widget.doctor_id,
+                                          doctorProfile['name'],
+                                          doctorProfile['avatar_url']),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor:
                                             const Color(0xFFECF8FF), //

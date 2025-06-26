@@ -404,8 +404,12 @@ class AppointmentConnectingCardState
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           ElevatedButton(
-                            onPressed: () =>
-                                sendMessageToUser(context, widget.patient_id),
+                            onPressed: () => sendMessageToUser(
+                              context,
+                              widget.patient_id,
+                              patientProfile['name'],
+                              patientProfile['avatar_url'],
+                            ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFECF8FF), //
                               shape: RoundedRectangleBorder(
@@ -432,8 +436,11 @@ class AppointmentConnectingCardState
                           ),
                           SizedBox(width: screenWidth * 0.02),
                           ElevatedButton(
-                            onPressed: () =>
-                                sendMessageToUser(context, widget.doctor_id),
+                            onPressed: () => sendMessageToUser(
+                                context,
+                                widget.doctor_id,
+                                doctorProfile['name'],
+                                doctorProfile['avatar_url']),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFECF8FF), //
                               shape: RoundedRectangleBorder(
