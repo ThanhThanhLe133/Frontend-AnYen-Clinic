@@ -584,7 +584,7 @@ class AppointmentConnectedCardState
                                       onPressed: () => sendMessageToUser(
                                         context,
                                         widget.patient_id,
-                                        patientProfile['name'],
+                                        patientProfile['fullname'],
                                         patientProfile['avatar_url'],
                                       ),
                                       style: ElevatedButton.styleFrom(

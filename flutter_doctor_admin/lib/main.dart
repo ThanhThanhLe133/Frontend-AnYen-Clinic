@@ -49,7 +49,7 @@ class MainApp extends StatelessWidget {
         ),
       ),
       home: !isLoggedIn
-          ? const LoginScreen()
+          ? const SplashScreen()
           : isDoctor
               ? DashboardDoctor()
               : DashboardAdmin(),

@@ -155,7 +155,7 @@ class _ListMessageScreenScreenState extends ConsumerState<ListMessageScreen> {
               itemCount: filteredConversations.length,
               itemBuilder: (context, index) {
                 return MessageCard(
-                  patientId: filteredConversations[index]['patient_id'],
+                  patientId: filteredConversations[index]['patient_id'] ?? "",
                   doctorId: filteredConversations[index]['doctor_id'] ?? "",
                   name: filteredConversations[index]['name'],
                   avatarUrl: filteredConversations[index]['avatar_url'],

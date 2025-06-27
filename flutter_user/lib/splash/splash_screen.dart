@@ -1,6 +1,8 @@
 import 'dart:async' show Timer;
 
+import 'package:anyen_clinic/dashboard/dashboard.dart';
 import 'package:anyen_clinic/splash/splash_screen_intro.dart';
+import 'package:anyen_clinic/storage.dart';
 import 'package:flutter/material.dart';
 // import 'package:an_yen_clinic/gen/assets.gen.dart';
 
@@ -15,12 +17,19 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Timer(Duration(seconds: 3), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => SplashScreenIntro()),
-      );
-    });
+    loadAndNavigate();
+  }
+
+  Future<void> loadAndNavigate() async {
+    await Future.delayed(const Duration(seconds: 3));
+    final bool isLoggedIn = await getLogin();
+
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+          builder: (_) => isLoggedIn ? Dashboard() : SplashScreenIntro()),
+    );
   }
 
   @override
