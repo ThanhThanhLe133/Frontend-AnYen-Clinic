@@ -47,8 +47,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     } else if (phoneNumber.startsWith(code)) {
       //nếu đã nhập mã vùng -> thêm +
       phoneNumber = "+$phoneNumber";
+    } else if (phoneNumber.startsWith("0")) {
+      phoneNumber = "+$code${phoneNumber.substring(1)}";
     } else {
-      //nếu chưa nhập mã vùng -> thêm mã vùng
       phoneNumber = "+$code$phoneNumber";
     }
 

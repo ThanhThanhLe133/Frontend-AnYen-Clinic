@@ -24,7 +24,7 @@ class _PsychologicalTestScreenState extends State<PsychologicalTestScreen> {
 
   Future<void> fetchQuestions() async {
     final response = await makeRequest(
-      url: '$apiUrl/patient/test/${testId}', // URL trả về JSON như bạn gửi
+      url: '$apiUrl/patient/test/$testId',
       method: 'GET',
     );
 
@@ -136,10 +136,8 @@ class _PsychologicalTestScreenState extends State<PsychologicalTestScreen> {
     }
   }
 
-  // Hàm xử lý cho nút FAB hoặc nút "Sau" ở trên
   void _handleNextOrComplete() {
     if (selectedAnswerIndex == -1) {
-      // Optional: Hiển thị thông báo yêu cầu chọn câu trả lời
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Vui lòng chọn một câu trả lời.'),
@@ -172,26 +170,25 @@ class _PsychologicalTestScreenState extends State<PsychologicalTestScreen> {
     if (questions.isEmpty) {
       return Scaffold(
         appBar: AppBar(
-          elevation: 0, // Bỏ shadow
+          elevation: 0,
           leading: IconButton(
-            // Icon back nhỏ hơn một chút và màu khác
-            icon: Icon(Icons.chevron_left,
-                color: Colors.black54), // Màu icon giống ảnh hơn
-            iconSize: screenWidth * 0.08, // Giữ kích thước tương đối
+            icon: Icon(Icons.chevron_left, color: Colors.black54),
+            iconSize: screenWidth * 0.08,
             onPressed: () {
               Navigator.pop(context);
             },
           ),
           title: Text(
-            widget.title, // Sử dụng title được truyền vào hoặc mặc định
+            widget.title,
+            maxLines: null,
             style: TextStyle(
-              color: Color(0xFF007AFF), // Màu xanh dương giống ảnh
-              fontSize: screenWidth * 0.055, // Cỡ chữ title điều chỉnh
+              color: Color(0xFF007AFF),
+              fontSize: screenWidth * 0.055,
               fontWeight: FontWeight.bold,
             ),
           ),
           centerTitle: true,
-          backgroundColor: Colors.white, // Nền AppBar trắng
+          backgroundColor: Colors.white,
           // Bỏ bottom border
         ),
         body: Center(child: CircularProgressIndicator()),
@@ -199,14 +196,12 @@ class _PsychologicalTestScreenState extends State<PsychologicalTestScreen> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.white, // Nền trắng như ảnh
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        elevation: 0, // Bỏ shadow
+        elevation: 0,
         leading: IconButton(
-          // Icon back nhỏ hơn một chút và màu khác
-          icon: Icon(Icons.chevron_left,
-              color: Colors.black54), // Màu icon giống ảnh hơn
-          iconSize: screenWidth * 0.08, // Giữ kích thước tương đối
+          icon: Icon(Icons.chevron_left, color: Colors.black54),
+          iconSize: screenWidth * 0.08,
           onPressed: () {
             Navigator.pop(context);
           },
